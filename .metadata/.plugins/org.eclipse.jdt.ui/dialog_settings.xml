@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <section name="Workbench">
-	<item value="C:\Users\Steven\Downloads" key="org.eclipse.jdt.ui.lastextjar"/>
+	<item value="C:\Users\Steven\Desktop\1Project Files\MineSwarm Dev\MineSwarm" key="org.eclipse.jdt.ui.lastextjar"/>
 	<section name="org.eclipse.jdt.internal.ui.packageview.PackageExplorerPart">
 		<item value="2" key="layout"/>
 		<item value="true" key="group_libraries"/>
@@ -45,6 +45,7 @@
 		<item value="false" key="JarManifestWizardPage.SAVE_MANIFEST"/>
 		<item value="false" key="JarPackageWizardPage.EXPORT_OUTPUT_FOLDER"/>
 		<list key="JarPackageWizardPage.DESTINATION_NAMES_ID">
+			<item value="C:\Users\Steven\Desktop\1Project Files\MineSwarm Dev\MineSwarm\OUT\MobKeys.jar"/>
 			<item value="C:\Users\Steven\Desktop\1Project Files\Mineswarm\plugins\MobKeys.jar"/>
 			<item value="OUT\MobKeys.jar"/>
 			<item value="OUT/MobKeys.jar"/>

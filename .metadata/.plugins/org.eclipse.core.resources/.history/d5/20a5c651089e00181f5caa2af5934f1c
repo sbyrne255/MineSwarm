@@ -116,7 +116,6 @@ public class MobKeys extends JavaPlugin implements Listener{
 		if (event.getEntity().getKiller() != null) 
 		{
 			Player player = event.getEntity().getKiller();
-			player.sendMessage(event.getEntity().getType().toString());
 			if(event.getEntity().getType().toString() == "ZOMBIE"){//Zombie was killed...
 				Random rand = new Random();
 				if((rand.nextInt(2))+1 == 1){//give him a book!
