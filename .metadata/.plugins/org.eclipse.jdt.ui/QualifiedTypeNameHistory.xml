@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<qualifiedTypeNameHistroy>
+<fullyQualifiedTypeName name="org.bukkit.command.CommandSender"/>
+<fullyQualifiedTypeName name="org.bukkit.command.Command"/>
+<fullyQualifiedTypeName name="org.bukkit.event.player.PlayerEggThrowEvent"/>
+<fullyQualifiedTypeName name="org.bukkit.event.EventHandler"/>
+<fullyQualifiedTypeName name="org.bukkit.entity.Player"/>
+<fullyQualifiedTypeName name="org.bukkit.plugin.java.JavaPlugin"/>
+<fullyQualifiedTypeName name="org.bukkit.event.Listener"/>
+<fullyQualifiedTypeName name="org.bukkit.event.player.PlayerBucketFillEvent"/>
+<fullyQualifiedTypeName name="org.bukkit.event.player.PlayerInteractEvent"/>
+<fullyQualifiedTypeName name="org.bukkit.event.block.Action"/>
+<fullyQualifiedTypeName name="org.bukkit.ChatColor"/>
+<fullyQualifiedTypeName name="org.bukkit.Location"/>
+<fullyQualifiedTypeName name="java.util.concurrent.TimeUnit"/>
+<fullyQualifiedTypeName name="org.bukkit.block.BlockFace"/>
+<fullyQualifiedTypeName name="org.bukkit.block.BlockState"/>
+<fullyQualifiedTypeName name="org.bukkit.material.Openable"/>
+<fullyQualifiedTypeName name="org.bukkit.material.MaterialData"/>
+<fullyQualifiedTypeName name="org.bukkit.material.Door"/>
+<fullyQualifiedTypeName name="org.bukkit.block.Block"/>
+</qualifiedTypeNameHistroy>

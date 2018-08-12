@@ -1,0 +1,7 @@
+name: MobKeys
+main: me.cutrats110.MobKeys
+version: 1.0
+commands:
+   doorlevel:
+      description: Blank description.
+      usage: /<command>

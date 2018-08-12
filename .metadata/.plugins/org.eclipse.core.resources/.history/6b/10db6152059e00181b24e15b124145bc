@@ -1,0 +1,154 @@
+package me.cutrats110;
+
+
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
+import org.bukkit.block.BlockState;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
+import org.bukkit.event.entity.EntityDeathEvent;
+//import org.bukkit.event.player.PlayerBucketFillEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.material.Door;
+import org.bukkit.material.Openable;
+import org.bukkit.plugin.java.JavaPlugin;
+
+public class MobKeys extends JavaPlugin implements Listener{
+	
+	private boolean preventDouble = true;
+	@Override
+	public void onEnable(){
+		getLogger().info("MobKeys is starting...");
+		
+	    getServer().getPluginManager().registerEvents(this, this);
+		getLogger().info("MobKeys has been enabled");
+	}
+	
+	@EventHandler
+	public void onPlayerInteract(PlayerInteractEvent event) {
+		if(preventDouble){
+		try{
+			if (event.getAction() == Action.RIGHT_CLICK_BLOCK && event.getClickedBlock().getType().toString().toLowerCase().replace("_", "").equals("irondoorblock") ) {
+				Player player = event.getPlayer();
+				Block block = event.getClickedBlock();
+				BlockState state = block.getState();
+				//Location blockPOS = block.getLocation();
+				
+				player.sendMessage(String.valueOf(player.getLevel()));
+				player.setLevel(0);
+				player.sendMessage(String.valueOf(player.getLevel()));
+				
+				//player.sendMessage(blockPOS.toString());
+
+				//SQLite select * FROM TABLE WHERE POS = blockPOS
+					//if SQLCost <= current LEVEL
+						//Subtract x Levels from LEVELS
+						//run try statements
+					//Else
+						//Message user cost VS balance
+				//IF SQL has no entry but its an iron door, load default cost and charge/attempt.
+				
+				
+				
+				
+				//Command handler should set cost of door/s by writing to SQLite database
+				
+				try{
+		            state = block.getRelative(BlockFace.DOWN).getState();
+		            Openable door = (Openable)state.getData();
+		            door.setOpen(true);
+		            state.setData((Door)door);
+		            //state.setData((MaterialData)door);
+		            state.update();
+				}catch(Exception err){
+					state = event.getClickedBlock().getState();
+		            Openable door = (Openable)state.getData();
+		            door.setOpen(true);
+		            state.setData((Door)door);
+		            //state.setData((MaterialData)door);
+		            state.update();
+				}
+				//Schedule Close
+			    getServer().getScheduler().scheduleSyncDelayedTask(this, new Runnable() {
+			    	public void run() {
+			    		BlockState state = block.getState();
+						try{
+				            state = event.getClickedBlock().getRelative(BlockFace.DOWN).getState();
+				            Openable door = (Openable)state.getData();
+				            door.setOpen(false);
+				            state.setData((Door)door);
+//				            state.setData((MaterialData)door);
+				            state.update();
+						}catch(Exception err){
+							state = event.getClickedBlock().getState();
+				            Openable door = (Openable)state.getData();
+				            door.setOpen(false);
+				            state.setData((Door)door);
+				            //state.setData((MaterialData)door);
+				            state.update();
+						}
+			    	}
+			    }, 45L);
+				
+				event.setCancelled(true);//Probably want to cancel but shouldn't matter in adventure mode
+				
+			}
+		}
+		catch(Exception err){
+			
+		}
+		preventDouble = false;
+		}else{
+			preventDouble = true;
+		}
+	}
+
+	@EventHandler
+	public void onEDeath(EntityDeathEvent event) {
+		if (event.getEntity().getKiller() != null) 
+		{
+			Player player = event.getEntity().getKiller();
+			if(event.getEntity().getType().toString() == "zombie"){//Zombie was killed...
+				
+			}
+			ItemStack playermeat = new ItemStack( Material.BOOK, 1);//Drops "key" (book)
+			player.getLocation().getWorld().dropItem(player.getLocation(), playermeat);
+		}
+	}
+	
+	@Override
+	public void onDisable(){
+		getLogger().info("MobKeys has been disabled");
+	}
+	
+	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args){	
+		if (cmd.getName().equalsIgnoreCase("doorlevel") && sender instanceof Player){
+			Player player = (Player) sender;
+			Block block = player.getTargetBlock(null, 100);
+			Location bl = block.getLocation();
+			player.sendMessage(bl.toString());
+			
+			
+			return true;
+		}
+		
+		
+		return false;
+	}
+	
+	
+	
+}
+
+
+//When door is right clicked, it will check the player's EXP and the door's physical position; if the door is a keydoor & 
+//they have enough EXP for that door (stored by position in sqlite)
+
+//
