@@ -19,4 +19,10 @@
 <fullyQualifiedTypeName name="org.bukkit.material.MaterialData"/>
 <fullyQualifiedTypeName name="org.bukkit.material.Door"/>
 <fullyQualifiedTypeName name="org.bukkit.block.Block"/>
+<fullyQualifiedTypeName name="org.bukkit.inventory.meta.ItemMeta"/>
+<fullyQualifiedTypeName name="org.apache.commons.lang.WordUtils"/>
+<fullyQualifiedTypeName name="java.awt.List"/>
+<fullyQualifiedTypeName name="java.util.List"/>
+<fullyQualifiedTypeName name="java.util.ArrayList"/>
+<fullyQualifiedTypeName name="org.bukkit.metadata.FixedMetadataValue"/>
 </qualifiedTypeNameHistroy>
