@@ -1,0 +1,40 @@
+//Location blockPOS = block.getLocation();
+				
+				//player.sendMessage(String.valueOf(player.getLevel()));
+				//player.setLevel(0);
+				//player.sendMessage(String.valueOf(player.getLevel()));
+				
+				//player.sendMessage(blockPOS.toString());
+
+				//SQLite select * FROM TABLE WHERE POS = blockPOS
+					//if SQLCost <= current LEVEL
+						//Subtract x Levels from LEVELS
+						//run try statements
+					//Else
+						//Message user cost VS balance
+				//IF SQL has no entry but its an iron door, load default cost and charge/attempt.
+				
+				
+				
+				
+				//Command handler should set cost of door/s by writing to SQLite database
+				//IF STATEMENT SHOULD CHECK META ITEM AND DOOR KEY REQUIRED TO SEE, USING SOMETHING LIKE:
+					//player.getItemInHand().getMetaData().getLore().contains("MOBKEY 1") THEN...;//Also, maybe check full inventory for keys instead of just hand?
+				
+				
+				
+				
+				/*
+				 * WHEN PLAYER KILLS ENTITY, CHECK POS OF PLAYER AGAINST SQLITE SQUARE LOCATIONS, IF THEY ARE BETWEEN POINTS IN DB, DROP THE KEY SPECIFIC TO THAT ROOM, IE
+				 * IF POS IS Y = 5, X = 5, Z = 5 AND DB HAS 
+				 * START: Y=0, X=0, Y=0 AND
+				 * END: Y=10, X=7, Y=15
+				 * THEN PLAYER IS BETWEEN 0,0,0 AND 10,7,15, THEREFOR SHOULD GET THE KEY ASSOCIATED WITH IT __IF__ THE MOB IS DROPPING A KEY.
+				 *
+				 * using a custom tool (hoe?) left click block POS1, right click block POS 2, enter height statically?
+				 * command would be something like: /mineswarm mark //enables hoe
+				 * *hits 2 blocks, 1 left, 1 right using player meta data
+				 * /mineswarm setzone ID bottom top
+				 * /mineswarm showzone ID (no arg = zone currently in)
+				 * 
+				 */

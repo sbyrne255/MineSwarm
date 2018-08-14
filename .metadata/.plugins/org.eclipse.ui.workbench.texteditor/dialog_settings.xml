@@ -2,18 +2,20 @@
 <section name="Workbench">
 	<section name="org.eclipse.ui.texteditor.FindReplaceDialog">
 		<item value="false" key="isRegEx"/>
-		<item value="inHand" key="selection"/>
+		<item value="world1" key="selection"/>
 		<item value="false" key="casesensitive"/>
 		<item value="false" key="incremental"/>
 		<item value="true" key="wrap"/>
 		<item value="false" key="wholeword"/>
 		<list key="findhistory">
-			<item value="inhand"/>
-			<item value="ID"/>
-			<item value="setMetaDAta"/>
-			<item value="setMetadata"/>
-			<item value="key 0"/>
-			<item value="key"/>
+			<item value="world1"/>
+			<item value="world2"/>
+			<item value="pos1x"/>
+			<item value="pos1X"/>
+			<item value="pos1y"/>
+			<item value="closed"/>
+			<item value="database connection closed"/>
+			<item value="exits"/>
 		</list>
 		<list key="replacehistory">
 		</list>
