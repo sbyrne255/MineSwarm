@@ -30,7 +30,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class Mineswarm extends JavaPlugin implements Listener{
-	private boolean debugging = true;
+
+	private boolean debugging = false;
 	private boolean preventDouble = true;
 	private Connection conn = null;
 	//Util & logging
@@ -40,6 +41,9 @@ public class Mineswarm extends JavaPlugin implements Listener{
 		
 	    getServer().getPluginManager().registerEvents(this, this);
 		getLogger().info("Mineswarm has been enabled");
+		new EventListener(this);
+
+
 		
 		connect();
 		createTable();

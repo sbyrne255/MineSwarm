@@ -1,0 +1,38 @@
+//FEATURE:
+	MAYBE CHECK FULL INVENTORY FOR KEY INSTEAD OF JUST HANDS
+//BUGS:
+	DEALING WITH OVERLAPPING ZONES WILL BE VERY HARD...
+//TODO:
+	ZONES
+		Set mob health/regen
+		Set keys that are dropped
+		set PVP
+	RANDOM DROPS
+		Configurable items
+		Change chances or implement special items in zones (use zone friendly names from config?)
+	Inventory swaps
+		White list items that can be dropped
+	TEAMS
+		teams can join randomly as long as they are at start, from there they can TPA 1 time to any player on the team or randomly select a player to TPA to.
+		New teams start at spawn
+		Leaving a team brings you to spawn
+		Creating a team sends everyone back to start
+		Teams are limited to 6ish people
+		Team owner accepts requests to join, on leave or AFK team owner transfers
+		Team score board different from solo
+	Leader boards (time/Deaths/KDA-boss/start/enddates/team members or solo/team size) Weeklyboard and all time board
+	
+		
+	
+	WHEN PLAYER KILLS ENTITY & ENTITY DROPS KEY, CHECK SQLITE FOR LOCATION, IF IN A ZONE DROP A KEY FOR THAT ZONE (NOT OTHERS)
+				/*
+				 * WHEN PLAYER KILLS ENTITY, CHECK POS OF PLAYER AGAINST SQLITE SQUARE LOCATIONS, IF THEY ARE BETWEEN POINTS IN DB, DROP THE KEY SPECIFIC TO THAT ROOM, IE
+				 * IF POS IS Y = 5, X = 5, Z = 5 AND DB HAS 
+				 * START: Y=0, X=0, Y=0 AND
+				 * END: Y=10, X=7, Y=15
+				 * THEN PLAYER IS BETWEEN 0,0,0 AND 10,7,15, THEREFOR SHOULD GET THE KEY ASSOCIATED WITH IT __IF__ THE MOB IS DROPPING A KEY.
+				 */
+	SHOW ZONES SHOULD GET BLOCK POS IE: 
+		IF ((MIN.X <= PLAYER.X) AND (MAX.X <= PLAYER.X)) AND (MIN.Z <= PLAYER.Z) AND (MAX.Z <= PLAYER.Z) AND (MIN.Y <= PLAYER.Y) AND (MAX.Y <= PLAYER.Y)
+		
+  
