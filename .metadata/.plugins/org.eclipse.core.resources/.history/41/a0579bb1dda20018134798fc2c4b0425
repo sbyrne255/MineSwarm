@@ -3,17 +3,14 @@
 //BUGS:
 	DEALING WITH OVERLAPPING ZONES WILL BE VERY HARD...
 //TODO:
+	ZONES
+		Set mob health/regen
+		*Set keys that are dropped
+		*set PVP
 	*RANDOM DROPS
 		*Configurable items
 	*Inventory swaps
 		*White list items that can be dropped
-	ZONES
-		Set mob health/regen [mob spawn event?]
-		*Set keys that are dropped
-		*set PVP
-	Chests plugin
-		block chests from sharing items with team (don't allow putting in box, only take out)
-		make items randomly spawn into box every few seconds/minutes (scheduler)
 	TEAMS
 		teams can join randomly as long as they are at start, from there they can TPA 1 time to any player on the team or randomly select a player to TPA to.
 		New teams start at spawn

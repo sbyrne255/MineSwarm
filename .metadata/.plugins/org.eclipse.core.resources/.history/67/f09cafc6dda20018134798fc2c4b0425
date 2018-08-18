@@ -8,7 +8,7 @@
 	*Inventory swaps
 		*White list items that can be dropped
 	ZONES
-		Set mob health/regen [mob spawn event?]
+		Set mob health/regen
 		*Set keys that are dropped
 		*set PVP
 	Chests plugin
