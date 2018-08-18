@@ -5,13 +5,12 @@
 //TODO:
 	ZONES
 		Set mob health/regen
-		Set keys that are dropped
-		set PVP
-	RANDOM DROPS
-		Configurable items
-		Change chances or implement special items in zones (use zone friendly names from config?)
-	Inventory swaps
-		White list items that can be dropped
+		*Set keys that are dropped
+		*set PVP
+	*RANDOM DROPS
+		*Configurable items
+	*Inventory swaps
+		*White list items that can be dropped
 	TEAMS
 		teams can join randomly as long as they are at start, from there they can TPA 1 time to any player on the team or randomly select a player to TPA to.
 		New teams start at spawn
@@ -21,9 +20,6 @@
 		Team owner accepts requests to join, on leave or AFK team owner transfers
 		Team score board different from solo
 	Leader boards (time/Deaths/KDA-boss/start/enddates/team members or solo/team size) Weeklyboard and all time board
-	Bosses
-		increase damage
-		increase hp
 	Class selection
 		Give items on command (probably use a command block and MetaData to store CD?)
 		Set class in MetaData
@@ -34,7 +30,7 @@
 		On Join, load MetaData
 		On Leave, save MetaData
 	Load a configfile
-		Enable a YML
+		*Enable a YML
 		Also, create multiple SQL-DBs and provide a scheduled backup (once ever 10 minutes, hold 3 versions?)
 		
 		

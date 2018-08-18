@@ -3,7 +3,6 @@ package me.cutrats110;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -15,7 +14,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
-import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -23,145 +21,32 @@ import org.bukkit.material.Door;
 import org.bukkit.material.Openable;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.plugin.java.JavaPlugin;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 
 public class Mineswarm extends JavaPlugin implements Listener{
 
-	private boolean debugging = false;
+	public final String version = "1.13.a";
+	//private boolean debugging = this.getConfig().getBoolean("debugging");
 	private boolean preventDouble = true;
-	private Connection conn = null;
+	private Database db = null;
 	//Util & logging
 	@Override
 	public void onEnable(){
 		getLogger().info("Mineswarm is starting...");
-		
 	    getServer().getPluginManager().registerEvents(this, this);
 		getLogger().info("Mineswarm has been enabled");
-		new EventListener(this);
-
-
+		new EventListener(this);		
+        this.saveDefaultConfig();
+        getLogger().info(this.getConfig().getString("message"));
+        db = new Database(this);
 		
-		connect();
-		createTable();
+		db.connect();
+		db.createTable();
 		
 	}
 	@Override
 	public void onDisable(){
 		getLogger().info("Mineswarm has been disabled");
 	}
-	//All database stuff here...
-	public void connect() {
-        try {
-        	// db parameters
-            String url = "jdbc:sqlite:plugins/mineswarm.db";
-            // create a connection to the database
-            conn = DriverManager.getConnection(url);
-            
-            getLogger().info("Connection to SQLite has been established.");
-            
-        } catch (SQLException e) {
-        	 getLogger().info(e.getMessage());
-        }
-    }
-    public void createTable() {
-        String sql = "CREATE TABLE IF NOT EXISTS zones(id,min_x,min_y,min_z,max_x,max_y,max_z,level,creator,world)";
-        try (
-        	PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.execute();
-        } catch (SQLException e) {getLogger().info(e.getMessage());}
-        
-        sql = "CREATE TABLE IF NOT EXISTS doors(id, level, block_y,creator)";
-        try (
-        	PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.execute();
-        } catch (SQLException e) {getLogger().info(e.getMessage());}
-    }	
-    public String selectDoor(String location, int y){
-        String sql = "SELECT level, block_y FROM doors WHERE id = ?";
-        try{
-        	if(conn.isClosed()){
-        		connect();
-        	}
-        }
-        catch(Exception er){
-        	getLogger().info("Conn check failed. " + er.toString());
-        }
-        try {
-            	PreparedStatement pstmt = conn.prepareStatement(sql);
-                pstmt.setString(1, location);
-                ResultSet rs = pstmt.executeQuery();
-                // loop through the result set
-                while (rs.next()) {
-                    int db_y = rs.getInt("block_y");
-                    if((db_y-1) == y || (db_y+1) == y || db_y == y){
-                    	return rs.getString("level");
-                    }
-                    getLogger().info(location);
-                    
-                }
-            } catch (SQLException e) {getLogger().info("ERROR SELECTING: " + e.getMessage());}
-        return null;
-    }
-    public void makeDoor(String location, int y, String level, String creator) {
-        String sql = "INSERT INTO doors(id,level,block_y,creator) VALUES(?,?,?,?)";
-        try (
-        	PreparedStatement pstmt = conn.prepareStatement(sql)) {
-        	pstmt.setString(1, location);
-            pstmt.setString(2, level);
-            pstmt.setInt(3, y);
-            pstmt.setString(4, creator);
-            
-            pstmt.executeUpdate();
-        } catch (SQLException e) {getLogger().info(e.getMessage());}
-    }
-    public void destroyDoor(String location, int y) {
-        String sql = "DELETE FROM doors WHERE id = ? AND (block_y-1 = ? OR block_y+1 = ? OR block_y = ?) ";
-        try (
-        	PreparedStatement pstmt = conn.prepareStatement(sql)) {
-        	pstmt.setString(1, location);
-            pstmt.setInt(2, y);
-            pstmt.setInt(3, y);
-            pstmt.setInt(4, y);
-            
-            pstmt.executeUpdate();
-        } catch (SQLException e) {getLogger().info(e.getMessage());}
-    }
-    public void deleteDoor(String location, int y, String creator) {
-        String sql = "DELETE FROM doors WHERE id = ? AND creator = ? AND (block_y-1 = ? OR block_y+1 = ? OR block_y = ?) ";
-        try (
-        	PreparedStatement pstmt = conn.prepareStatement(sql)) {
-        	pstmt.setString(1, location);
-            pstmt.setString(2, creator);
-            pstmt.setInt(3, y);
-            pstmt.setInt(4, y);
-            pstmt.setInt(5, y);
-            
-            pstmt.executeUpdate();
-        } catch (SQLException e) {getLogger().info(e.getMessage());}
-    }
-    public void makeZone(String id, int min_x, int min_y, int min_z, int max_x, int max_y, int max_z, String level, String creator, String world) {
-        String sql = "INSERT INTO zones(id, min_x, min_y, min_z, max_x, max_y, max_z, level, creator, world) VALUES(?,?,?,?,?,?,?,?,?,?)";
-        try (
-        	PreparedStatement pstmt = conn.prepareStatement(sql)) {
-        	pstmt.setString(1, id);
-            pstmt.setInt(2, min_x);
-            pstmt.setInt(3, min_y);
-            pstmt.setInt(4, min_z);
-            pstmt.setInt(5, max_x);
-            pstmt.setInt(6, max_y);
-            pstmt.setInt(7, max_z);
-            pstmt.setString(8, level);
-            pstmt.setString(9, creator);
-            pstmt.setString(10, world);
-            
-            pstmt.executeUpdate();
-        } catch (SQLException e) {getLogger().info(e.getMessage());}
-    }
-    
 	//Player interaction and events.
 	@EventHandler
 	public void onPlayerInteract(PlayerInteractEvent event) {
@@ -175,7 +60,7 @@ public class Mineswarm extends JavaPlugin implements Listener{
 						Block block = event.getClickedBlock();
 						String blockID = "X:" + String.valueOf(block.getX()) + "Z:"+String.valueOf(block.getZ()) + "W:"+String.valueOf(block.getWorld());
 						int blockY = block.getY();
-						String level = selectDoor(blockID, blockY);
+						String level = db.selectDoor(blockID, blockY);
 						level = "[" + level + "]";
 						
 						BlockState state = block.getState();
@@ -307,44 +192,6 @@ public class Mineswarm extends JavaPlugin implements Listener{
 			//getLogger().info("Some uncaught error, only happens when hand is empt right clicking; probably bukkit.");
 		}
 	}
-	@EventHandler
-	public void onEDeath(EntityDeathEvent event) {
-		if (event.getEntity().getKiller() != null) 
-		{
-			Player player = event.getEntity().getKiller();
-			if(debugging){player.sendMessage(event.getEntity().getType().toString());}
-			
-			if(event.getEntity().getType().toString() == "ZOMBIE"){//Zombie was killed...
-				Random rand = new Random();
-				if((rand.nextInt(12))+1 == 1 || debugging){
-					try{
-						ItemStack book_drop = new ItemStack( Material.BOOK, 1);//Drops "key" (book
-						
-						//SQL SELECT ZONE...
-						
-						try{
-							List<String> lore = new ArrayList<>();
-							lore.add("Key1");
-							
-							ItemMeta meta = book_drop.getItemMeta();
-							meta.setDisplayName("Key");
-							if(meta.hasLore()){meta.getLore().add("Key1");}
-							else{meta.setLore(lore);}
-							book_drop.setItemMeta(meta);
-						}
-						catch(Exception er){getLogger().info("Problem with setting custom name or lore in MOBKEYS: " + er.toString());}
-						
-						 
-						player.getLocation().getWorld().dropItem(player.getLocation(), book_drop);
-					}
-					catch(Exception er){
-						getLogger().info("Problem with drops: " + er.toString());
-					}
-					
-				}				
-			}
-		}
-	}
 	
 	//Command based functions.
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args){	
@@ -425,7 +272,7 @@ public class Mineswarm extends JavaPlugin implements Listener{
 						min_y = player.getMetadata("pos1y").get(0).asInt();
 					}
 					
-					makeZone(args[0], min_x, min_y, min_z, max_x, max_y, max_z, args[1], player.getName(), player.getMetadata("world1").get(0).asString());
+					db.makeZone(args[0].replace("_", " "), min_x, min_y, min_z, max_x, max_y, max_z, args[1].replace("_", " "), player.getName(), player.getMetadata("world1").get(0).asString(), Boolean.valueOf(args[2]), Integer.valueOf(args[3]));
 
 					return true;
 				}
@@ -443,7 +290,7 @@ public class Mineswarm extends JavaPlugin implements Listener{
 				Block block = player.getTargetBlock(null, 10);
 				String blockID = "X:" + String.valueOf(block.getX()) + "Z:"+String.valueOf(block.getZ()) + "W:"+String.valueOf(block.getWorld());
 				int blockY = block.getY();
-				makeDoor(blockID, blockY, args[0], player.getName());
+				db.makeDoor(blockID, blockY, args[0].replace("_", " "), player.getName());
 				return true;
 			}
 			catch(Exception er){
@@ -455,7 +302,7 @@ public class Mineswarm extends JavaPlugin implements Listener{
 				Block block = player.getTargetBlock(null, 10);
 				String blockID = "X:" + String.valueOf(block.getX()) + "Z:"+String.valueOf(block.getZ()) + "W:"+String.valueOf(block.getWorld());
 				int blockY = block.getY();
-				deleteDoor(blockID, blockY, player.getName());
+				db.deleteDoor(blockID, blockY, player.getName());
 				return true;
 			}
 			catch(Exception er){
@@ -467,7 +314,7 @@ public class Mineswarm extends JavaPlugin implements Listener{
 				Block block = player.getTargetBlock(null, 10);
 				String blockID = "X:" + String.valueOf(block.getX()) + "Z:"+String.valueOf(block.getZ()) + "W:"+String.valueOf(block.getWorld());
 				int blockY = block.getY();
-				destroyDoor(blockID, blockY);
+				db.destroyDoor(blockID, blockY);
 				return true;
 			}
 			catch(Exception er){

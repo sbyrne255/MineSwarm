@@ -2,22 +2,29 @@
 <section name="Workbench">
 	<section name="org.eclipse.ui.texteditor.FindReplaceDialog">
 		<item value="false" key="isRegEx"/>
-		<item value="world1" key="selection"/>
+		<item value="makeZone" key="selection"/>
 		<item value="false" key="casesensitive"/>
 		<item value="false" key="incremental"/>
 		<item value="true" key="wrap"/>
 		<item value="false" key="wholeword"/>
 		<list key="findhistory">
-			<item value="world1"/>
-			<item value="world2"/>
-			<item value="pos1x"/>
-			<item value="pos1X"/>
-			<item value="pos1y"/>
-			<item value="closed"/>
-			<item value="database connection closed"/>
-			<item value="exits"/>
+			<item value="makeZone"/>
+			<item value="Connection to sQLite"/>
+			<item value="noDick"/>
+			<item value="getConfig"/>
+			<item value="getLogger"/>
+			<item value="plugin."/>
+			<item value="ERROR SELECTING:"/>
+			<item value="ERROR SELECTING"/>
 		</list>
 		<list key="replacehistory">
+			<item value="plugin.getConfig"/>
+			<item value="plugin.getLogger"/>
+			<item value="this.getConfig"/>
+			<item value=""/>
+			<item value="items-drop-to"/>
+			<item value="configElement"/>
+			<item value="hasdied"/>
 		</list>
 	</section>
 	<section name="org.eclipse.ui.texteditor.FindReplaceDialog_dialogBounds">

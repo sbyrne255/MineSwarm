@@ -1,0 +1,43 @@
+name: Mineswarm
+main: me.cutrats110.Mineswarm
+version: 1.13
+load: POSTWORLD
+author: Steven Byrne
+website: www.spigotmc.org
+prefix: Mineswarm
+commands:
+  doorlevel:
+   description: Foo command
+   permission: test.foo
+   permission-message: You do not have permission!
+   usage: /<command> [test|stop]
+  markingtool:
+   description: Foo command
+   permission: test.foo
+   permission-message: You do not have permission!
+   usage: /<command> [test|stop]
+  showzone:
+   description: Foo command
+   permission: test.foo
+   permission-message: You do not have permission!
+   usage: /<command> [test|stop]
+  makezone:
+   description: Create a new zone from markers
+   permission-message: No perms yo
+   usage: /makezone [String ID] [Int Level]
+  makedb:
+   description: Create a new zone from markers
+   permission-message: No perms yo
+   usage: /makezone [String ID] [Double Y-bottom] [Double Y-top] [Int Level]
+  makedoor:
+   description: Create a new zone from markers
+   permission-message: No perms yo
+   usage: /makezone [String ID] [Double Y-bottom] [Double Y-top] [Int Level]
+  deletedoor:
+   description: Create a new zone from markers
+   permission-message: No perms yo
+   usage: /makezone [String ID] [Double Y-bottom] [Double Y-top] [Int Level]
+  destroydoor:
+   description: Create a new zone from markers
+   permission-message: No perms yo
+   usage: /makezone [String ID] [Double Y-bottom] [Double Y-top] [Int Level]

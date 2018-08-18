@@ -1,0 +1,118 @@
+# default config.yml
+
+#Set true for debugging messages and 100% drop of keys and random items.
+debugging: false
+#mob or player sets where items are dropped after killing a mob
+items-drop-to: player
+#mob or player sets where keys are dropped after killing a mob
+keys-drop-to: player
+default-pvp-on: false
+#mobs that drop items
+item-dropping-mobs:
+  - SKELETON
+  - ZOMBIE
+  - PIG
+#Mobs that drop keys, 1 in X probability key will drop.
+key-dropping-mobs:
+  - ZOMBIE
+  - 10
+#items the above mobs will drop,
+#Item name, 1/X chance of a drop (1 to 100%), quantity of items dropped
+mob-drops:
+  - ARROW
+  - 10
+  - 4
+  - APPLE
+  - 20
+  - 1
+#Boss mobs boosts: Mob, HP Regen per hit, Damage addition, Thornmail (returns damage to sender) [1 = .5 hearts]
+boss-mobs:
+  - GIANT
+  - 2
+  - 0
+  - 1
+  - DRAGON
+  - 0
+  - 4
+  - 2
+  
+#Books are keys, remove book from list if you do not want players to share keys.
+dropping-whitelist:
+  - BOOK
+  - ARROW
+  - SPECTRAL_ARROW
+  - ARROW_OF_NIGHT_VISION
+  - ARROW_OF_INVISIBILITY
+  - ARROW_OF_LEAPING
+  - ARROW_OF_FIRE_RESISTANCE
+  - ARROW_OF_SWIFTNESS
+  - ARROW_OF_SLOWNESS
+  - ARROW_OF_THE_TURTLE_MASTER
+  - ARROW_OF_BREATHING
+  - ARROW_OF_HEALING
+  - ARROW_OF_HARMING
+  - ARROW_OF_POISON
+  - ARROW_OF_REGENERATION
+  - ARROW_OF_STRENGTH
+  - ARROW_OF_WEAKNESS
+  - ARROW_OF_LUCK
+  - ARROW_OF_SLOW_FALLING
+  - POTION_OF_NIGHT_VISION
+  - POTION_OF_INVISIBILITY
+  - POTION_OF_LEAPING
+  - POTION_OF_FIRE_RESISTANCE
+  - POTION_OF_SWIFTNESS
+  - POTION_OF_SLOWNESS
+  - POTION_OF_THE_TURTLE_MASTER
+  - POTION_OF_WATER_BREATHING
+  - POTION_OF_HEALING
+  - POTION_OF_HARMING
+  - POTION_OF_POISON
+  - POTION_OF_REGENERATION
+  - POTION_OF_STRENGTH
+  - POTION_OF_WEAKNESS
+  - POTION_OF_LUCK
+  - POTION_OF_SLOW_FALLING
+  - SPLASH_WATER_BOTTLE
+  - FISHING_ROD
+  - FLINT_AND_STEEL
+  - COMPASS
+  - LEAD
+  - CLOCK
+  - TORCH
+  - REDSTONE_TORCH
+  - APPLE
+  - MUSHROOM_STEW
+  - BREAD
+  - RAW_PORKCHOP
+  - COOKED_PORKCHOP
+  - GOLDEN_APPLE
+  - ENCHANTED_GOLDEN_APPLE
+  - RAW_COD
+  - RAW_SALMON
+  - TROPICAL_FISH
+  - PUFFERFISH
+  - COOKED_COD
+  - COOK_SALMON
+  - CAKE
+  - COOKIE
+  - MELON_SLICE
+  - DRIED_KELP
+  - RAW_BEEF
+  - COOKED_BEEF
+  - RAW_CHICKEN
+  - COOKED_CHICKEN
+  - ROTTEN_FLESH
+  - SPIDER_EYE
+  - CARROT
+  - POTATO
+  - BAKED_POTATO
+  - POISONOUS_POTATO
+  - PUMPKIN_PIE
+  - RAW_RABBIT
+  - COOKED_RABBIT
+  - RABBIT_STEW
+  - RAW_MUTTON
+  - COOKED_MUTTON
+  - BEETROOT
+  - BEETROOT_SOUP

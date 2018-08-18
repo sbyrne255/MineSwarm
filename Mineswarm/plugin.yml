@@ -3,41 +3,37 @@ main: me.cutrats110.Mineswarm
 version: 1.13
 load: POSTWORLD
 author: Steven Byrne
-website: www.spigotmc.org
+website: robertsroom.com
 prefix: Mineswarm
 commands:
   doorlevel:
    description: Foo command
    permission: test.foo
    permission-message: You do not have permission!
-   usage: /<command> [test|stop]
+   usage: /NA
   markingtool:
    description: Foo command
    permission: test.foo
    permission-message: You do not have permission!
-   usage: /<command> [test|stop]
+   usage: /markingtool
   showzone:
    description: Foo command
-   permission: test.foo
+   permission: mineswarm.showzone
    permission-message: You do not have permission!
-   usage: /<command> [test|stop]
+   usage: /showzone [Optional Friendly Name]
   makezone:
    description: Create a new zone from markers
    permission-message: No perms yo
-   usage: /makezone [String ID] [Int Level]
-  makedb:
-   description: Create a new zone from markers
-   permission-message: No perms yo
-   usage: /makezone [String ID] [Double Y-bottom] [Double Y-top] [Int Level]
+   usage: /makezone [String Friendly Name] [String Level (Matches Door)] [Bool PVP On true/false] [Int Mob multiplier]
   makedoor:
-   description: Create a new zone from markers
+   description: Create a new door you are looking at
    permission-message: No perms yo
-   usage: /makezone [String ID] [Double Y-bottom] [Double Y-top] [Int Level]
+   usage: /makedoor [String Level/Name (Matches Level of zone)]
   deletedoor:
-   description: Create a new zone from markers
+   description: deletes door from DB if you created it
    permission-message: No perms yo
-   usage: /makezone [String ID] [Double Y-bottom] [Double Y-top] [Int Level]
+   usage: /deletedoor
   destroydoor:
-   description: Create a new zone from markers
+   description: destroys door in DB regardless of creator
    permission-message: No perms yo
-   usage: /makezone [String ID] [Double Y-bottom] [Double Y-top] [Int Level]
+   usage: /destroydoor
