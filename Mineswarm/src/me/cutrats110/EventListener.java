@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Random;
 
 import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.Entity;
@@ -18,9 +19,14 @@ import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryDragEvent;
+import org.bukkit.event.inventory.InventoryType;
+//import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.metadata.FixedMetadataValue;
@@ -66,9 +72,56 @@ public class EventListener implements Listener {
         player.setWalkSpeed((float) .2);//0 to prevent walking...
         player.setGlowing(false);
     }
+    public Inventory getClickedInventory(InventoryView view, int slot) {
+        Inventory clickedInventory;
+        if (slot < 0) {
+            clickedInventory = null;
+        } else if (view.getTopInventory() != null && slot < view.getTopInventory().getSize()) {
+            clickedInventory = view.getTopInventory();
+        } else {
+            clickedInventory = view.getBottomInventory();
+        }
+        return clickedInventory;
+    }	 
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onPlayerDrag(InventoryDragEvent event) { 
+    	event.setCancelled(true);
+    }
     
     @EventHandler(priority = EventPriority.HIGHEST)
-    public void onPlayerClick(InventoryClickEvent event) {
+    public void onPlayerClick(InventoryClickEvent event) {     
+    	//Got some null pointers here...
+    	if(!event.getWhoClicked().getGameMode().equals(GameMode.CREATIVE)){
+	    	if(getClickedInventory(event.getView(), event.getRawSlot()).getType().equals(InventoryType.CHEST)){  //Top peice...
+	    		//plugin.getLogger().info(getClickedInventory(event.getView(), event.getRawSlot()).getType().toString());
+	    		if(!event.isShiftClick()){
+	    			if(event.isLeftClick()){
+	    				event.setCancelled(true);
+	    				return;
+	    			}
+	    			if(event.isRightClick()){
+	    				event.setCancelled(true);
+	    				return;
+	    			}
+	    		}    		
+	        }//https://hub.spigotmc.org/javadocs/spigot/org/bukkit/event/inventory/InventoryInteractEvent.html
+	    	else{
+	    		//plugin.getLogger().info(getClickedInventory(event.getView(), event.getRawSlot()).getType().toString());
+	    		if(event.isShiftClick()){//AND CURRENT ITEM IS NOT IN LIST...
+	    			event.setCancelled(true);
+					return;
+	    		}
+	    		if(event.isLeftClick() && event.isShiftClick()){//AND CURRENT ITEM IS NOT IN LIST...
+	    			event.setCancelled(true);
+					return;
+	    		}
+	    		if(event.isRightClick() && event.isShiftClick()){//AND CURRENT ITEM IS NOT IN LIST...
+	    			event.setCancelled(true);
+					return;
+	    		}
+	    	}
+    	}
+    	
     	try{
 	    	if(event.getClick().isRightClick()){
 	    		if(event.getAction().equals(InventoryAction.DROP_ONE_CURSOR) || event.getAction().equals(InventoryAction.DROP_ALL_CURSOR) ){
@@ -108,10 +161,8 @@ public class EventListener implements Listener {
 		Entity damager = e.getDamager();
 		Entity damageTaker = e.getEntity();
 		
-		if (damageTaker instanceof Player) {
-		    Player taker = (Player) damageTaker;
-		    if (damager instanceof Player) {
-		        Player damagerPlayer = (Player) damager;
+		if (damageTaker instanceof Player) { Player taker = (Player) damageTaker;
+		    if (damager instanceof Player) { Player damagerPlayer = (Player) damager;
 		        if(damagerPlayer.getName() != "bob" && taker.getMetadata("isdown").get(0).asBoolean()){//Check if player is medic, and or on team.
 			    	taker.sendMessage("HE IS MEDIC");
 		        	taker.setMetadata("isdown",new FixedMetadataValue(plugin, false));
@@ -127,16 +178,6 @@ public class EventListener implements Listener {
 		        }
 		        else
 		        {
-		        	taker.getLocation().getBlockX();
-		        	taker.getLocation().getBlockY();
-		        	taker.getLocation().getBlockZ();
-		        	taker.getLocation().getWorld();
-		        	
-		        	damagerPlayer.getLocation().getBlockX();
-		        	damagerPlayer.getLocation().getBlockX();
-		        	damagerPlayer.getLocation().getBlockX();
-		        	damagerPlayer.getLocation().getWorld();
-		        	
 		        	//IF region PVP ON
 		        	if(db.selectZonePVP(taker.getLocation().getBlockX(), taker.getLocation().getBlockY(), taker.getLocation().getBlockZ(), taker.getLocation().getWorld().toString()) && db.selectZonePVP(damagerPlayer.getLocation().getBlockX(), damagerPlayer.getLocation().getBlockY(), damagerPlayer.getLocation().getBlockZ(), damagerPlayer.getLocation().getWorld().toString()))
 					{
@@ -147,15 +188,25 @@ public class EventListener implements Listener {
 		        	}
 		        }
 		    }
+		    else{
+		    	if(taker.getMetadata("isdown").get(0).asBoolean()){
+		    		e.setCancelled(true);
+		    		return;
+		    	}
+		    }
 		}
 		
 		if(damager instanceof Player && !(damageTaker instanceof Player) && damager.getMetadata("isdown").get(0).asBoolean()){
 			//Player on Mob violence...
 			e.setCancelled(true);
 		}
+		if(!(damager instanceof Player) && damageTaker instanceof Player && damageTaker.getMetadata("isdown").get(0).asBoolean()){
+			//Mob on Downed Player violence...
+			e.setCancelled(true);
+		}
 	}
 	@EventHandler(priority = EventPriority.HIGH)
-	public void dmg(final EntityDamageEvent event) 
+	public void dmg(EntityDamageEvent event) 
 	{
 		Entity e = event.getEntity();
 		if(e instanceof Player) 
@@ -177,8 +228,10 @@ public class EventListener implements Listener {
 								if(player.getHealth() <= 20)
 								{
 									player.setHealth(player.getHealth());
+									return;
 								} else {
-									player.setHealth(player.getHealth()+.5);
+									player.setHealth(player.getHealth()+1);
+									return;
 								}
 							}catch(Exception errr){}
 						}
@@ -213,6 +266,9 @@ public class EventListener implements Listener {
 		//IF it's not a player...
 
 	}
+	
+	
+	
 	@EventHandler
 	public void onEDeath(EntityDeathEvent event) {
 		if (event.getEntity().getKiller() != null) 
@@ -237,7 +293,7 @@ public class EventListener implements Listener {
 							try{
 								keyinfo = db.selectZoneLevel(x,y,z,world);
 							}catch(Exception ers){
-								plugin.getLogger().info("MY DICK"+ ers.toString());
+								plugin.getLogger().info(ers.toString());
 							}
 							List<String> lore = new ArrayList<>();
 							lore.add(keyinfo);

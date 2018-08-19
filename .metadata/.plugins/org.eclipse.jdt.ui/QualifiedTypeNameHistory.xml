@@ -1,10 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <qualifiedTypeNameHistroy>
-<fullyQualifiedTypeName name="org.bukkit.command.CommandSender"/>
-<fullyQualifiedTypeName name="org.bukkit.command.Command"/>
-<fullyQualifiedTypeName name="org.bukkit.event.player.PlayerEggThrowEvent"/>
-<fullyQualifiedTypeName name="org.bukkit.plugin.java.JavaPlugin"/>
-<fullyQualifiedTypeName name="org.bukkit.event.player.PlayerBucketFillEvent"/>
 <fullyQualifiedTypeName name="org.bukkit.event.player.PlayerInteractEvent"/>
 <fullyQualifiedTypeName name="org.bukkit.event.block.Action"/>
 <fullyQualifiedTypeName name="org.bukkit.ChatColor"/>
@@ -19,8 +14,6 @@
 <fullyQualifiedTypeName name="org.bukkit.inventory.meta.ItemMeta"/>
 <fullyQualifiedTypeName name="org.apache.commons.lang.WordUtils"/>
 <fullyQualifiedTypeName name="java.awt.List"/>
-<fullyQualifiedTypeName name="java.util.List"/>
-<fullyQualifiedTypeName name="java.util.ArrayList"/>
 <fullyQualifiedTypeName name="org.bukkit.metadata.FixedMetadataValue"/>
 <fullyQualifiedTypeName name="com.mysql.jdbc.PreparedStatement"/>
 <fullyQualifiedTypeName name="java.sql.PreparedStatement"/>
@@ -28,12 +21,8 @@
 <fullyQualifiedTypeName name="java.sql.ResultSet"/>
 <fullyQualifiedTypeName name="org.bukkit.event.Listener"/>
 <fullyQualifiedTypeName name="org.bukkit.plugin.Plugin"/>
-<fullyQualifiedTypeName name="org.bukkit.Bukkit"/>
-<fullyQualifiedTypeName name="org.bukkit.event.EventPriority"/>
 <fullyQualifiedTypeName name="org.bukkit.event.entity.EntityDamageEvent"/>
 <fullyQualifiedTypeName name="org.bukkit.event.EventHandler"/>
-<fullyQualifiedTypeName name="org.bukkit.entity.Entity"/>
-<fullyQualifiedTypeName name="org.bukkit.entity.Player"/>
 <fullyQualifiedTypeName name="org.bukkit.potion.PotionType"/>
 <fullyQualifiedTypeName name="org.bukkit.potion.PotionEffectType"/>
 <fullyQualifiedTypeName name="org.bukkit.potion.PotionEffect"/>
@@ -50,8 +39,25 @@
 <fullyQualifiedTypeName name="org.bukkit.event.player.PlayerDropItemEvent"/>
 <fullyQualifiedTypeName name="org.bukkit.inventory.ItemStack"/>
 <fullyQualifiedTypeName name="org.bukkit.event.inventory.InventoryClickEvent"/>
-<fullyQualifiedTypeName name="org.bukkit.inventory.Inventory"/>
 <fullyQualifiedTypeName name="org.bukkit.event.inventory.InventoryAction"/>
-<fullyQualifiedTypeName name="org.bukkit.Material"/>
 <fullyQualifiedTypeName name="java.sql.Connection"/>
+<fullyQualifiedTypeName name="java.util.ArrayList"/>
+<fullyQualifiedTypeName name="org.bukkit.Bukkit"/>
+<fullyQualifiedTypeName name="org.bukkit.entity.EntityType"/>
+<fullyQualifiedTypeName name="org.bukkit.craftbukkit.v1_13_R1.entity.CraftLivingEntity"/>
+<fullyQualifiedTypeName name="org.bukkit.craftbukkit.v1_13_R1.inventory.CraftItemStack"/>
+<fullyQualifiedTypeName name="org.bukkit.entity.LivingEntity"/>
+<fullyQualifiedTypeName name="org.bukkit.entity.Entity"/>
+<fullyQualifiedTypeName name="org.bukkit.entity.Player"/>
+<fullyQualifiedTypeName name="java.util.List"/>
+<fullyQualifiedTypeName name="org.bukkit.Material"/>
+<fullyQualifiedTypeName name="org.bukkit.block.DoubleChest"/>
+<fullyQualifiedTypeName name="org.bukkit.inventory.InventoryView"/>
+<fullyQualifiedTypeName name="org.bukkit.event.EventPriority"/>
+<fullyQualifiedTypeName name="org.bukkit.event.inventory.InventoryMoveItemEvent"/>
+<fullyQualifiedTypeName name="org.bukkit.event.inventory.InventoryType"/>
+<fullyQualifiedTypeName name="org.bukkit.event.inventory.InventoryDragEvent"/>
+<fullyQualifiedTypeName name="org.bukkit.GameMode"/>
+<fullyQualifiedTypeName name="org.bukkit.block.Chest"/>
+<fullyQualifiedTypeName name="org.bukkit.inventory.Inventory"/>
 </qualifiedTypeNameHistroy>

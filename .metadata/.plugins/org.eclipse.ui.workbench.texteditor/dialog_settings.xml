@@ -2,26 +2,26 @@
 <section name="Workbench">
 	<section name="org.eclipse.ui.texteditor.FindReplaceDialog">
 		<item value="false" key="isRegEx"/>
-		<item value="makeZone" key="selection"/>
+		<item value="plugin.getLogger().info" key="selection"/>
 		<item value="false" key="casesensitive"/>
 		<item value="false" key="incremental"/>
 		<item value="true" key="wrap"/>
 		<item value="false" key="wholeword"/>
 		<list key="findhistory">
-			<item value="makeZone"/>
-			<item value="Connection to sQLite"/>
-			<item value="noDick"/>
-			<item value="getConfig"/>
-			<item value="getLogger"/>
-			<item value="plugin."/>
+			<item value="plugin.getLogger().info"/>
+			<item value="getEntitiesAroundPoint"/>
+			<item value="world"/>
+			<item value="etypes"/>
 			<item value="ERROR SELECTING:"/>
-			<item value="ERROR SELECTING"/>
+			<item value="ERROR SLECTIG: "/>
+			<item value="database connection closed"/>
+			<item value="rand"/>
 		</list>
 		<list key="replacehistory">
+			<item value=""/>
 			<item value="plugin.getConfig"/>
 			<item value="plugin.getLogger"/>
 			<item value="this.getConfig"/>
-			<item value=""/>
 			<item value="items-drop-to"/>
 			<item value="configElement"/>
 			<item value="hasdied"/>

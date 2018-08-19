@@ -11,8 +11,11 @@
 		Set mob health/regen [mob spawn event?]
 		*Set keys that are dropped
 		*set PVP
+		*Show zone you are in
+		*TP to zone by name
 	Chests plugin
-		block chests from sharing items with team (don't allow putting in box, only take out)
+		*block chests from sharing items with team (don't allow putting in box, only take out)
+		***THIS ONE IS KICKING MY ASS SO FAR...
 		make items randomly spawn into box every few seconds/minutes (scheduler)
 	TEAMS
 		teams can join randomly as long as they are at start, from there they can TPA 1 time to any player on the team or randomly select a player to TPA to.
@@ -37,18 +40,6 @@
 		Also, create multiple SQL-DBs and provide a scheduled backup (once ever 10 minutes, hold 3 versions?)
 		
 		
-	
 		
-	
-	WHEN PLAYER KILLS ENTITY & ENTITY DROPS KEY, CHECK SQLITE FOR LOCATION, IF IN A ZONE DROP A KEY FOR THAT ZONE (NOT OTHERS)
-				/*
-				 * WHEN PLAYER KILLS ENTITY, CHECK POS OF PLAYER AGAINST SQLITE SQUARE LOCATIONS, IF THEY ARE BETWEEN POINTS IN DB, DROP THE KEY SPECIFIC TO THAT ROOM, IE
-				 * IF POS IS Y = 5, X = 5, Z = 5 AND DB HAS 
-				 * START: Y=0, X=0, Y=0 AND
-				 * END: Y=10, X=7, Y=15
-				 * THEN PLAYER IS BETWEEN 0,0,0 AND 10,7,15, THEREFOR SHOULD GET THE KEY ASSOCIATED WITH IT __IF__ THE MOB IS DROPPING A KEY.
-				 */
-	SHOW ZONES SHOULD GET BLOCK POS IE: 
-		IF ((MIN.X <= PLAYER.X) AND (MAX.X <= PLAYER.X)) AND (MIN.Z <= PLAYER.Z) AND (MAX.Z <= PLAYER.Z) AND (MIN.Y <= PLAYER.Y) AND (MAX.Y <= PLAYER.Y)
-		
-  
+SCHEDULE TIMER, EVERY 20s CONFIGURSABE check all MOBSPAWNERS (CUSTOM SET) in DB (NEW DB, OR AT LEAST NEW TABLE) check area if there are more than X number of zombies (configurable) spawn more
+if there is less than X in a XYZ radius (configurable) don't spawn any.

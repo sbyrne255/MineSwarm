@@ -3,11 +3,14 @@ package me.cutrats110;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
+import org.bukkit.block.Chest;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -15,6 +18,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.material.Door;
@@ -35,12 +39,13 @@ public class Mineswarm extends JavaPlugin implements Listener{
 	    getServer().getPluginManager().registerEvents(this, this);
 		getLogger().info("Mineswarm has been enabled");
 		new EventListener(this);		
+		new ScheduledMobs(this);
         this.saveDefaultConfig();
-        getLogger().info(this.getConfig().getString("message"));
         db = new Database(this);
 		
 		db.connect();
 		db.createTable();
+		db.createMobsTable();
 		
 	}
 	@Override
@@ -219,17 +224,28 @@ public class Mineswarm extends JavaPlugin implements Listener{
 			
 			return true;
 		}
-		if (cmd.getName().equalsIgnoreCase("showzone") && sender instanceof Player){			
+		if (cmd.getName().equalsIgnoreCase("showzone") && sender instanceof Player){		
 			try{
-				//args[0];
-				if (player.hasMetadata("pos1x") && player.hasMetadata("pos1z")){
-					player.sendMessage("POS 1: X=" + player.getMetadata("pos1x").get(0).asString() + " Z=" + player.getMetadata("pos1z").get(0).asString());
-					player.sendMessage("POS 2: X=" + player.getMetadata("pos2x").get(0).asString() + " Z=" + player.getMetadata("pos2z").get(0).asString());
+				List<String> zoneData = db.showZone(player.getLocation().getBlockX(), player.getLocation().getBlockY(), player.getLocation().getBlockZ(), player.getLocation().getWorld().toString());
+				for(String x : zoneData){
+					player.sendMessage(x);
+				}
+				return true;
+			}
+			catch(Exception er){
+				player.sendMessage("Error on show location/s: " + er.toString());
+			}
+		}
+		if (cmd.getName().equalsIgnoreCase("gotozone") && sender instanceof Player){		
+			try{
+				List<String> zoneData = db.tpToZone(args[0]);
+				if(zoneData.size() >= 1){
+					Location location = new Location (Bukkit.getWorld(zoneData.get(0)), Integer.valueOf(zoneData.get(1)), Integer.valueOf(zoneData.get(2)), Integer.valueOf(zoneData.get(3)));
+					player.teleport(location);
 					return true;
 				}
-				else {
-					player.sendMessage("One of the positions is not set, please set both positions before displaying zone");
-					return true;
+				else{
+					return false;
 				}
 			}
 			catch(Exception er){
@@ -321,8 +337,64 @@ public class Mineswarm extends JavaPlugin implements Listener{
 				player.sendMessage("Error on show location/s: " + er.toString());
 			}
 		}
-		
+		if (cmd.getName().equalsIgnoreCase("makespawner") && sender instanceof Player){			
+			try{
+				int min_x, min_z, min_y;
+				int max_x, max_z, max_y;
+				
+				Block block = player.getTargetBlock(null, 10);
+				min_x = block.getX() - Integer.valueOf(args[0]);
+				min_y = block.getY() - Integer.valueOf(args[0]);
+				min_z = block.getZ() - Integer.valueOf(args[0]);
+				
+				max_x = block.getX() + Integer.valueOf(args[0]);
+				max_y = block.getY() + Integer.valueOf(args[0]);
+				max_z = block.getZ() + Integer.valueOf(args[0]);
+				db.makeSpawner(min_x, min_y, min_z, max_x, max_y, max_z, block.getWorld().toString().replace("CraftWorld{name=", "").replace("}", ""), Integer.valueOf(args[0]), args[1], Integer.valueOf(args[2]), Integer.valueOf(args[3]), Integer.valueOf(args[4]), Integer.valueOf(args[5]), Integer.valueOf(args[6]), args[7], Integer.valueOf(args[8]));
+
+				return true;
+			}
+			catch(Exception er){
+				player.sendMessage("Error ON INSERT: " + er.toString());
+			}
+		}
+		if (cmd.getName().equalsIgnoreCase("chest") && sender instanceof Player){			
+			try{
+				Block block = player.getTargetBlock(null, 10);
+				this.getLogger().info(block.getType().toString());
+				if(block.getType().equals(Material.CHEST)){
+					Chest chest = (Chest) block.getState();
+					Inventory chestinv = chest.getInventory();
+					chestinv.addItem(new ItemStack(Material.STICK,43));
+					chest.update();
+					chestinv.first(new ItemStack(Material.STICK,43));
+					chest.update(true);
+				}
+				else{
+					Chest chest = (Chest) block.getState();
+					Inventory chestinv = chest.getInventory();
+					chestinv.addItem(new ItemStack(Material.STICK,43));
+					chest.update();
+					chestinv.first(new ItemStack(Material.STICK,43));
+					chest.update();
+					
+					
+					
+					chest.getInventory().addItem(new ItemStack(Material.STICK,43));
+					chest.getInventory().setItem(3, new ItemStack(Material.STICK,43));
+					chest.update(true);
+					this.getLogger().info("DED");
+				}
+				
+
+				return true;
+			}
+			catch(Exception er){
+				player.sendMessage("Error ON INSERT: " + er.toString());
+			}
+		}
 		return false;
 	}
-	
+	//BETTER IDEA WHEN THIS WORKS... 
+	//USE MARKED REGION AS REGION TO CHECK PLAYERS AGAINST, THEN USE BLOCK PLAYER IS LOOKING AT FOR SPAWNER LOCATION (NO OFFSETS)
 }
