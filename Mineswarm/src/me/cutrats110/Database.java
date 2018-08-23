@@ -6,8 +6,14 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.block.Chest;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 
 public class Database {
@@ -15,11 +21,22 @@ public class Database {
 	public Plugin plugin;
 	private Connection conn = null;
 	private Connection mobConn = null;
+	private Connection chestConn = null;
 	
 	public Database(Plugin instance) {
 		plugin = instance;
 	}
 	//All database stuff here...
+	public void connectChests() {
+        try {
+        	// db parameters
+            String url = "jdbc:sqlite:plugins/mineswarmChests.db";
+            // create a connection to the database
+            chestConn = DriverManager.getConnection(url);
+        } catch (SQLException e) {
+        	plugin.getLogger().info(e.getMessage());
+        }
+    }
 	public void connectMobs() {
         try {
         	// db parameters
@@ -40,7 +57,8 @@ public class Database {
         	plugin.getLogger().info(e.getMessage());
         }
     }
-    public void createTable() {
+    
+	public void createTable() {
         try{
         	if(conn.isClosed()){
         		
@@ -88,7 +106,29 @@ public class Database {
         } catch (SQLException e) {plugin.getLogger().info(e.getMessage());}
         finally{ try {mobConn.close();} catch (SQLException e) {} }
     }	
-
+    public void createChestsTable() {
+        try{
+        	if(mobConn.isClosed()){
+        		
+        		connectChests();
+        	}
+        }
+        catch(NullPointerException np){
+        	connectChests();
+        }
+        catch(Exception er){
+        	plugin.getLogger().info("Conn check failed. " + er.toString());
+        }
+    	
+        String sql = "CREATE TABLE IF NOT EXISTS chests(x,y,z,world,creator,items)";
+        try (
+        	PreparedStatement pstmt = chestConn.prepareStatement(sql)) {
+            pstmt.execute();
+        } catch (SQLException e) {plugin.getLogger().info(e.getMessage());}
+        finally{ try {chestConn.close();} catch (SQLException e) {} }
+    }	
+    
+    
     public String selectDoor(String location, int y){
         try{
         	if(conn.isClosed()){
@@ -387,10 +427,6 @@ public class Database {
         finally{ try {conn.close();} catch (SQLException e) {} }
         return null;
     }
-
-    
-    
-    
     public List<String> getMobSpawners(int x, int y, int z, String world) {
         String sql = "SELECT * FROM spawners WHERE min_x < ? AND min_z < ? AND min_y < ? AND max_y > ? AND max_x > ? AND max_z > ? AND world = ? LIMIT 1";
         try{
@@ -465,10 +501,6 @@ public class Database {
         finally{ try {mobConn.close();} catch (SQLException e) {} }
         return null;
     }
-    
-    
-    
-    
     public void makeSpawner(int min_x, int min_y, int min_z, int max_x, int max_y, int max_z, String world, int radius, String etype, int max_mobs, int xoff, int yoff, int zoff, int chance, String weapon, int durability) {
         try{
         	if(mobConn.isClosed()){
@@ -518,4 +550,90 @@ public class Database {
         finally{ try {mobConn.close();} catch (Exception e) {} }
     }
 	
+    //Add Chest, insert location, items, creator RUN FROM COMMAND
+    //Select Chest, select block location (XYZ+w), set items [room for optimization by combining DB and Scheduled task functions into one loop...
+    public void createChest(int x, int y, int z, String world, String creator, String items) {
+        try{
+        	if(chestConn.isClosed()){
+        		
+        		plugin.getLogger().info("OPENING CONNECTION...");
+        		connectChests();
+        	}
+        }
+        catch(NullPointerException np){
+        	plugin.getLogger().info("NULL, OPENING CONNECTION...");
+        	connectChests();
+        }
+        catch(Exception er){
+        	plugin.getLogger().info("Conn check failed. " + er.toString());
+        }
+    	
+    	String sql = "INSERT INTO chests(x,y,z,world,creator,items)"
+    			+ " VALUES(?,?,?,?,?,?)";
+        try {
+        	PreparedStatement pstmt = chestConn.prepareStatement(sql);
+        	pstmt.setInt(1, x);
+        	pstmt.setInt(2, y);
+        	pstmt.setInt(3, z);
+        	pstmt.setString(4, world);
+        	pstmt.setString(5, creator);
+        	pstmt.setString(6, items);
+
+            
+            pstmt.executeUpdate();
+        } catch (SQLException e) {plugin.getLogger().info("Problem inserting new chest data: " + e.toString());}
+        catch(Exception err){
+        	plugin.getLogger().info("SQL error see error: " + err.toString());
+        }
+        finally{ try {chestConn.close();} catch (Exception e) {} }
+    }
+    public ResultSet getChests() {
+        String sql = "SELECT * FROM chests";
+        try{
+        	if(conn.isClosed()){
+        		connectChests();
+        	}
+        }
+        catch(NullPointerException np){
+        	connectChests();
+        }
+        catch(Exception er){
+        	plugin.getLogger().info("Conn check failed. " + er.toString());
+        }
+        
+        try {
+        	PreparedStatement pstmt = chestConn.prepareStatement(sql);    
+        	
+	    	ResultSet rs = pstmt.executeQuery();
+	    	try {
+	    		Chest chest;
+				while (rs.next()) {
+					try {
+						chest = (Chest) new Location(Bukkit.getWorld(rs.getString("world")), rs.getInt("x"),rs.getInt("y"),rs.getInt("z")).getBlock().getState();
+						List<String> items = Arrays.asList(rs.getString("items").split("\\s*,\\s*"));
+						ItemStack[] contents = new ItemStack[(items.size()/2)];
+						int j = 0;
+						for(int i = 0; i < items.size(); i+=2) {//This builds my itemStack array...
+							contents[j] = new ItemStack(Material.getMaterial(items.get(i).toString()), Integer.valueOf(items.get(i+1)));
+							j++;
+						}
+						chest.getBlockInventory().setContents(contents);
+					}catch(Exception err) {
+						plugin.getLogger().info("Failed to cast block: " + err.toString());
+					}
+					
+				}
+			} catch (Exception e) {
+				plugin.getLogger().info(e.toString());
+			}
+        	
+        	
+        	
+            return null;                
+        }
+        catch (Exception e) {plugin.getLogger().info("General Error...: " + e.toString());}
+        finally{ try {chestConn.close();} catch (SQLException e) {} }
+        return null;
+    }
+
 }

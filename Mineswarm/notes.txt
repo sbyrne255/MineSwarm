@@ -13,10 +13,9 @@
 		*set PVP
 		*Show zone you are in
 		*TP to zone by name
-	Chests plugin
+	*Chests plugin
 		*block chests from sharing items with team (don't allow putting in box, only take out)
-		***THIS ONE IS KICKING MY ASS SO FAR...
-		make items randomly spawn into box every few seconds/minutes (scheduler)
+		*make items randomly spawn into box every few seconds/minutes (scheduler)//Probably should load timing from config, but Mahh
 	TEAMS
 		teams can join randomly as long as they are at start, from there they can TPA 1 time to any player on the team or randomly select a player to TPA to.
 		New teams start at spawn
@@ -30,7 +29,6 @@
 		Give items on command (probably use a command block and MetaData to store CD?)
 		Set class in MetaData
 		Set team in MetaData
-		Revive was originally thought of as team only, but for the time being will be for all users but only medics can save players.
 	MetaData
 		Use SQLite to save MetaData changes, if it is too slow que up a task list for each item (low priority)
 		On Join, load MetaData

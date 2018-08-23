@@ -18,7 +18,6 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.material.Door;
@@ -40,12 +39,14 @@ public class Mineswarm extends JavaPlugin implements Listener{
 		getLogger().info("Mineswarm has been enabled");
 		new EventListener(this);		
 		new ScheduledMobs(this);
+		new ScheduledChests(this);
         this.saveDefaultConfig();
         db = new Database(this);
 		
 		db.connect();
 		db.createTable();
 		db.createMobsTable();
+		db.createChestsTable();
 		
 	}
 	@Override
@@ -358,34 +359,43 @@ public class Mineswarm extends JavaPlugin implements Listener{
 				player.sendMessage("Error ON INSERT: " + er.toString());
 			}
 		}
-		if (cmd.getName().equalsIgnoreCase("chest") && sender instanceof Player){			
-			try{
+		if (cmd.getName().equalsIgnoreCase("chest") && sender instanceof Player){
+			
+			Chest chest;			
+			try {
 				Block block = player.getTargetBlock(null, 10);
-				this.getLogger().info(block.getType().toString());
-				if(block.getType().equals(Material.CHEST)){
-					Chest chest = (Chest) block.getState();
-					Inventory chestinv = chest.getInventory();
-					chestinv.addItem(new ItemStack(Material.STICK,43));
-					chest.update();
-					chestinv.first(new ItemStack(Material.STICK,43));
-					chest.update(true);
-				}
-				else{
-					Chest chest = (Chest) block.getState();
-					Inventory chestinv = chest.getInventory();
-					chestinv.addItem(new ItemStack(Material.STICK,43));
-					chest.update();
-					chestinv.first(new ItemStack(Material.STICK,43));
-					chest.update();
-					
-					
-					
-					chest.getInventory().addItem(new ItemStack(Material.STICK,43));
-					chest.getInventory().setItem(3, new ItemStack(Material.STICK,43));
-					chest.update(true);
-					this.getLogger().info("DED");
+                chest = (Chest) block.getState();
+			}
+			catch(Exception err){
+				player.sendMessage("That block could not be casted as a chest.");
+				return true;
+			}
+			
+			if(args.length <= 1) {
+				player.sendMessage("Arguments must be ITEM QUANTITY such as: DIRT 12");
+				return false;
+			}
+			if ( (args.length & 1) != 0 ) { 
+				player.sendMessage("Missing argumenets, args should be ITEM QUANTITY");
+				return false;
+			}
+			
+			try{
+				String items = "";
+				for(int i = 0; i < args.length;i+=2) {
+					try {
+						new ItemStack(Material.getMaterial(args[i].toString()), Integer.valueOf(args[i+1]));
+					}catch(Exception problem) {
+						player.sendMessage("Could not convert one of more of the args to an item stack.");
+						return false;
+					}
 				}
 				
+				for(String item : args) {
+					items += item +",";
+				}items = items.replaceAll(",$", "");
+				
+				db.createChest(chest.getX(), chest.getY(), chest.getZ(), chest.getWorld().getName(), player.getName(), items);
 
 				return true;
 			}

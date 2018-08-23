@@ -36,7 +36,8 @@ public class ScheduledMobs implements Listener {
 	
 	public void mobSpawns(){
 		Bukkit.getScheduler().scheduleSyncRepeatingTask(plugin, new Runnable() {
-		    public void run() {
+		    @SuppressWarnings("unlikely-arg-type")
+			public void run() {
 		    	if(debugging){plugin.getLogger().info("I am a scheduled task, running at a scheduled time!");}	    	
 		    	//SELECT * FROM DB...   	
 		    	//Remember to check the BLOCK id for close entities, NOT the player!!!

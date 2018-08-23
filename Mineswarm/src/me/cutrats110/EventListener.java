@@ -87,7 +87,6 @@ public class EventListener implements Listener {
     public void onPlayerDrag(InventoryDragEvent event) { 
     	event.setCancelled(true);
     }
-    
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onPlayerClick(InventoryClickEvent event) {     
     	//Got some null pointers here...
@@ -155,25 +154,35 @@ public class EventListener implements Listener {
 			event.setCancelled(true);
 		} 
     }
-    
-    @EventHandler(priority = EventPriority.HIGH)
+    @SuppressWarnings("unlikely-arg-type")
+	@EventHandler(priority = EventPriority.HIGH)
 	public void onPlayerDamage(EntityDamageByEntityEvent e) {
 		Entity damager = e.getDamager();
 		Entity damageTaker = e.getEntity();
 		
 		if (damageTaker instanceof Player) { Player taker = (Player) damageTaker;
 		    if (damager instanceof Player) { Player damagerPlayer = (Player) damager;
-		        if(damagerPlayer.getName() != "bob" && taker.getMetadata("isdown").get(0).asBoolean()){//Check if player is medic, and or on team.
-			    	taker.sendMessage("HE IS MEDIC");
+		        if((damagerPlayer.getInventory().getItemInMainHand().equals(Material.PLAYER_HEAD) || damagerPlayer.getInventory().getItemInOffHand().equals(Material.PLAYER_HEAD)) && taker.getMetadata("isdown").get(0).asBoolean()){//Check if player is medic, and or on team.
+		        	taker.sendMessage("A medic has revived you!");
 		        	taker.setMetadata("isdown",new FixedMetadataValue(plugin, false));
 		        	taker.setMetadata("hasdied",new FixedMetadataValue(plugin, true));
 		        	for (PotionEffect effect : taker.getActivePotionEffects()){
 		        		taker.removePotionEffect(effect.getType());
 		        	}
 		        	taker.setHealth(10);
-		        	taker.setWalkSpeed((float) .2);//0 to prevent walking...
+		        	taker.setWalkSpeed((float) .2);
 		        	taker.setGlowing(false);
 		        	e.setCancelled(true);
+			    	if(damagerPlayer.getInventory().getItemInMainHand().equals(Material.PLAYER_HEAD)) {
+			    		ItemStack heads = new ItemStack(Material.PLAYER_HEAD, damagerPlayer.getInventory().getItemInMainHand().getAmount() -1);
+			    		damagerPlayer.getInventory().setItemInMainHand(heads);
+			    		return;
+			    	}
+			    	if(damagerPlayer.getInventory().getItemInOffHand().equals(Material.PLAYER_HEAD)) {
+			    		ItemStack heads = new ItemStack(Material.PLAYER_HEAD, damagerPlayer.getInventory().getItemInOffHand().getAmount() -1);
+			    		damagerPlayer.getInventory().setItemInOffHand(heads);
+			    		return;
+			    	}
 		        	return;
 		        }
 		        else
@@ -266,9 +275,6 @@ public class EventListener implements Listener {
 		//IF it's not a player...
 
 	}
-	
-	
-	
 	@EventHandler
 	public void onEDeath(EntityDeathEvent event) {
 		if (event.getEntity().getKiller() != null) 

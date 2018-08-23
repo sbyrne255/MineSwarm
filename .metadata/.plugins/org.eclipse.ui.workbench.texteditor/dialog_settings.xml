@@ -2,12 +2,14 @@
 <section name="Workbench">
 	<section name="org.eclipse.ui.texteditor.FindReplaceDialog">
 		<item value="false" key="isRegEx"/>
-		<item value="plugin.getLogger().info" key="selection"/>
+		<item value="replace" key="selection"/>
 		<item value="false" key="casesensitive"/>
 		<item value="false" key="incremental"/>
 		<item value="true" key="wrap"/>
 		<item value="false" key="wholeword"/>
 		<list key="findhistory">
+			<item value="replace"/>
+			<item value="offhand"/>
 			<item value="plugin.getLogger().info"/>
 			<item value="getEntitiesAroundPoint"/>
 			<item value="world"/>

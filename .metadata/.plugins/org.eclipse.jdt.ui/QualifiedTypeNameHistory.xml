@@ -3,14 +3,12 @@
 <fullyQualifiedTypeName name="org.bukkit.event.player.PlayerInteractEvent"/>
 <fullyQualifiedTypeName name="org.bukkit.event.block.Action"/>
 <fullyQualifiedTypeName name="org.bukkit.ChatColor"/>
-<fullyQualifiedTypeName name="org.bukkit.Location"/>
 <fullyQualifiedTypeName name="java.util.concurrent.TimeUnit"/>
 <fullyQualifiedTypeName name="org.bukkit.block.BlockFace"/>
 <fullyQualifiedTypeName name="org.bukkit.block.BlockState"/>
 <fullyQualifiedTypeName name="org.bukkit.material.Openable"/>
 <fullyQualifiedTypeName name="org.bukkit.material.MaterialData"/>
 <fullyQualifiedTypeName name="org.bukkit.material.Door"/>
-<fullyQualifiedTypeName name="org.bukkit.block.Block"/>
 <fullyQualifiedTypeName name="org.bukkit.inventory.meta.ItemMeta"/>
 <fullyQualifiedTypeName name="org.apache.commons.lang.WordUtils"/>
 <fullyQualifiedTypeName name="java.awt.List"/>
@@ -18,7 +16,6 @@
 <fullyQualifiedTypeName name="com.mysql.jdbc.PreparedStatement"/>
 <fullyQualifiedTypeName name="java.sql.PreparedStatement"/>
 <fullyQualifiedTypeName name="java.sql.Statement"/>
-<fullyQualifiedTypeName name="java.sql.ResultSet"/>
 <fullyQualifiedTypeName name="org.bukkit.event.Listener"/>
 <fullyQualifiedTypeName name="org.bukkit.plugin.Plugin"/>
 <fullyQualifiedTypeName name="org.bukkit.event.entity.EntityDamageEvent"/>
@@ -35,13 +32,11 @@
 <fullyQualifiedTypeName name="java.io.File"/>
 <fullyQualifiedTypeName name="org.bukkit.configuration.file.FileConfiguration"/>
 <fullyQualifiedTypeName name="org.bukkit.configuration.file.YamlConfiguration"/>
-<fullyQualifiedTypeName name="java.util.Arrays"/>
 <fullyQualifiedTypeName name="org.bukkit.event.player.PlayerDropItemEvent"/>
 <fullyQualifiedTypeName name="org.bukkit.inventory.ItemStack"/>
 <fullyQualifiedTypeName name="org.bukkit.event.inventory.InventoryClickEvent"/>
 <fullyQualifiedTypeName name="org.bukkit.event.inventory.InventoryAction"/>
 <fullyQualifiedTypeName name="java.sql.Connection"/>
-<fullyQualifiedTypeName name="java.util.ArrayList"/>
 <fullyQualifiedTypeName name="org.bukkit.Bukkit"/>
 <fullyQualifiedTypeName name="org.bukkit.entity.EntityType"/>
 <fullyQualifiedTypeName name="org.bukkit.craftbukkit.v1_13_R1.entity.CraftLivingEntity"/>
@@ -49,7 +44,6 @@
 <fullyQualifiedTypeName name="org.bukkit.entity.LivingEntity"/>
 <fullyQualifiedTypeName name="org.bukkit.entity.Entity"/>
 <fullyQualifiedTypeName name="org.bukkit.entity.Player"/>
-<fullyQualifiedTypeName name="java.util.List"/>
 <fullyQualifiedTypeName name="org.bukkit.Material"/>
 <fullyQualifiedTypeName name="org.bukkit.block.DoubleChest"/>
 <fullyQualifiedTypeName name="org.bukkit.inventory.InventoryView"/>
@@ -58,6 +52,12 @@
 <fullyQualifiedTypeName name="org.bukkit.event.inventory.InventoryType"/>
 <fullyQualifiedTypeName name="org.bukkit.event.inventory.InventoryDragEvent"/>
 <fullyQualifiedTypeName name="org.bukkit.GameMode"/>
-<fullyQualifiedTypeName name="org.bukkit.block.Chest"/>
 <fullyQualifiedTypeName name="org.bukkit.inventory.Inventory"/>
+<fullyQualifiedTypeName name="org.bukkit.block.Chest"/>
+<fullyQualifiedTypeName name="org.bukkit.block.Block"/>
+<fullyQualifiedTypeName name="org.bukkit.Location"/>
+<fullyQualifiedTypeName name="java.sql.ResultSet"/>
+<fullyQualifiedTypeName name="java.util.List"/>
+<fullyQualifiedTypeName name="java.util.Arrays"/>
+<fullyQualifiedTypeName name="java.util.ArrayList"/>
 </qualifiedTypeNameHistroy>
