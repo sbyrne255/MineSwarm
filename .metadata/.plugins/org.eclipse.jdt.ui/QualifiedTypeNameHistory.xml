@@ -1,12 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <qualifiedTypeNameHistroy>
-<fullyQualifiedTypeName name="org.bukkit.event.player.PlayerInteractEvent"/>
-<fullyQualifiedTypeName name="org.bukkit.event.block.Action"/>
-<fullyQualifiedTypeName name="org.bukkit.ChatColor"/>
-<fullyQualifiedTypeName name="java.util.concurrent.TimeUnit"/>
-<fullyQualifiedTypeName name="org.bukkit.block.BlockFace"/>
-<fullyQualifiedTypeName name="org.bukkit.block.BlockState"/>
-<fullyQualifiedTypeName name="org.bukkit.material.Openable"/>
 <fullyQualifiedTypeName name="org.bukkit.material.MaterialData"/>
 <fullyQualifiedTypeName name="org.bukkit.material.Door"/>
 <fullyQualifiedTypeName name="org.bukkit.inventory.meta.ItemMeta"/>
@@ -15,7 +8,6 @@
 <fullyQualifiedTypeName name="org.bukkit.metadata.FixedMetadataValue"/>
 <fullyQualifiedTypeName name="com.mysql.jdbc.PreparedStatement"/>
 <fullyQualifiedTypeName name="java.sql.PreparedStatement"/>
-<fullyQualifiedTypeName name="java.sql.Statement"/>
 <fullyQualifiedTypeName name="org.bukkit.event.Listener"/>
 <fullyQualifiedTypeName name="org.bukkit.plugin.Plugin"/>
 <fullyQualifiedTypeName name="org.bukkit.event.entity.EntityDamageEvent"/>
@@ -29,7 +21,6 @@
 <fullyQualifiedTypeName name="org.bukkit.attribute.Attribute"/>
 <fullyQualifiedTypeName name="org.bukkit.event.entity.PlayerDeathEvent"/>
 <fullyQualifiedTypeName name="org.bukkit.event.player.PlayerQuitEvent"/>
-<fullyQualifiedTypeName name="java.io.File"/>
 <fullyQualifiedTypeName name="org.bukkit.configuration.file.FileConfiguration"/>
 <fullyQualifiedTypeName name="org.bukkit.configuration.file.YamlConfiguration"/>
 <fullyQualifiedTypeName name="org.bukkit.event.player.PlayerDropItemEvent"/>
@@ -60,4 +51,13 @@
 <fullyQualifiedTypeName name="java.util.List"/>
 <fullyQualifiedTypeName name="java.util.Arrays"/>
 <fullyQualifiedTypeName name="java.util.ArrayList"/>
+<fullyQualifiedTypeName name="java.sql.Statement"/>
+<fullyQualifiedTypeName name="java.text.SimpleDateFormat"/>
+<fullyQualifiedTypeName name="java.sql.Timestamp"/>
+<fullyQualifiedTypeName name="java.util.Date"/>
+<fullyQualifiedTypeName name="java.io.File"/>
+<fullyQualifiedTypeName name="org.apache.commons.io.FileUtils"/>
+<fullyQualifiedTypeName name="java.io.IOException"/>
+<fullyQualifiedTypeName name="me.cutrats110.ScheduledBackupDB"/>
+<fullyQualifiedTypeName name="java.util.Calendar"/>
 </qualifiedTypeNameHistroy>

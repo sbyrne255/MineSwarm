@@ -25,8 +25,7 @@ public class ScheduledChests implements Listener {
 		    	if(debugging){plugin.getLogger().info("I am a scheduled task, running at a scheduled time!");}
 		    	db.getChests();
 		    }
-		}, (20*20), (20*20));//Delay, length allowed to run...
+		}, (20*90), (20*90));//20*90 = 1:30
 		//20t = 1s
-		//20*10 = 10 seconds...
 	}
 }

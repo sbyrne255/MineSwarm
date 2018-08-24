@@ -1,0 +1,74 @@
+package me.cutrats110;
+
+import java.io.File;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+
+import org.apache.commons.io.FileUtils;
+import org.bukkit.Bukkit;
+import org.bukkit.event.Listener;
+import org.bukkit.plugin.Plugin;
+
+public class ScheduledBackupDB implements Listener {
+	public Plugin plugin;
+	public Database db = null;
+	
+	public ScheduledBackupDB(Plugin instance) {
+		plugin = instance;
+		Bukkit.getServer().getPluginManager().registerEvents(this, plugin);
+		this.db = new Database(plugin);
+		backup();
+		
+	}
+	public void backup(){
+		Bukkit.getScheduler().scheduleSyncRepeatingTask(plugin, new Runnable() {
+		    public void run() {
+		    	plugin.getLogger().info("Scheduled Database Backup Starting...");
+		    	String timeStamp = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new Date());
+		    	try {
+		    	    File directory = new File(System.getProperty("user.dir") +"/MSbackups/");
+		    		if (! directory.exists()){ directory.mkdir(); }
+		    		
+			    	File source = new File(System.getProperty("user.dir") +"/plugins/mineswarmChests.db");
+			    	File dest = new File(System.getProperty("user.dir") +"/MSbackups/"+ timeStamp + "mineswarmChests.db");
+			    	FileUtils.copyFile(source, dest);
+		    	    
+		    	    source = new File(System.getProperty("user.dir") +"/plugins/mobspawners.db");
+			    	dest = new File(System.getProperty("user.dir") +"/MSbackups/"+ timeStamp + "mobspawners.db");
+			    	FileUtils.copyFile(source, dest);
+		    	    
+		    	    source = new File(System.getProperty("user.dir") +"/plugins/mineswarm.db");
+			    	dest = new File(System.getProperty("user.dir") +"/MSbackups/"+ timeStamp + "mineswarm.db");
+		    	    FileUtils.copyFile(source, dest);
+
+		    	    
+		    	    
+		    	    //Delete files older than 5 days.
+		    	    final File[] listFiles = directory.listFiles();
+		    	    Calendar cal = Calendar.getInstance();  
+		    	    cal.add(Calendar.DAY_OF_MONTH, 5 * -1); 
+		    	    
+		            for(File listFile : listFiles) {
+		            	if(listFile.lastModified() < cal.getTimeInMillis()) {
+		                    listFile.delete();
+		                }
+		            }
+		    	    
+		    	} catch (IOException e) {
+		    		plugin.getLogger().info(e.toString());
+		    	} catch (Exception e) {
+					plugin.getLogger().info(e.toString());
+				}
+		    	
+		    	          
+
+		    	
+		    }
+		}, (((20*1)*60)*240), (((20*1)*60)*240));//runs every 4 hours.
+		//20t = 1s
+		//20*10 = 10 seconds...
+	}
+}
+	

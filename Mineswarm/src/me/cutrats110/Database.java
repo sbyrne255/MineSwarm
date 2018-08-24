@@ -1,5 +1,6 @@
 package me.cutrats110;
 
+import java.io.File;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -29,8 +30,9 @@ public class Database {
 	//All database stuff here...
 	public void connectChests() {
         try {
-        	// db parameters
-            String url = "jdbc:sqlite:plugins/mineswarmChests.db";
+        	File directory = new File(System.getProperty("user.dir") +"/Mineswarm");
+    		if (! directory.exists()){ directory.mkdir(); }
+            String url = "jdbc:sqlite:plugins/Mineswarm/mineswarmChests.db";
             // create a connection to the database
             chestConn = DriverManager.getConnection(url);
         } catch (SQLException e) {
@@ -39,8 +41,9 @@ public class Database {
     }
 	public void connectMobs() {
         try {
-        	// db parameters
-            String url = "jdbc:sqlite:plugins/mobspawners.db";
+        	File directory = new File(System.getProperty("user.dir") +"/Mineswarm");
+    		if (! directory.exists()){ directory.mkdir(); }
+            String url = "jdbc:sqlite:plugins/Mineswarm/mobspawners.db";
             // create a connection to the database
             mobConn = DriverManager.getConnection(url);
         } catch (SQLException e) {
@@ -50,14 +53,16 @@ public class Database {
 	public void connect() {
         try {
         	// db parameters
-            String url = "jdbc:sqlite:plugins/mineswarm.db";
+        	File directory = new File(System.getProperty("user.dir") +"/Mineswarm");
+    		if (! directory.exists()){ directory.mkdir(); }
+            String url = "jdbc:sqlite:plugins/Mineswarm/mineswarm.db";
             // create a connection to the database
             conn = DriverManager.getConnection(url);
         } catch (SQLException e) {
         	plugin.getLogger().info(e.getMessage());
         }
     }
-    
+   
 	public void createTable() {
         try{
         	if(conn.isClosed()){
@@ -549,9 +554,6 @@ public class Database {
         }
         finally{ try {mobConn.close();} catch (Exception e) {} }
     }
-	
-    //Add Chest, insert location, items, creator RUN FROM COMMAND
-    //Select Chest, select block location (XYZ+w), set items [room for optimization by combining DB and Scheduled task functions into one loop...
     public void createChest(int x, int y, int z, String world, String creator, String items) {
         try{
         	if(chestConn.isClosed()){
@@ -636,4 +638,10 @@ public class Database {
         return null;
     }
 
+    public void deleteChest(int x, int y, int z, String world, String creator) {
+    	//Delete where position matches AND creator matches
+    }
+    public void destroyChest(int x, int y, int z, String world) {
+    	//DELETE where position matches
+    }
 }

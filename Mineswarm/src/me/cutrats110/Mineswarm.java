@@ -40,6 +40,7 @@ public class Mineswarm extends JavaPlugin implements Listener{
 		new EventListener(this);		
 		new ScheduledMobs(this);
 		new ScheduledChests(this);
+		new ScheduledBackupDB(this);
         this.saveDefaultConfig();
         db = new Database(this);
 		
@@ -357,6 +358,15 @@ public class Mineswarm extends JavaPlugin implements Listener{
 			}
 			catch(Exception er){
 				player.sendMessage("Error ON INSERT: " + er.toString());
+			}
+		}
+		if (cmd.getName().equalsIgnoreCase("save") && sender instanceof Player){			
+			try{
+
+				return true;
+			}
+			catch(Exception er){
+				player.sendMessage("Error ON DB BACKUP: " + er.toString());
 			}
 		}
 		if (cmd.getName().equalsIgnoreCase("chest") && sender instanceof Player){

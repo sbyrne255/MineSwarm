@@ -49,3 +49,7 @@ commands:
    description: TPs you to the middle of the zone
    permission-message: No perms yo
    usage: /gotozone [Friendly name OR Level]
+  save:
+   description: TPs you to the middle of the zone
+   permission-message: No perms yo
+   usage: /gotozone [Friendly name OR Level]
