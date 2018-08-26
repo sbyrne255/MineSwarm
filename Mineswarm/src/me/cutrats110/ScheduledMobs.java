@@ -36,120 +36,66 @@ public class ScheduledMobs implements Listener {
 	
 	public void mobSpawns(){
 		Bukkit.getScheduler().scheduleSyncRepeatingTask(plugin, new Runnable() {
-		    @SuppressWarnings("unlikely-arg-type")
 			public void run() {
 		    	if(debugging){plugin.getLogger().info("I am a scheduled task, running at a scheduled time!");}	    	
-		    	//SELECT * FROM DB...   	
-		    	//Remember to check the BLOCK id for close entities, NOT the player!!!
-		    	playerLoop:
-		    	for(Player player : Bukkit.getOnlinePlayers()){
+		    	
+		    	
+		    	playerLoop://Problem, right now loop is checking ONCE per player, needs to check all players VS all spanwers... 
+		    	for(Player player : Bukkit.getOnlinePlayers()){//Loop through all online players
 		    		if(debugging){plugin.getLogger().info("Players are online...");}
 		    		List<String> results = db.getMobSpawners(player.getLocation().getBlockX(), player.getLocation().getBlockY(), player.getLocation().getBlockZ(), player.getLocation().getWorld().toString().replace("CraftWorld{name=", "").replace("}", ""));
 		    		//IF PLAYER in XYZ Radius...
-		    		int mobcount = 0;
-		    		if(results != null){			
-		    			if(debugging){plugin.getLogger().info("Results are NOT null, trying more stuff...");}
-		    			//Known working for a squared area, IE: 30*30*30 room
-		    			for(Entity e : getEntitiesAroundPoint(results.get(0).replace("CraftWorld{name=", "").replace("}", ""), Integer.valueOf(results.get(1)), Integer.valueOf(results.get(2)), Integer.valueOf(results.get(3)), Integer.valueOf(results.get(4)))){
-		    			
-		    			//Demo for new Marking method, in which the difference between X-min and X-max is used for 1 wall...
-		    			//for(Entity e : getEntitiesAroundPoint(results.get(0).replace("CraftWorld{name=", "").replace("}", ""), Integer.valueOf(results.get(1)), Integer.valueOf(results.get(2)), Integer.valueOf(results.get(3)), Integer.valueOf(results.get(13)), Integer.valueOf(results.get(14)), Integer.valueOf(results.get(15)))){
-		    				//For each entity near the block...
-		    				if(debugging){plugin.getLogger().info("Checking mobs around area...");}
-		    				if(e.getType().toString().equals(results.get(5))){
-		    					if(debugging){plugin.getLogger().info("Found Mob with same type...");}
-		    					mobcount++;
-		    					if(mobcount > Integer.valueOf(results.get(6))){
-		    						if(debugging){plugin.getLogger().info("To many mobs, checking next player...");}
-		    						continue playerLoop;//Mobs already more than allowed...
-		    					}
-		    				}
-		    			}
-		    			//IF entities less than DB max mobs
-		    			for(int i = mobcount; i < Integer.valueOf(results.get(6)); i++){
-		    				if(debugging){plugin.getLogger().info("While we have less mobs in the area than our max spawn some mobs!.");}
-		    		    	Location location = new Location (Bukkit.getWorld(results.get(0).replace("CraftWorld{name=", "").replace("}", "")), Integer.valueOf(results.get(1)), Integer.valueOf(results.get(2)), Integer.valueOf(results.get(3)));//Needs to be location from DB...
-		    		    	if(debugging){plugin.getLogger().info(String.valueOf(location.getBlockX()));}
-		    		    	if(debugging){plugin.getLogger().info(String.valueOf(location.getBlockY()));}
-		    		    	if(debugging){plugin.getLogger().info(String.valueOf(location.getBlockZ()));}
-		    		    	//Check % of weapon, if 0 ignore
-		    		    	if(Integer.valueOf(results.get(10)) != 0){
-		    		    		if(debugging){plugin.getLogger().info("Probability is set, trying it");}
-		    		    		//Random chance check...
-		    		    		Random rand = new Random();				
-								if( (rand.nextInt(Integer.valueOf(results.get(10))+1) == 1) || debugging){
-									if(debugging){plugin.getLogger().info("Either debugging or got our random number!");}
-									ItemStack item = new ItemStack( Material.matchMaterial(results.get(11)), 1);
-									item.setDurability(Short.valueOf(results.get(12)));
-									if(location.getBlock().equals(Material.AIR)){
-										LivingEntity zombie1 = (LivingEntity) Bukkit.getWorld(results.get(0)).spawnEntity(location, EntityType.valueOf(results.get(5)));
+		    		//Loop for X in results...
+		    		for(int a = 0; a < results.size(); a+=13) {
+			    		if(results != null){
+			    			if(debugging){plugin.getLogger().info(String.valueOf((results.size()/13)) + " Types of mobs spawning");}
+			    			//Loop each entity near the spawner
+			    			int mobcount = 0;
+			    			for(Entity e : getEntitiesAroundPoint(results.get(a).replace("CraftWorld{name=", "").replace("}", ""), Integer.valueOf(results.get(a+1)), Integer.valueOf(results.get(a+2)), Integer.valueOf(results.get(a+3)), Integer.valueOf(results.get(a+4))))
+			    			{
+			    				if(e.getType().toString().equals(results.get(a+5))){
+			    					mobcount++;
+			    					if(mobcount > Integer.valueOf(results.get(a+6))){
+			    						if(debugging){plugin.getLogger().info("To many mobs, checking next player...");}
+			    						continue playerLoop;//Mobs already more than allowed...
+			    					}
+			    				}
+			    			}
+			    			//IF entities less than DB max mobs
+			    			for(int i = mobcount; i < Integer.valueOf(results.get(a+6)); i++){
+			    				if(debugging){plugin.getLogger().info("While we have less mobs in the area than our max spawn some mobs!.");}
+			    		    	Location location = new Location (Bukkit.getWorld(results.get(a).replace("CraftWorld{name=", "").replace("}", "")), Integer.valueOf(results.get(a+1)), Integer.valueOf(results.get(a+2)), Integer.valueOf(results.get(a+3)));//Needs to be location from DB...
+	
+			    		    	//Check % of weapon, if 0 ignore
+			    		    	if(Integer.valueOf(results.get(a+10)) != 0){
+			    		    		if(debugging){plugin.getLogger().info("Probability is set, trying it");}
+			    		    		//Random chance check...
+			    		    		Random rand = new Random();				
+									if( (rand.nextInt(Integer.valueOf(results.get(a+10))+1) == 1) || debugging)
+									{
+										if(debugging){plugin.getLogger().info("Either debugging or got our random number!");}
+										ItemStack item = new ItemStack( Material.matchMaterial(results.get(a+11)), 1);
+										item.setDurability(Short.valueOf(results.get(a+12)));
+										
+										LivingEntity zombie1 = (LivingEntity) Bukkit.getWorld(results.get(a)).spawnEntity(location, EntityType.valueOf(results.get(a+5)));
 					    		    	zombie1.getEquipment().setItemInMainHand(item);
-					    		    	if(debugging){plugin.getLogger().info("Just spawned a zombie with a weapon!");}
+					    		    	if(debugging){plugin.getLogger().info("Just spawned a mob with a weapon!");}
 					    		    	if(debugging){plugin.getLogger().info(zombie1.getLocation().toString());}
+					    		    	
 									}
 									else{
-										location.setY(location.getY()+2);
-										if(location.getBlock().equals(Material.AIR)){
-											LivingEntity zombie1 = (LivingEntity) Bukkit.getWorld(results.get(0)).spawnEntity(location, EntityType.valueOf(results.get(5)));
-						    		    	zombie1.getEquipment().setItemInMainHand(item);
-						    		    	if(debugging){plugin.getLogger().info("Just spawned a zombie with a weapon!");}
-						    		    	if(debugging){plugin.getLogger().info(zombie1.getLocation().toString());}
-										}
-										else
-										{
-											location.setY(location.getY()-4);
-											if(location.getBlock().equals(Material.AIR)){
-												LivingEntity zombie1 = (LivingEntity) Bukkit.getWorld(results.get(0)).spawnEntity(location, EntityType.valueOf(results.get(5)));
-							    		    	zombie1.getEquipment().setItemInMainHand(item);
-							    		    	if(debugging){plugin.getLogger().info("Just spawned a zombie with a weapon!");}
-							    		    	if(debugging){plugin.getLogger().info(zombie1.getLocation().toString());}
-											}else
-											{
-												location.setY(location.getY()+2);
-												LivingEntity zombie1 = (LivingEntity) Bukkit.getWorld(results.get(0)).spawnEntity(location, EntityType.valueOf(results.get(5)));
-							    		    	zombie1.getEquipment().setItemInMainHand(item);
-							    		    	if(debugging){plugin.getLogger().info("Just spawned a zombie with a weapon!");}
-							    		    	if(debugging){plugin.getLogger().info(zombie1.getLocation().toString());}
-											}
-										}
+										LivingEntity zombie1 = (LivingEntity) Bukkit.getWorld(results.get(a)).spawnEntity(location, EntityType.valueOf(results.get(a+5)));
+						    		    if(debugging){plugin.getLogger().info("Just spawned a mob without a weapon!");}
+						    		    if(debugging){plugin.getLogger().info(zombie1.getLocation().toString());}
 									}
-				    		    	
+			    		    	}
+			    		    	else{
+									LivingEntity zombie1 = (LivingEntity) Bukkit.getWorld(results.get(a)).spawnEntity(location, EntityType.valueOf(results.get(a+5)));
+					    		    if(debugging){plugin.getLogger().info("Just spawned a mob without a weapon!");}
+					    		    if(debugging){plugin.getLogger().info(zombie1.getLocation().toString());}
 								}
-								else{
-									if(location.getBlock().equals(Material.AIR)){
-										LivingEntity zombie1 = (LivingEntity) Bukkit.getWorld(results.get(0)).spawnEntity(location, EntityType.valueOf(results.get(5)));
-					    		    	if(debugging){plugin.getLogger().info("Just spawned a zombie without a weapon!");}
-					    		    	if(debugging){plugin.getLogger().info(zombie1.getLocation().toString());}
-									}
-									else{
-										location.setY(location.getY()+2);
-										if(location.getBlock().equals(Material.AIR)){
-											LivingEntity zombie1 = (LivingEntity) Bukkit.getWorld(results.get(0)).spawnEntity(location, EntityType.valueOf(results.get(5)));
-						    		    	if(debugging){plugin.getLogger().info("Just spawned a zombie without a weapon!");}
-						    		    	if(debugging){plugin.getLogger().info(zombie1.getLocation().toString());}
-										}
-										else
-										{
-											location.setY(location.getY()-4);
-											if(location.getBlock().equals(Material.AIR)){
-												LivingEntity zombie1 = (LivingEntity) Bukkit.getWorld(results.get(0)).spawnEntity(location, EntityType.valueOf(results.get(5)));
-							    		    	if(debugging){plugin.getLogger().info("Just spawned a zombie without a weapon!");}
-							    		    	if(debugging){plugin.getLogger().info(zombie1.getLocation().toString());}
-											}else
-											{
-												location.setY(location.getY()+2);
-												LivingEntity zombie1 = (LivingEntity) Bukkit.getWorld(results.get(0)).spawnEntity(location, EntityType.valueOf(results.get(5)));
-							    		    	if(debugging){plugin.getLogger().info("Just spawned a zombie without a weapon!");}
-							    		    	if(debugging){plugin.getLogger().info(zombie1.getLocation().toString());}
-											}
-										}
-									}
-								}
-		    		    	}
-		    			}
-		    		}
-		    		else{
-		    			if(debugging){plugin.getLogger().info("No data found...");}
+			    			}
+			    		}
 		    		}
 		    	}
 		    }

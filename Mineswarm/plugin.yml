@@ -1,6 +1,7 @@
 name: Mineswarm
 main: me.cutrats110.Mineswarm
-version: 1.13
+version: 1.6.1
+api-version: 1.13
 load: POSTWORLD
 author: Steven Byrne
 website: robertsroom.com
@@ -53,3 +54,11 @@ commands:
    description: TPs you to the middle of the zone
    permission-message: No perms yo
    usage: /gotozone [Friendly name OR Level]
+  class:
+   description: Gives player a set of items associated with the class (similar to kits)
+   permission-message: No perms yo
+   usage: /class [String classname]
+  makebutton:
+   description: Gives player a set of items associated with the class (similar to kits)
+   permission-message: No perms yo
+   usage: /makebutton [classname]

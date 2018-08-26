@@ -1,0 +1,21 @@
+package me.cutrats110;
+
+import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
+
+public class Kits {
+	public Plugin plugin;
+	public Database db = null;
+	
+	public Kits(Plugin instance) {
+		plugin = instance;
+		this.db = new Database(plugin);
+		
+	}
+	
+	void giveKit(Player player, String kit) {
+		//Read config for medic...
+		
+	}
+
+}

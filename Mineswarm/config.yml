@@ -12,10 +12,19 @@ item-dropping-mobs:
   - SKELETON
   - ZOMBIE
   - PIG
+  - SPIDER
+  - CAVE_SPIDER
+  - BLAZE
 #Mobs that drop keys, 1 in X probability key will drop.
 key-dropping-mobs:
   - ZOMBIE
   - 10
+  - SKELETON
+  - 10
+  - SPIDER
+  - 7
+  - BLAZE
+  - 20
 #items the above mobs will drop,
 #Item name, 1/X chance of a drop (1 to 100%), quantity of items dropped
 mob-drops:
@@ -24,6 +33,9 @@ mob-drops:
   - 4
   - APPLE
   - 20
+  - 1
+  - GOLDEN_APPLE
+  - 30
   - 1
 #Boss mobs boosts: Mob, HP Regen per hit, Damage addition, Thornmail (returns damage to sender) [1 = .5 hearts]
 boss-mobs:
@@ -116,3 +128,23 @@ dropping-whitelist:
   - COOKED_MUTTON
   - BEETROOT
   - BEETROOT_SOUP
+guide-title: Mineswarm Guide
+guide-author: Cutrats110
+guide-pages:
+  - This is page one
+  - This is on page two...
+#Class items, one per line
+solo-class:
+  - BOOK,1
+  - ARROW,20
+  - WOOD_SWORD,1,KNOCKBACK,2
+  - WOOD_SWORD,1,KNOCKBACK,2,SHARPNESS,2
+  - SPECTRAL_ARROW,10
+tank-class:
+  - IRON_HELMET,1
+  - IRON_CHESTPLATE,1
+  - IRON_BOOTS,1
+  - CHAINMAIL_LEGGINGS,1
+  - SHIELD,1
+  - STONE_AXE,1,UNBREAKING,3
+  - GOLDEN_APPLE,3

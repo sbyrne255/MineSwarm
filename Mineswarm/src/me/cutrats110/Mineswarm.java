@@ -1,9 +1,16 @@
 package me.cutrats110;
 
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
+import org.apache.commons.io.FileUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -31,6 +38,7 @@ public class Mineswarm extends JavaPlugin implements Listener{
 	//private boolean debugging = this.getConfig().getBoolean("debugging");
 	private boolean preventDouble = true;
 	private Database db = null;
+	private Kits kits = new Kits(this);
 	//Util & logging
 	@Override
 	public void onEnable(){
@@ -48,6 +56,7 @@ public class Mineswarm extends JavaPlugin implements Listener{
 		db.createTable();
 		db.createMobsTable();
 		db.createChestsTable();
+		db.createPlayersTable();
 		
 	}
 	@Override
@@ -73,7 +82,8 @@ public class Mineswarm extends JavaPlugin implements Listener{
 						BlockState state = block.getState();
 						
 						if(player.getInventory().getItemInMainHand().hasItemMeta()){
-							if(player.getInventory().getItemInMainHand().getItemMeta().getLore().toString().equals(level) || player.getInventory().getItemInMainHand().getItemMeta().getLore().toString().equals("Key HERE")){
+							if(player.getInventory().getItemInMainHand().getItemMeta().getLore().toString().equals(level) || player.getInventory().getItemInMainHand().getItemMeta().getLore().toString().equals("Key HERE"))
+							{
 								try{
 									state = block.getRelative(BlockFace.DOWN).getState();
 						            Openable door = (Openable)state.getData();
@@ -96,6 +106,9 @@ public class Mineswarm extends JavaPlugin implements Listener{
 						            }
 								}	
 															
+							}
+							else {
+								player.sendMessage("You need a " + level + " key to open this door");
 							}
 						}
 						else{
@@ -174,6 +187,37 @@ public class Mineswarm extends JavaPlugin implements Listener{
 				getLogger().info("Problem with opening door in MineSwarm. " + err.toString());
 			}
 			preventDouble = false; }else{ preventDouble = true;	}
+			
+			if(event.getAction().equals(Action.RIGHT_CLICK_BLOCK) && event.getClickedBlock().getType().equals(Material.JUNGLE_BUTTON)) {
+				File f = new File(System.getProperty("user.dir") +"/plugins/Mineswarm/buttons.yml");
+				List<String> lines = FileUtils.readLines(f, "UTF-8");
+				for (String line : lines) {
+					List<String> button = Arrays.asList(line.split("\\s*,\\s*"));
+					if(button.get(0).equals(String.valueOf(event.getClickedBlock().getX())) && button.get(1).equals(String.valueOf(event.getClickedBlock().getY())) && button.get(2).equals(String.valueOf(event.getClickedBlock().getZ())) && button.get(3).equals(String.valueOf(event.getClickedBlock().getWorld().getName()))) {
+						try{
+							if(!(player.hasMetadata("class"))) {
+								kits.giveKit(player, button.get(4));
+								return;
+							}
+							else
+							{
+								player.sendMessage("You can't use more than 1 class, die to pick a new class >:)");
+								return;
+							}
+						}
+						catch(Exception er){
+							player.sendMessage("Error on class command: " + er.toString());
+							return;
+						}
+						
+					}
+					else {
+						getLogger().info("Didn't meet if requirment....");
+					}
+					
+				}
+				
+			}
 			
 			if((event.getAction() == Action.RIGHT_CLICK_BLOCK || event.getAction() == Action.LEFT_CLICK_BLOCK) && (player.getInventory().getItemInMainHand().getItemMeta().getDisplayName().contains("MCMS Marking Tool"))){
 				try{
@@ -411,6 +455,46 @@ public class Mineswarm extends JavaPlugin implements Listener{
 			}
 			catch(Exception er){
 				player.sendMessage("Error ON INSERT: " + er.toString());
+			}
+		}
+		if (cmd.getName().equalsIgnoreCase("class")){
+			try{
+				if(!(player.hasMetadata("class"))) {
+					kits.giveKit(player, args[0]);
+					return true;
+				}
+				else
+				{
+					player.sendMessage("You can't use more than 1 class, die to pick a new class >:)");
+					return true;
+				}
+			}
+			catch(Exception er){
+				player.sendMessage("Error on class command: " + er.toString());
+				return false;
+			}
+		}
+		if (cmd.getName().equalsIgnoreCase("makebutton")){
+			try{
+				
+				
+				Block block = player.getTargetBlock(null, 10);
+				if(block.getType().equals(Material.JUNGLE_BUTTON)) {
+					
+					File f = new File(System.getProperty("user.dir") +"/plugins/Mineswarm/buttons.yml");
+		    		f.createNewFile();
+		    		
+					try {
+					    Files.write(Paths.get(f.getPath()), (String.valueOf(block.getX()) + "," + (String.valueOf(block.getY()) +"," + String.valueOf(block.getZ()) + "," + block.getWorld().getName() +","+ args[0] + "\n")).getBytes(), StandardOpenOption.APPEND);
+					}catch (IOException e) {
+						this.getLogger().info(e.toString());
+					}
+					return true;
+				}
+			}
+			catch(Exception er){
+				player.sendMessage("Error on button make command: " + er.toString());
+				return false;
 			}
 		}
 		return false;

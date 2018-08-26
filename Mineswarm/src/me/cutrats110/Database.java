@@ -6,15 +6,19 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.List;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Chest;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.plugin.Plugin;
 
 public class Database {
@@ -23,6 +27,7 @@ public class Database {
 	private Connection conn = null;
 	private Connection mobConn = null;
 	private Connection chestConn = null;
+	private Connection playerConn = null;
 	
 	public Database(Plugin instance) {
 		plugin = instance;
@@ -58,6 +63,18 @@ public class Database {
             String url = "jdbc:sqlite:plugins/Mineswarm/mineswarm.db";
             // create a connection to the database
             conn = DriverManager.getConnection(url);
+        } catch (SQLException e) {
+        	plugin.getLogger().info(e.getMessage());
+        }
+    }
+	public void connectPlayers() {
+        try {
+        	// db parameters
+        	File directory = new File(System.getProperty("user.dir") +"/Mineswarm");
+    		if (! directory.exists()){ directory.mkdir(); }
+            String url = "jdbc:sqlite:plugins/Mineswarm/playerdata.db";
+            // create a connection to the database
+            playerConn = DriverManager.getConnection(url);
         } catch (SQLException e) {
         	plugin.getLogger().info(e.getMessage());
         }
@@ -132,7 +149,55 @@ public class Database {
         } catch (SQLException e) {plugin.getLogger().info(e.getMessage());}
         finally{ try {chestConn.close();} catch (SQLException e) {} }
     }	
-    
+	public void createPlayersTable() {
+        try{if(playerConn.isClosed()){ connectPlayers(); }}
+        catch(NullPointerException np){connectPlayers();}
+        catch(Exception er){plugin.getLogger().info("Conn check failed. " + er.toString());}
+    	String scoresSQL =
+    			"CREATE TABLE IF NOT EXISTS scores("
+        		+ "name,"
+        		+ "total_damage_taken,"
+        		+ "total_damage_delt,"
+        		+ "kit,"
+        		+ "first_joined,"
+        		+ "team_members,"
+        		+ "team_size,"
+        		+ "deaths,"
+        		+ "players_saved,"
+        		+ "downs,"
+        		+ "been_revived,"
+        		+ "start_time,"
+        		+ "end_time,"
+        		+ "mobs_killed"
+        		+ ");";
+    			
+    			
+        String sql = "CREATE TABLE IF NOT EXISTS players("
+        		+ "name,"
+        		+ "total_damage_taken,"
+        		+ "total_damage_delt,"
+        		+ "kit,"
+        		+ "has_died,"
+        		+ "isdown,"
+        		+ "first_joined,"
+        		+ "team_members,"
+        		+ "team_size,"
+        		+ "deaths,"
+        		+ "players_saved,"
+        		+ "downs,"
+        		+ "been_revived,"
+        		+ "start_time,"
+        		+ "end_time,"
+        		+ "mobs_killed"
+        		+ ");";
+        try {
+        	PreparedStatement pstmt = playerConn.prepareStatement(sql);
+            pstmt.execute();
+            pstmt = playerConn.prepareStatement(scoresSQL);
+            pstmt.execute();
+        } catch (SQLException e) {plugin.getLogger().info(e.getMessage());}
+        finally{ try {playerConn.close();} catch (SQLException e) {} }
+    }	
     
     public String selectDoor(String location, int y){
         try{
@@ -433,7 +498,7 @@ public class Database {
         return null;
     }
     public List<String> getMobSpawners(int x, int y, int z, String world) {
-        String sql = "SELECT * FROM spawners WHERE min_x < ? AND min_z < ? AND min_y < ? AND max_y > ? AND max_x > ? AND max_z > ? AND world = ? LIMIT 1";
+        String sql = "SELECT * FROM spawners WHERE min_x < ? AND min_z < ? AND min_y < ? AND max_y > ? AND max_x > ? AND max_z > ? AND world = ?";
         try{
         	if(conn.isClosed()){
         		connectMobs();
@@ -462,45 +527,39 @@ public class Database {
                 	try{
                 	//Player is near a spanwer...
                 	//Add radius to min location to get block's true location (t...)
-                	
-                	int tx = rs.getInt("min_x") + rs.getInt("radius");
-                	int ty = rs.getInt("min_y") + rs.getInt("radius");
-                	int tz = rs.getInt("min_z") + rs.getInt("radius");
-                	//Location of mobspawner block.
-                	//0-4
-                	data.add(rs.getString("world"));
-                	data.add(String.valueOf(tx));
-                	data.add(String.valueOf(ty));
-                	data.add(String.valueOf(tz));
-                	data.add(rs.getString("radius"));
-                	
-                	//Entity type
-                	//5-6
-                	data.add(rs.getString("etype"));
-                	data.add(rs.getString("max_mobs")); 
-                	//Spawn location...
-                	//7-9
-                	data.add(String.valueOf(tx+rs.getInt("x_offset")));
-                	data.add(String.valueOf(ty+rs.getInt("y_offset")));
-                	data.add(String.valueOf(tz+rs.getInt("z_offset")));
-                	
-                	//Weapon related.
-                	//10-12
-                	data.add(rs.getString("chance"));
-                	data.add(rs.getString("weapons"));
-                	data.add(rs.getString("durability"));
-                	
-                	//13-15
-                	//data.add(String.valueOf(Math.abs(rs.getInt("max_x") * rs.getInt("min_x"))));
-                	//data.add(String.valueOf(Math.abs(rs.getInt("max_y") * rs.getInt("min_y"))));
-                	//data.add(String.valueOf(Math.abs(rs.getInt("max_z") * rs.getInt("min_z"))));
+	                	int tx = rs.getInt("min_x") + rs.getInt("radius");
+	                	int ty = rs.getInt("min_y") + rs.getInt("radius");
+	                	int tz = rs.getInt("min_z") + rs.getInt("radius");
+	                	//Location of mobspawner block.
+	                	//0-4
+	                	data.add(rs.getString("world"));
+	                	data.add(String.valueOf(tx));
+	                	data.add(String.valueOf(ty));
+	                	data.add(String.valueOf(tz));
+	                	data.add(rs.getString("radius"));
+	                	
+	                	//Entity type
+	                	//5-6
+	                	data.add(rs.getString("etype"));
+	                	data.add(rs.getString("max_mobs")); 
+	                	//Spawn location...
+	                	//7-9
+	                	data.add(String.valueOf(tx+rs.getInt("x_offset")));
+	                	data.add(String.valueOf(ty+rs.getInt("y_offset")));
+	                	data.add(String.valueOf(tz+rs.getInt("z_offset")));
+	                	
+	                	//Weapon related.
+	                	//10-12
+	                	data.add(rs.getString("chance"));
+	                	data.add(rs.getString("weapons"));
+	                	data.add(rs.getString("durability"));
                 	}
                 	catch(Exception er){
-                		plugin.getLogger().info("FUCK CUNTS WHORE: " + er.toString());
+                		plugin.getLogger().info("Error " + er.toString());
                 	}
-                	
-                    return data;               
+                	          
                 }
+                return data;
         }
         catch (Exception e) {plugin.getLogger().info("ERROR SELECTING MOB SPAWNERS...: " + e.toString());}
         finally{ try {mobConn.close();} catch (SQLException e) {} }
@@ -638,6 +697,126 @@ public class Database {
         return null;
     }
 
+    public boolean setPlayerData(Player player){
+        String sql = "SELECT * FROM players WHERE name = ?";
+        try{
+        	if(playerConn.isClosed()){
+        		connectPlayers();
+        	}
+        }
+        catch(NullPointerException np){
+        	connectPlayers();
+        }
+        catch(Exception er){
+        	plugin.getLogger().info("Conn check failed. " + er.toString());
+        }
+        try {
+            	PreparedStatement pstmt = playerConn.prepareStatement(sql);
+                pstmt.setString(1, player.getName());           
+                ResultSet rs = pstmt.executeQuery();
+                
+                while (rs.next()) {
+                	player.setMetadata("total_damage_taken",new FixedMetadataValue(plugin, rs.getInt("total_damage_taken")));
+                    player.setMetadata("total_damage_delt",new FixedMetadataValue(plugin, rs.getInt("total_damage_delt")));
+                    if(rs.getString("kit") != null && rs.getString("kit").length() > 0) {
+                    	plugin.getLogger().info("Setting class");
+                    	player.setMetadata("class",new FixedMetadataValue(plugin, rs.getString("kit")));
+                    }                    
+                    player.setMetadata("hasdied",new FixedMetadataValue(plugin, rs.getBoolean("has_died")));
+                	player.setMetadata("isdown",new FixedMetadataValue(plugin, rs.getBoolean("isdown")));
+                    player.setMetadata("team_members",new FixedMetadataValue(plugin, rs.getString("team_members")));
+                    player.setMetadata("team_size",new FixedMetadataValue(plugin, rs.getInt("team_size")));
+                    player.setMetadata("deaths",new FixedMetadataValue(plugin, rs.getInt("deaths")));
+                    player.setMetadata("players_saved",new FixedMetadataValue(plugin, rs.getInt("players_saved")));
+                    player.setMetadata("revived",new FixedMetadataValue(plugin, rs.getInt("been_revived")));
+                    player.setMetadata("downs",new FixedMetadataValue(plugin, rs.getInt("downs")));
+                    player.setMetadata("start_time",new FixedMetadataValue(plugin, rs.getString("start_time")));
+                    player.setMetadata("mobs_killed",new FixedMetadataValue(plugin, rs.getString("mobs_killed")));
+                    playerConn.close();
+                	return true;
+                }
+        }
+        catch (Exception e) {plugin.getLogger().info("ERROR SELECTING PLAYER...: " + e.toString());}
+        finally{ try {playerConn.close();} catch (SQLException e) {} }
+        return false;    
+    }
+    public void newPlayer(Player player) {
+    	String sql = "INSERT INTO players(name,total_damage_taken, total_damage_delt, kit, has_died, isdown, first_joined, team_members, team_size, deaths, players_saved, downs, been_revived, start_time) "
+    								+ "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+    	
+    	try{if(playerConn.isClosed()){connectPlayers();}
+        }catch(NullPointerException np){connectPlayers();
+        }catch(Exception er){plugin.getLogger().info("Conn check failed. " + er.toString());}
+        try {
+        	String timeStamp = new SimpleDateFormat("yyyyMMddHHmmss").format(Calendar.getInstance().getTime());
+        	
+        	PreparedStatement pstmt = playerConn.prepareStatement(sql);
+        	pstmt.setString(1, player.getName());
+        	pstmt.setInt(2, 0);
+        	pstmt.setInt(3, 0);
+        	pstmt.setString(4, null);
+        	pstmt.setBoolean(5, false);
+        	pstmt.setBoolean(6, false);
+        	pstmt.setString(7, timeStamp);
+        	pstmt.setString(8, player.getName());
+        	pstmt.setInt(9, 1);
+        	pstmt.setInt(10, 0);
+        	pstmt.setInt(11, 0);
+        	pstmt.setInt(12, 0);
+        	pstmt.setInt(13, 0);
+        	pstmt.setString(14, null);
+        	
+            
+            pstmt.executeUpdate();
+            
+        	player.setMetadata("isdown",new FixedMetadataValue(plugin, false));
+            player.setMetadata("hasdied",new FixedMetadataValue(plugin, false));
+            player.setMetadata("total_damage_taken",new FixedMetadataValue(plugin, 0));
+            player.setMetadata("total_damage_delt",new FixedMetadataValue(plugin, 0));
+            player.setMetadata("deaths",new FixedMetadataValue(plugin, 0));
+            player.setMetadata("players_saved",new FixedMetadataValue(plugin, 0));
+            player.setMetadata("downs",new FixedMetadataValue(plugin, 0));
+            player.setMetadata("been_revived",new FixedMetadataValue(plugin, 0));
+            
+            
+        } catch (SQLException e) {plugin.getLogger().info("PROBLEM INSERTING NEW PLAYER: " + e.toString());}
+        catch(Exception err){
+        	plugin.getLogger().info("PROBLEM IN INSERT, NOT SQL PROBLEM: " + err.toString());
+        }
+        finally{ try {playerConn.close();} catch (Exception e) {} }
+    }
+    public void updatePlayerData(Player player) {
+    	String sql = "UPDATE players SET total_damage_taken = ?, total_damage_delt = ?, kit = ?, has_died = ?, isdown = ?, team_members = ?, team_size = ?, deaths = ?, players_saved = ?, downs = ?, been_revived = ?, start_time = ?, mobs_killed = ? WHERE name = ?";
+    	
+    	try{if(playerConn.isClosed()){connectPlayers();}
+        }catch(NullPointerException np){connectPlayers();
+        }catch(Exception er){plugin.getLogger().info("Conn check failed. " + er.toString());}
+        try {
+        	PreparedStatement pstmt = playerConn.prepareStatement(sql);//13 fields...
+        	try { pstmt.setInt(1, player.getMetadata("total_damage_taken").get(0).asInt()); } catch(IndexOutOfBoundsException iob) {pstmt.setInt(1, 0);}
+        	try { pstmt.setInt(2, player.getMetadata("total_damage_delt").get(0).asInt()); } catch(IndexOutOfBoundsException iob) {pstmt.setInt(2, 0);}
+        	try { pstmt.setString(3, player.getMetadata("class").get(0).asString()); } catch(Exception iob) {pstmt.setString(3, "");}
+        	try { pstmt.setBoolean(4, player.getMetadata("hasdied").get(0).asBoolean()); } catch(IndexOutOfBoundsException iob) {pstmt.setBoolean(4, false);}
+        	try { pstmt.setBoolean(5, player.getMetadata("isdown").get(0).asBoolean()); } catch(IndexOutOfBoundsException iob) {pstmt.setBoolean(5, false);}
+        	try { pstmt.setString(6, player.getMetadata("team_members").get(0).asString()); } catch(IndexOutOfBoundsException iob) {pstmt.setString(6, "NOT IMPLEMENTED YET");}
+        	try { pstmt.setInt(7, player.getMetadata("team_size").get(0).asInt()); } catch(IndexOutOfBoundsException iob) {pstmt.setInt(7, 1);}
+        	try { pstmt.setInt(8, player.getMetadata("deaths").get(0).asInt()); } catch(IndexOutOfBoundsException iob) {pstmt.setInt(8, 0);}
+        	try { pstmt.setInt(9, player.getMetadata("players_saved").get(0).asInt()); } catch(IndexOutOfBoundsException iob) {pstmt.setInt(9, 0);}
+        	try { pstmt.setInt(10, player.getMetadata("downs").get(0).asInt()); } catch(IndexOutOfBoundsException iob) {pstmt.setInt(10, 0);}
+        	try { pstmt.setInt(11, player.getMetadata("revived").get(0).asInt()); } catch(IndexOutOfBoundsException iob) {pstmt.setInt(11, 0);}
+        	try { pstmt.setString(12, player.getMetadata("start_time").get(0).asString()); } catch(IndexOutOfBoundsException iob) {pstmt.setString(12, "NOT IMPLEMENTED YET");}
+        	try { pstmt.setString(13, player.getMetadata("mobs_killed").get(0).asString()); } catch(IndexOutOfBoundsException iob) {pstmt.setString(12, "");}
+        	pstmt.setString(14, player.getName());
+        	
+            pstmt.executeUpdate();          
+            
+        } catch (SQLException e) {plugin.getLogger().info("PROBLEM UPDATING EXISTING PLAYER: " + e.toString());}
+        catch(Exception err){
+        	plugin.getLogger().info("PROBLEM IN UPDATE, NOT SQL PROBLEM: " + err.toString());
+        }
+        finally{ try {playerConn.close();} catch (Exception e) {} }
+    }
+     
     public void deleteChest(int x, int y, int z, String world, String creator) {
     	//Delete where position matches AND creator matches
     }
@@ -645,3 +824,5 @@ public class Database {
     	//DELETE where position matches
     }
 }
+
+

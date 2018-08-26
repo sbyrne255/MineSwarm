@@ -1,0 +1,53 @@
+//FEATURE:
+	MAYBE CHECK FULL INVENTORY FOR KEY INSTEAD OF JUST HANDS
+//BUGS:
+	DEALING WITH OVERLAPPING ZONES WILL BE VERY HARD...
+//TODO:
+	*Load a configfile
+		*Enable a YML
+		*Also, create multiple SQL-DBs and provide a scheduled backup (once ever 10 minutes, hold 3 versions?)//Have not implemented multiple DBs, want to see how this scales.
+	*RANDOM DROPS
+		*Configurable items
+	*Inventory swaps
+		*White list items that can be dropped
+	*Chests plugin
+		*block chests from sharing items with team (don't allow putting in box, only take out)
+		*make items randomly spawn into box every few seconds/minutes (scheduler)//Probably should load timing from config, but Mahh
+	ZONES
+		Set mob health/regen [mob spawn event?]
+		*Set keys that are dropped
+		*set PVP
+		*Show zone you are in
+		*TP to zone by name
+	TEAMS
+		teams can join randomly as long as they are at start, from there they can TPA 1 time to any player on the team or randomly select a player to TPA to.
+		New teams start at spawn
+		Leaving a team brings you to spawn
+		Creating a team sends everyone back to start
+		Teams are limited to 6ish people
+		Team owner accepts requests to join, on leave or AFK team owner transfers
+		Team score board different from solo
+	Leader boards (time/Deaths/KDA-boss/start/enddates/team members or solo/team size) Weeklyboard and all time board
+		Meta saves:
+			Number of mobs killed (by type) [Maybe JSON?]
+			Number of times downed
+			Number of times revived
+			Number of times died
+			Kit type
+			Time from taking first kit to completion (Command block button) //On join when they pick a kit set a date, on completion clear that date (Null) IF that date isn't null/empty don't set it.
+			Total damage delt to mobs (on damage event, add damage taken/given)
+			Total damage taken
+			Team members
+			Team size	
+	Class selection
+		*Give items on command (probably use a command block and MetaData to store CD?)
+		*Set class in MetaData
+		Set team in MetaData
+	MetaData
+		Use SQLite to save MetaData changes, if it is too slow que up a task list for each item (low priority)
+		On Join, load MetaData
+		On Leave, save MetaData
+		
+		
+SCHEDULE TIMER, EVERY 20s CONFIGURSABE check all MOBSPAWNERS (CUSTOM SET) in DB (NEW DB, OR AT LEAST NEW TABLE) check area if there are more than X number of zombies (configurable) spawn more
+if there is less than X in a XYZ radius (configurable) don't spawn any.

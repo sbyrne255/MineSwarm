@@ -1,0 +1,121 @@
+package me.cutrats110;
+
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.List;
+
+import org.bukkit.Material;
+import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.BookMeta;
+import org.bukkit.metadata.FixedMetadataValue;
+import org.bukkit.plugin.Plugin;
+
+public class Kits {
+	public Plugin plugin;
+	public Database db = null;
+	
+	public Kits(Plugin instance) {
+		plugin = instance;
+		this.db = new Database(plugin);
+		
+	}
+	
+	void giveKit(Player player, String kit) {
+		//Read standard items (all players get).
+		//Check kit against config, if more items needed:
+		
+		ItemStack guideBook = new ItemStack(Material.WRITTEN_BOOK, 1);
+		BookMeta bookMeta = (BookMeta) guideBook.getItemMeta();
+		bookMeta.setTitle(plugin.getConfig().getString("guide-title"));
+		bookMeta.setAuthor(plugin.getConfig().getString("guide-author"));
+		List<String> pages = new ArrayList<String>();
+		//256 MAX characters per page.
+		pages.add("Hello, welcome to Mineswarm Reborn server! Hello, welcome to Mineswarm Reborn server! Hello, welcome to Mineswarm Reborn server! Hello, welcome to Mineswarm Reborn server! Hello, welcome to Mineswarm Reborn server! Hello, welcome to Mineswarm Reborn server! Hello, welcome to Mineswarm Reborn server! Hello, welcome to Mineswarm Reborn server! Hello, welcome to Mineswarm Reborn server! Hello, welcome to Mineswarm Reborn server! Hello, welcome to Mineswarm Reborn server! Hello, welcome to Mineswarm Reborn server! Hello, welcome to Mineswarm Reborn server! Hello, welcome to Mineswarm Reborn server! Hello, welcome to Mineswarm Reborn server! Hello, welcome to Mineswarm Reborn server! Hello, welcome to Mineswarm Reborn server! Hello, welcome to Mineswarm Reborn server! Hello, welcome to Mineswarm Reborn server! Hello, welcome to Mineswarm Reborn server! Hello, welcome to Mineswarm Reborn server! Hello, welcome to Mineswarm Reborn server! Hello, welcome to Mineswarm Reborn server! Hello, welcome to Mineswarm Reborn server! Hello, welcome to Mineswarm Reborn server! Hello, welcome to Mineswarm Reborn server! Hello, welcome to Mineswarm Reborn server! Hello, welcome to Mineswarm Reborn server! Hello, welcome to Mineswarm Reborn server! Hello, welcome to Mineswarm Reborn server! Hello, welcome to Mineswarm Reborn server! Hello, welcome to Mineswarm Reborn server! Hello, welcome to Mineswarm Reborn server! Hello, welcome to Mineswarm Reborn server! Hello, welcome to Mineswarm Reborn server! Hello, welcome to Mineswarm Reborn server! Hello, welcome to Mineswarm Reborn server! Hello, welcome to Mineswarm Reborn server! Hello, welcome to Mineswarm Reborn server! Hello, welcome to Mineswarm Reborn server! Hello, welcome to Mineswarm Reborn server! Hello, welcome to Mineswarm Reborn server! Hello, welcome to Mineswarm Reborn server! Hello, welcome to Mineswarm Reborn server! Hello, welcome to Mineswarm Reborn server! Hello, welcome to Mineswarm Reborn server! Hello, welcome to Mineswarm Reborn server! Hello, welcome to Mineswarm Reborn server! Hello, welcome to Mineswarm Reborn server! Hello, welcome to Mineswarm Reborn server! Hello, welcome to Mineswarm Reborn server! Hello, welcome to Mineswarm Reborn server! Hello, welcome to Mineswarm Reborn server! Hello, welcome to Mineswarm Reborn server! Hello, welcome to Mineswarm Reborn server! Hello, welcome to Mineswarm Reborn server! Hello, welcome to Mineswarm Reborn server! Hello, welcome to Mineswarm Reborn server! Hello, welcome to Mineswarm Reborn server! Hello, welcome to Mineswarm Reborn server! Hello, welcome to Mineswarm Reborn server! Hello, welcome to Mineswarm Reborn server! Hello, welcome to Mineswarm Reborn server! Hello, welcome to Mineswarm Reborn server! Hello, welcome to Mineswarm Reborn server! Hello, welcome to Mineswarm Reborn server! Hello, welcome to Mineswarm Reborn server! Hello, welcome to Mineswarm Reborn server! Hello, welcome to Mineswarm Reborn server! Hello, welcome to Mineswarm Reborn server! Hello, welcome to Mineswarm Reborn server! Hello, welcome to Mineswarm Reborn server! Hello, welcome to Mineswarm Reborn server! Hello, welcome to Mineswarm Reborn server! Hello, welcome to Mineswarm Reborn server! Hello, welcome to Mineswarm Reborn server! Hello, welcome to Mineswarm Reborn server! Hello, welcome to Mineswarm Reborn server! Hello, welcome to Mineswarm Reborn server! Hello, welcome to Mineswarm Reborn server! Hello, welcome to Mineswarm Reborn server! Hello, welcome to Mineswarm Reborn server! Hello, welcome to Mineswarm Reborn server! Hello, welcome to Mineswarm Reborn server! Hello, welcome to Mineswarm Reborn server! Hello, welcome to Mineswarm Reborn server! Hello, welcome to Mineswarm Reborn server! Hello, welcome to Mineswarm Reborn server! Hello, welcome to Mineswarm Reborn server! Hello, welcome to Mineswarm Reborn server! Hello, welcome to Mineswarm Reborn server! Hello, welcome to Mineswarm Reborn server! Hello, welcome to Mineswarm Reborn server! Hello, welcome to Mineswarm Reborn server! Hello, welcome to Mineswarm Reborn server! Hello, welcome to Mineswarm Reborn server! "); // Page 1
+		pages.add("Website: Mineswarm.net"); // Page 2
+		pages.add("Don't cheat!"); // Page 3
+		bookMeta.setPages(pages);
+		guideBook.setItemMeta(bookMeta);
+		
+		player.getInventory().addItem(guideBook);
+		
+		String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(Calendar.getInstance().getTime());
+		List<String> items;
+		switch (kit) {
+        case "solo":  
+        	items = plugin.getConfig().getStringList("solo-class");
+        	for(String item : items) {
+        		player.getInventory().addItem(new ItemStack(Material.getMaterial(item),1));
+        	}
+        	player.setMetadata("class",new FixedMetadataValue(plugin, "solo"));
+        	player.setMetadata("start_time",new FixedMetadataValue(plugin, timeStamp));
+        	break;
+        	
+        case "tank":  
+        	items = plugin.getConfig().getStringList("tank-class");
+        	for(String item : items) {
+        		player.getInventory().addItem(new ItemStack(Material.getMaterial(item),1));
+        	}
+        	player.setMetadata("class",new FixedMetadataValue(plugin, "tank"));
+        	player.setMetadata("start_time",new FixedMetadataValue(plugin, timeStamp));
+        	break;
+        case "adc":  
+        	items = plugin.getConfig().getStringList("adc-class");
+        	for(String item : items) {
+        		player.getInventory().addItem(new ItemStack(Material.getMaterial(item),1));
+        	}
+        	player.setMetadata("class",new FixedMetadataValue(plugin, "adc"));
+        	player.setMetadata("start_time",new FixedMetadataValue(plugin, timeStamp));
+        	break;
+        case "support":  
+        	items = plugin.getConfig().getStringList("support-class");
+        	for(String item : items) {
+        		player.getInventory().addItem(new ItemStack(Material.getMaterial(item),1));
+        	}
+        	player.setMetadata("class",new FixedMetadataValue(plugin, "support"));
+        	player.setMetadata("start_time",new FixedMetadataValue(plugin, timeStamp));
+        	break;
+        case "overwatch":  
+        	items = plugin.getConfig().getStringList("overwatch-class");
+        	for(String item : items) {
+        		player.getInventory().addItem(new ItemStack(Material.getMaterial(item),1));
+        	}
+        	player.setMetadata("class",new FixedMetadataValue(plugin, "overwatch"));
+        	player.setMetadata("start_time",new FixedMetadataValue(plugin, timeStamp));
+        	break;
+        case "archer":  
+        	items = plugin.getConfig().getStringList("archer-class");
+        	for(String item : items) {
+        		player.getInventory().addItem(new ItemStack(Material.getMaterial(item),1));
+        	}
+        	player.setMetadata("class",new FixedMetadataValue(plugin, "archer"));
+        	player.setMetadata("start_time",new FixedMetadataValue(plugin, timeStamp));
+        	break;
+        case "mage":  
+        	items = plugin.getConfig().getStringList("mage-class");
+        	for(String item : items) {
+        		player.getInventory().addItem(new ItemStack(Material.getMaterial(item),1));
+        	}
+        	player.setMetadata("class",new FixedMetadataValue(plugin, "mage"));
+        	player.setMetadata("start_time",new FixedMetadataValue(plugin, timeStamp));
+        	break;
+        case "angerymage":  
+        	items = plugin.getConfig().getStringList("angerymage-class");
+        	for(String item : items) {
+        		player.getInventory().addItem(new ItemStack(Material.getMaterial(item),1));
+        	}
+        	player.setMetadata("class",new FixedMetadataValue(plugin, "angerymage"));
+        	player.setMetadata("start_time",new FixedMetadataValue(plugin, timeStamp));
+        	break;
+        default: player.sendMessage("We don't know what class that is :/ ");
+                 break;
+    }
+		
+		
+		
+		
+		
+	}
+
+}

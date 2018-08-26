@@ -14,6 +14,8 @@ import org.bukkit.plugin.Plugin;
 public class ScheduledBackupDB implements Listener {
 	public Plugin plugin;
 	public Database db = null;
+	private String destDir = System.getProperty("user.dir") +"/plugins/Mineswarm/backups/";
+	private String sourceDir = System.getProperty("user.dir") +"/plugins/Mineswarm/";
 	
 	public ScheduledBackupDB(Plugin instance) {
 		plugin = instance;
@@ -29,11 +31,11 @@ public class ScheduledBackupDB implements Listener {
 		    	plugin.getLogger().info("Scheduled Player Database Backup Starting...");
 		    	String timeStamp = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new Date());
 		    	try {
-		    	    File directory = new File(System.getProperty("user.dir") +"/MSbackups/PlayerData");
+		    	    File directory = new File(destDir);
 		    		if (! directory.exists()){ directory.mkdir(); }
 		    		
-			    	File source = new File(System.getProperty("user.dir") +"/plugins/playerdata.db");
-			    	File dest = new File(System.getProperty("user.dir") +"/MSbackups/"+ timeStamp + "playerdata.db");
+			    	File source = new File(sourceDir + "playerdata.db");
+			    	File dest = new File(destDir + timeStamp + "_playerdata.db");
 			    	FileUtils.copyFile(source, dest);
 		    	    
 		    	    //Delete files older than 1 days.
@@ -53,7 +55,7 @@ public class ScheduledBackupDB implements Listener {
 					plugin.getLogger().info(e.toString());
 				}		    	
 		    }
-		}, (((20*1)*60)*20), (((20*1)*60)*20));//runs every 20 minutes
+		}, (2), (((20*1)*60)*20));//runs every 20 minutes
 		//20t = 1s
 		//20*10 = 10 seconds...
 	}
@@ -63,19 +65,19 @@ public class ScheduledBackupDB implements Listener {
 		    	plugin.getLogger().info("Scheduled Database Backup Starting...");
 		    	String timeStamp = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new Date());
 		    	try {
-		    	    File directory = new File(System.getProperty("user.dir") +"/MSbackups/");
+		    	    File directory = new File(destDir);
 		    		if (! directory.exists()){ directory.mkdir(); }
 		    		
-			    	File source = new File(System.getProperty("user.dir") +"/plugins/mineswarmChests.db");
-			    	File dest = new File(System.getProperty("user.dir") +"/MSbackups/"+ timeStamp + "mineswarmChests.db");
+			    	File source = new File(sourceDir+"mineswarmChests.db");
+			    	File dest = new File(destDir+ timeStamp + "_mineswarmChests.db");
 			    	FileUtils.copyFile(source, dest);
 		    	    
-		    	    source = new File(System.getProperty("user.dir") +"/plugins/mobspawners.db");
-			    	dest = new File(System.getProperty("user.dir") +"/MSbackups/"+ timeStamp + "mobspawners.db");
+		    	    source = new File(sourceDir+"mobspawners.db");
+			    	dest = new File(destDir + timeStamp + "_mobspawners.db");
 			    	FileUtils.copyFile(source, dest);
 		    	    
-		    	    source = new File(System.getProperty("user.dir") +"/plugins/mineswarm.db");
-			    	dest = new File(System.getProperty("user.dir") +"/MSbackups/"+ timeStamp + "mineswarm.db");
+		    	    source = new File(sourceDir + "mineswarm.db");
+			    	dest = new File(destDir + timeStamp + "_mineswarm.db");
 		    	    FileUtils.copyFile(source, dest);
 
 		    	    
@@ -97,7 +99,7 @@ public class ScheduledBackupDB implements Listener {
 					plugin.getLogger().info(e.toString());
 				}		    	
 		    }
-		}, (((20*1)*60)*240), (((20*1)*60)*240));//runs every 4 hours.
+		}, (0), (((20*1)*60)*240));//runs every 4 hours.
 		//20t = 1s
 		//20*10 = 10 seconds...
 	}

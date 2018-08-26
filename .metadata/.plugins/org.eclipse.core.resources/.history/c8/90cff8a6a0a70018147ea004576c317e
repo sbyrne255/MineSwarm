@@ -1,0 +1,50 @@
+package me.cutrats110;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.bukkit.Material;
+import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.BookMeta;
+import org.bukkit.plugin.Plugin;
+
+public class Kits {
+	public Plugin plugin;
+	public Database db = null;
+	
+	public Kits(Plugin instance) {
+		plugin = instance;
+		this.db = new Database(plugin);
+		
+	}
+	
+	void giveKit(Player player, String kit) {
+		//Read standard items (all players get).
+		//Check kit against config, if more items needed:
+		
+		ItemStack writtenBook = new ItemStack(Material.WRITTEN_BOOK, 1);
+		BookMeta bookMeta = (BookMeta) writtenBook.getItemMeta();
+		bookMeta.setTitle(plugin.getConfig().getString("guide-title"));
+		bookMeta.setAuthor(plugin.getConfig().getString("guide-author"));
+		List<String> pages = new ArrayList<String>();
+		pages.add("Hello, welcome to Mineswarm Reborn server!"); // Page 1
+		pages.add("Website: Mineswarm.net"); // Page 2
+		pages.add("Don't cheat!"); // Page 3
+		bookMeta.setPages(pages);
+		writtenBook.setItemMeta(bookMeta);
+		
+		
+		writtenBook = new ItemStack(Material.WRITTEN_BOOK, 1);
+		bookMeta = (BookMeta) writtenBook.getItemMeta();
+		bookMeta.setTitle(plugin.getConfig().getString("rules-title"));
+		bookMeta.setAuthor(plugin.getConfig().getString("guide-author"));
+		pages = new ArrayList<String>();
+		pages.add("Hello, welcome to Mineswarm Reborn server!");
+		pages.add("Website: Mineswarm.net");
+		pages.add("Don't cheat!");
+		bookMeta.setPages(pages);
+		writtenBook.setItemMeta(bookMeta);
+	}
+
+}
