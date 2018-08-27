@@ -8,6 +8,7 @@
 		<item value="true" key="wrap"/>
 		<item value="false" key="wholeword"/>
 		<list key="findhistory">
+			<item value="s"/>
 			<item value="replace"/>
 			<item value="offhand"/>
 			<item value="plugin.getLogger().info"/>

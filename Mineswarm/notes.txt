@@ -29,7 +29,18 @@
 		Leaving a team brings you to spawn
 		Creating a team sends everyone back to start
 		Teams are limited to 6ish people
+		Teams have team name above head like so: https://bukkit.org/threads/tutorial-scoreboards-teams-with-the-bukkit-api.139655/
+		On downed team-mate message all team members...
 		Team owner accepts requests to join, on leave or AFK team owner transfers
+			Create Team [Name]
+			Join Team [Name]
+			Delete Team [Name] //if owner
+			Kick Team member [Player name]
+			TPA to team (massive cooldowns) [Player]
+			
+			
+			
+		
 		Team score board different from solo *Search by team_size > 1
 		Look into spectral glow to team mates// Answer about half way down with protolib: https://bukkit.org/threads/glowing-for-one-person.446790/
 	Leader boards (time/Deaths/KD/start/enddates/team members or solo/team size) Weeklyboard and all time board

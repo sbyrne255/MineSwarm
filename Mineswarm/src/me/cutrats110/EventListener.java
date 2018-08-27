@@ -38,6 +38,7 @@ public class EventListener implements Listener {
 	public Plugin plugin;
 	public Database db = null;
 	private boolean debugging = true;
+	private TeamBoards board = new TeamBoards();
 	
 	public EventListener(Plugin instance) {
 		plugin = instance;
@@ -59,6 +60,8 @@ public class EventListener implements Listener {
         	//Player did not exist, create them...
         	db.newPlayer(player);
         }    
+        
+        board.makeScoreBoard(player);
     }
        
     

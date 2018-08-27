@@ -1,0 +1,43 @@
+package me.cutrats110;
+
+import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
+import org.bukkit.scoreboard.DisplaySlot;
+import org.bukkit.scoreboard.Objective;
+import org.bukkit.scoreboard.Score;
+import org.bukkit.scoreboard.Scoreboard;
+import org.bukkit.scoreboard.ScoreboardManager;
+
+public class TeamBoards {
+
+	public void makeScoreBoard (Player player) {
+		ScoreboardManager manager = Bukkit.getScoreboardManager();
+		Scoreboard board = manager.getNewScoreboard();		
+				
+		board.getEntries().add("APPLES");
+		Objective member = board.registerNewObjective("test2", "dummy","public2");		
+		member.setDisplaySlot(DisplaySlot.SIDEBAR);
+		member.setDisplayName("Cutrats110");
+		
+		Score mscore = member.getScore("Health");//Not sure what the arg is here...
+		mscore.setScore(20); //Integer only!
+		//player.setScoreboard(manager.getNewScoreboard()); //manager.getNewScoreboard() will return a blank scoreboard
+
+		
+		/*
+		manager = Bukkit.getScoreboardManager();
+		board = manager.getNewScoreboard();
+		 
+		objective = board.registerNewObjective("showhealth", "health", "HP");
+		objective.setDisplaySlot(DisplaySlot.BELOW_NAME);
+		objective.setDisplayName("/ 20");
+		*/
+		 
+		for(Player online : Bukkit.getOnlinePlayers()){//Medics only? At least teams only...
+		  online.setScoreboard(board);
+		}
+		
+
+
+	}
+}

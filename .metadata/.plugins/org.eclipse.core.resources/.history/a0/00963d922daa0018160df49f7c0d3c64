@@ -1,0 +1,39 @@
+package me.cutrats110;
+
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.entity.Player;
+import org.bukkit.scoreboard.DisplaySlot;
+import org.bukkit.scoreboard.Objective;
+import org.bukkit.scoreboard.Scoreboard;
+import org.bukkit.scoreboard.ScoreboardManager;
+
+public class TeamBoards {
+
+	public void makeScoreBoard (Player player) {
+		ScoreboardManager manager = Bukkit.getScoreboardManager();
+		Scoreboard board = manager.getNewScoreboard();		
+				
+		Objective member = board.registerNewObjective("test2", "dummy","public2");		
+		member.setDisplaySlot(DisplaySlot.SIDEBAR);
+		member.setDisplayName("  Team Health  ");
+		member.getScore(ChatColor.GREEN + "Cutrats110 - HP").setScore(20);
+		member.getScore(ChatColor.GREEN + "JamesThe_Lion - HP").setScore(20);
+		member.getScore(ChatColor.GREEN + "AlexMcPimpin - HP").setScore(19);
+		member.getScore(ChatColor.GREEN + "GradualCheetah - HP").setScore(14);
+		
+		
+		Objective teamBoard = board.registerNewObjective("teamName", "dummy","public2");		
+		teamBoard.setDisplaySlot(DisplaySlot.SIDEBAR);
+		
+		teamBoard.setDisplayName("  Team Name  ");
+		teamBoard.getScore(ChatColor.GREEN + "Bob's Moosaders").setScore(1);
+		
+		for(Player online : Bukkit.getOnlinePlayers()){//Medics only? At least teams only...
+		  online.setScoreboard(board);
+		}
+		
+
+
+	}
+}

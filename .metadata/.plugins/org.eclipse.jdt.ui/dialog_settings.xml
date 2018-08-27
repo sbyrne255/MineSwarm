@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <section name="Workbench">
-	<item value="C:\Users\Steven\Desktop\1Project Files\MineSwarm Dev\MineSwarm\Required" key="org.eclipse.jdt.ui.lastextjar"/>
+	<item value="C:\Users\Steven.admin\Desktop\Local Project Files\MineSwarm Plugin\.git\MineSwarm\Required" key="org.eclipse.jdt.ui.lastextjar"/>
 	<section name="RefactoringWizard.preview">
 		<item value="600" key="width"/>
 		<item value="400" key="height"/>
@@ -56,8 +56,8 @@
 		<item value="false" key="JarManifestWizardPage.SAVE_MANIFEST"/>
 		<item value="false" key="JarPackageWizardPage.EXPORT_OUTPUT_FOLDER"/>
 		<list key="JarPackageWizardPage.DESTINATION_NAMES_ID">
-			<item value="C:\Users\Steven\Desktop\MineSwarm.jar"/>
 			<item value="C:\Users\Steven.admin\Desktop\MineSwarm.jar"/>
+			<item value="C:\Users\Steven\Desktop\MineSwarm.jar"/>
 			<item value="C:\Users\Steven\Desktop\1Project Files\MineSwarm Dev\MineSwarm\OUT\MineSwarm.jar"/>
 			<item value="C:\Users\Steven\Desktop\1Project Files\MineSwarm Dev\MineSwarm\OUT\MobKeys.jar"/>
 			<item value="C:\Users\Steven\Desktop\1Project Files\Mineswarm\plugins\MobKeys.jar"/>

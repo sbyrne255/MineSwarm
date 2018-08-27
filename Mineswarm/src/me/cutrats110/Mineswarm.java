@@ -58,6 +58,7 @@ public class Mineswarm extends JavaPlugin implements Listener{
 		db.createChestsTable();
 		db.createPlayersTable();
 		
+		
 	}
 	@Override
 	public void onDisable(){
