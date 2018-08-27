@@ -179,7 +179,7 @@ public class Mineswarm extends JavaPlugin implements Listener{
 								            state.update();
 										}
 							    	}
-						    	}, 55L);
+						    	}, 45L);
 						    event.setCancelled(true);//Probably want to cancel but shouldn't matter in adventure mode
 						    return;
 						}
