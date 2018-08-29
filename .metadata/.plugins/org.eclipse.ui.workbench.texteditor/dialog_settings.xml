@@ -2,12 +2,13 @@
 <section name="Workbench">
 	<section name="org.eclipse.ui.texteditor.FindReplaceDialog">
 		<item value="false" key="isRegEx"/>
-		<item value="plugin" key="selection"/>
+		<item value="createTeam" key="selection"/>
 		<item value="false" key="casesensitive"/>
 		<item value="false" key="incremental"/>
 		<item value="true" key="wrap"/>
 		<item value="false" key="wholeword"/>
 		<list key="findhistory">
+			<item value="createTeam"/>
 			<item value="plugin"/>
 			<item value="team"/>
 			<item value="class"/>
@@ -22,7 +23,6 @@
 			<item value="deaths"/>
 			<item value="team_members"/>
 			<item value="hasdied"/>
-			<item value="delt"/>
 		</list>
 		<list key="replacehistory">
 			<item value=""/>

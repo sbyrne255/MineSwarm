@@ -39,14 +39,13 @@ public class Mineswarm extends JavaPlugin implements Listener{
 	private boolean preventDouble = true;
 	private Database db = null;
 	private Kits kits = new Kits(this);
-	private MineswarmTeams teams = new MineswarmTeams(this);
+	private MineswarmTeams teams = new MineswarmTeams(this);;
 	//Util & logging
 	@Override
 	public void onEnable(){
 		getLogger().info("Mineswarm is starting...");
 	    getServer().getPluginManager().registerEvents(this, this);
-		getLogger().info("Mineswarm has been enabled");
-		new EventListener(this, teams);		
+		getLogger().info("Mineswarm has been enabled");		
 		new ScheduledMobs(this);
 		new ScheduledChests(this);
 		new ScheduledBackupDB(this);
@@ -57,6 +56,7 @@ public class Mineswarm extends JavaPlugin implements Listener{
 		db.createMobsTable();
 		db.createChestsTable();
 		db.createPlayersTable();		
+
 		
 	}
 	@Override
