@@ -1,47 +1,51 @@
 package me.cutrats110;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.scoreboard.DisplaySlot;
 import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Scoreboard;
-import org.bukkit.scoreboard.ScoreboardManager;
 
 public class TeamBoards {
-
-	public void makeScoreBoard (Player player) {
-		ScoreboardManager manager = Bukkit.getScoreboardManager();
-		Scoreboard board = manager.getNewScoreboard();		
+	public void makeScoreBoard () {
+		Scoreboard board = Bukkit.getScoreboardManager().getNewScoreboard();	
 				
-		Objective teamMembersBoard = board.registerNewObjective("test2", "dummy","public2");		
+		Objective teamMembersBoard = board.registerNewObjective("teamhp", "health","hp");	
 		teamMembersBoard.setDisplaySlot(DisplaySlot.SIDEBAR);
 		teamMembersBoard.setDisplayName("  Team Health  ");
-		teamMembersBoard.getScore(ChatColor.GREEN + "Cutrats110 - HP").setScore(20);
-		teamMembersBoard.getScore(ChatColor.GREEN + "JamesThe_Lion - HP").setScore(20);
-		teamMembersBoard.getScore(ChatColor.GREEN + "AlexMcPimpin - HP").setScore(19);
-		teamMembersBoard.getScore(ChatColor.GREEN + "GradualCheetah - HP").setScore(14);
+
+		for(Player player : teamMembers()) {
+			teamMembersBoard.getScore(ChatColor.GREEN + player.getName()+" - HP").setScore((int) player.getHealth());
+		}
 		
-		
-		Objective teamNameBoard = board.registerNewObjective("teamName", "dummy","public2");		
+		Objective teamNameBoard = board.registerNewObjective("teamName", "dummy","name");		
 		teamNameBoard.setDisplaySlot(DisplaySlot.BELOW_NAME);
-		teamNameBoard.setDisplayName("Bob's Moosaders");
+		teamNameBoard.setDisplayName(getTeamName("Futurama2!"));
+		teamNameBoard.getScore("teamname").setScore(teamSize("Team name"));
 		
-		Objective listBoard = board.registerNewObjective("teamName", "dummy","public2");		
-		listBoard.setDisplaySlot(DisplaySlot.PLAYER_LIST);
-		listBoard.setDisplayName("Bob's Moosaders");
-		
-		for(Player online : Bukkit.getOnlinePlayers()){//Medics only? At least teams only...
-		  online.setScoreboard(board);
+		for(Player player : teamMembers()){//Team members only...
+			player.setScoreboard(board);
 		}
 		
 		
 		//Team class tut: https://bukkit.org/threads/team-systems.411790/
-		//List of prebuild events: https://minecraft.gamepedia.com/Scoreboard#Objectives
-		//Tut walk trhough for scoreboards. https://bukkit.org/threads/tutorial-scoreboards-teams-with-the-bukkit-api.139655/
-		
-		
 
-
+	}
+	private List<Player> teamMembers() {
+		List<Player> players = new ArrayList<Player>();
+		for(Player online : Bukkit.getOnlinePlayers()){//Team members only...
+			  players.add(online);
+		}
+		return players;
+		
+	}
+	private int teamSize(String teamName) {
+		return 5;
+	}
+	private String getTeamName(String playerUUID) {
+		return playerUUID;
 	}
 }

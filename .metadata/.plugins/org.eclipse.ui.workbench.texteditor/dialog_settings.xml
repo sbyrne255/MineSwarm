@@ -2,23 +2,27 @@
 <section name="Workbench">
 	<section name="org.eclipse.ui.texteditor.FindReplaceDialog">
 		<item value="false" key="isRegEx"/>
-		<item value="replace" key="selection"/>
+		<item value="plugin" key="selection"/>
 		<item value="false" key="casesensitive"/>
 		<item value="false" key="incremental"/>
 		<item value="true" key="wrap"/>
 		<item value="false" key="wholeword"/>
 		<list key="findhistory">
-			<item value="s"/>
-			<item value="replace"/>
-			<item value="offhand"/>
-			<item value="plugin.getLogger().info"/>
-			<item value="getEntitiesAroundPoint"/>
-			<item value="world"/>
-			<item value="etypes"/>
-			<item value="ERROR SELECTING:"/>
-			<item value="ERROR SLECTIG: "/>
-			<item value="database connection closed"/>
-			<item value="rand"/>
+			<item value="plugin"/>
+			<item value="team"/>
+			<item value="class"/>
+			<item value="save"/>
+			<item value="mobs_killed"/>
+			<item value="revives"/>
+			<item value="players_saved"/>
+			<item value="NOW"/>
+			<item value="total_damage_taken"/>
+			<item value="start"/>
+			<item value="saved"/>
+			<item value="deaths"/>
+			<item value="team_members"/>
+			<item value="hasdied"/>
+			<item value="delt"/>
 		</list>
 		<list key="replacehistory">
 			<item value=""/>

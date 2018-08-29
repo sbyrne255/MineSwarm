@@ -39,25 +39,24 @@ public class Mineswarm extends JavaPlugin implements Listener{
 	private boolean preventDouble = true;
 	private Database db = null;
 	private Kits kits = new Kits(this);
+	private MineswarmTeams teams = new MineswarmTeams(this);
 	//Util & logging
 	@Override
 	public void onEnable(){
 		getLogger().info("Mineswarm is starting...");
 	    getServer().getPluginManager().registerEvents(this, this);
 		getLogger().info("Mineswarm has been enabled");
-		new EventListener(this);		
+		new EventListener(this, teams);		
 		new ScheduledMobs(this);
 		new ScheduledChests(this);
 		new ScheduledBackupDB(this);
         this.saveDefaultConfig();
         db = new Database(this);
-		
 		db.connect();
 		db.createTable();
 		db.createMobsTable();
 		db.createChestsTable();
-		db.createPlayersTable();
-		
+		db.createPlayersTable();		
 		
 	}
 	@Override
@@ -259,6 +258,73 @@ public class Mineswarm extends JavaPlugin implements Listener{
 			
 			return true;
 		}
+		
+		if (cmd.getName().equalsIgnoreCase("msteam") && sender instanceof Player){
+			switch(args[0]) {
+				case "join": 
+					try {
+						teams.joinTeam(player, args[1]);
+						return true;
+					}catch(IndexOutOfBoundsException ib) {
+						player.sendMessage("Please enter a team name you want to join");
+					}
+					break;
+				case "accept": 
+					try {
+						teams.joinTeamAccept(player, args[1]);
+						return true;
+					}catch(IndexOutOfBoundsException ib) {
+						player.sendMessage("Please enter the player name you want to let join");
+					}
+					break;
+				case "deny": 
+					try {
+						teams.joinTeamDeny(player, args[1]);
+						return true;
+					}catch(IndexOutOfBoundsException ib) {
+						player.sendMessage("Please enter the player name you want to deny joining");
+					}
+					break;
+				case "leave":
+					try {
+						teams.leaveTeam(player);
+						return true;
+					}catch(Exception exc) {
+						player.sendMessage("Error: " + exc.toString());
+					}
+					break;
+				case "create":
+					try {
+						teams.createTeam(args[1], player);
+						return true;
+					}catch(IndexOutOfBoundsException ib) {
+						player.sendMessage("Please enter a team name you want to create");
+					}
+					break;
+				case "kick":
+					try {
+						teams.kickTeamMember(args[1], player);
+						return true;
+					}catch(IndexOutOfBoundsException ib) {
+						player.sendMessage("Please enter the player name you want to kick.");
+					}
+					break;
+				case "save":
+					try {
+						teams.saveTeamData();
+						return true;
+					}catch(Exception exc) {
+						player.sendMessage("Problem saving: " + exc.toString());
+					}
+					break;
+			}
+			//player.sendMessage(bl.toString());
+			
+			
+			return true;
+		}
+		
+		
 		//MCMS Marking Tool
 		if (cmd.getName().equalsIgnoreCase("markingtool") && sender instanceof Player){
 			ItemStack markingTool = new ItemStack( Material.GOLDEN_HOE, 1);

@@ -1,0 +1,47 @@
+package me.cutrats110;
+
+import java.util.Collection;
+
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.entity.Player;
+import org.bukkit.scoreboard.DisplaySlot;
+import org.bukkit.scoreboard.Objective;
+import org.bukkit.scoreboard.Scoreboard;
+import org.bukkit.scoreboard.ScoreboardManager;
+
+public class TeamBoards {
+
+	public void makeScoreBoard (Player player) {
+		ScoreboardManager manager = Bukkit.getScoreboardManager();
+		Scoreboard board = manager.getNewScoreboard();		
+				
+		Objective teamMembersBoard = board.registerNewObjective("teamhp", "health","hp");		
+		teamMembersBoard.setDisplaySlot(DisplaySlot.SIDEBAR);
+		teamMembersBoard.setDisplayName("  Team Health  ");
+		teamMembersBoard.getScore(ChatColor.GREEN + "Cutrats110 - HP").setScore(20);
+		teamMembersBoard.getScore(ChatColor.GREEN + "JamesThe_Lion - HP").setScore(20);
+		teamMembersBoard.getScore(ChatColor.GREEN + "AlexMcPimpin - HP").setScore(19);
+		teamMembersBoard.getScore(ChatColor.GREEN + "GradualCheetah - HP").setScore(14);
+		
+		
+		Objective teamNameBoard = board.registerNewObjective("teamName", "dummy","public2");		
+		teamNameBoard.setDisplaySlot(DisplaySlot.BELOW_NAME);
+		teamNameBoard.setDisplayName("Bob's Moosaders");
+		teamNameBoard.getScore("teamname").setScore(1);//Set to team size.
+		
+		for(Player online : Bukkit.getOnlinePlayers()){//Team members only...
+		  online.setScoreboard(board);
+		}
+		
+		
+		//Team class tut: https://bukkit.org/threads/team-systems.411790/
+		//List of prebuild events: https://minecraft.gamepedia.com/Scoreboard#Objectives
+		//Tut walk trhough for scoreboards. https://bukkit.org/threads/tutorial-scoreboards-teams-with-the-bukkit-api.139655/
+
+	}
+	private Collection<Player> teamMembers() {
+		return Bukkit.getOnlinePlayers();
+		
+	}
+}

@@ -39,12 +39,14 @@ public class EventListener implements Listener {
 	public Database db = null;
 	private boolean debugging = true;
 	private TeamBoards board = new TeamBoards();
+	private MineswarmTeams teams = null;
 	
-	public EventListener(Plugin instance) {
+	public EventListener(Plugin instance, MineswarmTeams teams) {
 		plugin = instance;
 		Bukkit.getServer().getPluginManager().registerEvents(this, plugin);
 		debugging = plugin.getConfig().getBoolean("debugging");
 		this.db = new Database(plugin);
+		this.teams = teams;
 	}
     
 	@EventHandler
@@ -55,13 +57,15 @@ public class EventListener implements Listener {
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event)
     {
+    	teams.addUUID(event.getPlayer());
+    	
         Player player = event.getPlayer();
         if(db.setPlayerData(player) == false) {
         	//Player did not exist, create them...
         	db.newPlayer(player);
         }    
         
-        board.makeScoreBoard(player);
+        board.makeScoreBoard();
     }
        
     
