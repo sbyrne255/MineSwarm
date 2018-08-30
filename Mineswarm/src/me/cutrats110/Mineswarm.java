@@ -39,7 +39,7 @@ public class Mineswarm extends JavaPlugin implements Listener{
 	private boolean preventDouble = true;
 	private Database db = null;
 	private Kits kits = new Kits(this);
-	private MineswarmTeams teams = new MineswarmTeams(this);;
+	private MineswarmTeams teams = new MineswarmTeams(this);
 	//Util & logging
 	@Override
 	public void onEnable(){
@@ -49,16 +49,14 @@ public class Mineswarm extends JavaPlugin implements Listener{
 		new EventListener(this, teams);		
 		new ScheduledMobs(this);
 		new ScheduledChests(this);
-		new ScheduledBackupDB(this);
+		new ScheduledBackupDB(this, teams);
         this.saveDefaultConfig();
         db = new Database(this);
 		db.connect();
 		db.createTable();
 		db.createMobsTable();
 		db.createChestsTable();
-		db.createPlayersTable();		
-
-		
+		db.createPlayersTable();			
 	}
 	@Override
 	public void onDisable(){
@@ -262,6 +260,15 @@ public class Mineswarm extends JavaPlugin implements Listener{
 		
 		if (cmd.getName().equalsIgnoreCase("msteam") && sender instanceof Player){
 			switch(args[0]) {
+				case "tpr":
+					teams.addTPAQue(player);
+					break;
+				case "tpp":
+					teams.addTPAQue(player, args[1]);
+					break;
+				case "no":
+					teams.tpQueue.get(player.getUniqueId()).cancel();
+					break;
 				case "join": 
 					try {
 						teams.joinTeam(player, args[1]);
@@ -270,7 +277,7 @@ public class Mineswarm extends JavaPlugin implements Listener{
 						player.sendMessage("Please enter a team name you want to join");
 					}
 					break;
-				case "accept": 
+				case "add": 
 					try {
 						teams.joinTeamAccept(player, args[1]);
 						return true;

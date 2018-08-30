@@ -2,29 +2,31 @@
 
 #Set true for debugging messages and 100% drop of keys and random items.
 debugging: false
+max-team-size: 6
 #mob or player sets where items are dropped after killing a mob
 items-drop-to: player
 #mob or player sets where keys are dropped after killing a mob
 keys-drop-to: player
 default-pvp-on: false
+leaving-team-takes-to-spawn: true
+creating-team-takes-to-spawn: false
 #mobs that drop items
 item-dropping-mobs:
   - SKELETON
   - ZOMBIE
   - PIG
-  - SPIDER
-  - CAVE_SPIDER
-  - BLAZE
 #Mobs that drop keys, 1 in X probability key will drop.
 key-dropping-mobs:
   - ZOMBIE
   - 10
   - SKELETON
+  - 16
+  - ENDERMITE
   - 10
   - SPIDER
-  - 7
-  - BLAZE
-  - 20
+  - 12
+  - CAVE_SPIDER
+  - 13
 #items the above mobs will drop,
 #Item name, 1/X chance of a drop (1 to 100%), quantity of items dropped
 mob-drops:
@@ -33,9 +35,6 @@ mob-drops:
   - 4
   - APPLE
   - 20
-  - 1
-  - GOLDEN_APPLE
-  - 30
   - 1
 #Boss mobs boosts: Mob, HP Regen per hit, Damage addition, Thornmail (returns damage to sender) [1 = .5 hearts]
 boss-mobs:
@@ -132,7 +131,7 @@ guide-title: Mineswarm Guide
 guide-author: Cutrats110
 guide-pages:
   - This is page one
-  - This is on page two...
+  - This is on page two...t
 #Class items, one per line
 solo-class:
   - BOOK,1
@@ -142,9 +141,9 @@ solo-class:
   - SPECTRAL_ARROW,10
 tank-class:
   - IRON_HELMET,1
-  - IRON_CHESTPLATE,1
+  - DIAMOND_CHESTPLATE,1
+  - IRON_LEGGINGS,1
   - IRON_BOOTS,1
-  - CHAINMAIL_LEGGINGS,1
   - SHIELD,1
   - STONE_AXE,1,UNBREAKING,3
   - GOLDEN_APPLE,3

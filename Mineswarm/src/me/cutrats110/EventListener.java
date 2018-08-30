@@ -24,6 +24,7 @@ import org.bukkit.event.inventory.InventoryType;
 //import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryView;
@@ -51,8 +52,23 @@ public class EventListener implements Listener {
     
 	@EventHandler
 	public void onPlayerQuit(PlayerQuitEvent event) {
-		db.updatePlayerData(event.getPlayer());
-        
+		//Cancel any pending TPs
+		if(teams.tpQueue.containsKey(event.getPlayer().getUniqueId())) {
+			teams.tpQueue.get(event.getPlayer().getUniqueId()).cancel();
+			teams.tpQueue.remove(event.getPlayer().getUniqueId());
+		}
+		
+		//Got an unhandled error in console before, didn't look at what.
+		
+		//Remove from owner position..
+		if(teams.getTeamOwner(event.getPlayer().getName()).equals(event.getPlayer())) {
+			//Player is owner of team...
+			
+			//Remove from owner,
+			//Re-add team membership
+		}
+		
+		db.updatePlayerData(event.getPlayer());        
     }
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event)
@@ -68,10 +84,25 @@ public class EventListener implements Listener {
         board.makeScoreBoard();
     }
        
-    
+    @EventHandler
+    public void onMove(PlayerMoveEvent e) {
+        if (e.getTo().getBlockX() == e.getFrom().getBlockX() && e.getTo().getBlockY() == e.getFrom().getBlockY() && e.getTo().getBlockZ() == e.getFrom().getBlockZ()) return; //The player hasn't moved
+        if (teams.tpQueue.containsKey(e.getPlayer().getUniqueId())) {
+        	teams.tpQueue.get(e.getPlayer().getUniqueId()).cancel();
+        	teams.tpQueue.remove(e.getPlayer().getUniqueId());
+            e.getPlayer().sendMessage("TP has been cancelled due to movement");
+            return;
+        }
+    }
     @EventHandler
     public void onPlayerDeath(PlayerDeathEvent event)
     {
+    	if (teams.tpQueue.containsKey(event.getEntity().getPlayer().getUniqueId())) {
+        	teams.tpQueue.get(event.getEntity().getPlayer().getUniqueId()).cancel();
+        	teams.tpQueue.remove(event.getEntity().getPlayer().getUniqueId());
+            return;
+        }
+    	
     	event.getDrops().clear();
     	
         Player player = event.getEntity();
@@ -189,74 +220,79 @@ public class EventListener implements Listener {
 
     
     public Inventory getClickedInventory(InventoryView view, int slot) {
-        Inventory clickedInventory;
-        if (slot < 0) {
-            clickedInventory = null;
-        } else if (view.getTopInventory() != null && slot < view.getTopInventory().getSize()) {
-            clickedInventory = view.getTopInventory();
-        } else {
-            clickedInventory = view.getBottomInventory();
-        }
-        return clickedInventory;
+    	try {
+	        Inventory clickedInventory;
+	        if (slot < 0) {
+	            clickedInventory = null;
+	        } else if (view.getTopInventory() != null && slot < view.getTopInventory().getSize()) {
+	            clickedInventory = view.getTopInventory();
+	        } else {
+	            clickedInventory = view.getBottomInventory();
+	        }
+	        return clickedInventory;
+    	}catch(Exception nope) {}
+    	return null;
     }	 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onPlayerDrag(InventoryDragEvent event) { 
     	event.setCancelled(true);
     }
     @EventHandler(priority = EventPriority.HIGHEST)
-    public void onPlayerClick(InventoryClickEvent event) {     
-    	//Got some null pointers here...
-    	if(!event.getWhoClicked().getGameMode().equals(GameMode.CREATIVE)){
-	    	if(getClickedInventory(event.getView(), event.getRawSlot()).getType().equals(InventoryType.CHEST)){  //Top peice...
-	    		//plugin.getLogger().info(getClickedInventory(event.getView(), event.getRawSlot()).getType().toString());
-	    		if(!event.isShiftClick()){
-	    			if(event.isLeftClick()){
-	    				event.setCancelled(true);
-	    				return;
-	    			}
-	    			if(event.isRightClick()){
-	    				event.setCancelled(true);
-	    				return;
-	    			}
-	    		}    		
-	        }//https://hub.spigotmc.org/javadocs/spigot/org/bukkit/event/inventory/InventoryInteractEvent.html
-	    	else{
-	    		//plugin.getLogger().info(getClickedInventory(event.getView(), event.getRawSlot()).getType().toString());
-	    		if(event.isShiftClick()){//AND CURRENT ITEM IS NOT IN LIST...
-	    			event.setCancelled(true);
-					return;
-	    		}
-	    		if(event.isLeftClick() && event.isShiftClick()){//AND CURRENT ITEM IS NOT IN LIST...
-	    			event.setCancelled(true);
-					return;
-	    		}
-	    		if(event.isRightClick() && event.isShiftClick()){//AND CURRENT ITEM IS NOT IN LIST...
-	    			event.setCancelled(true);
-					return;
+    public void onPlayerClick(InventoryClickEvent event) {   
+    	try {
+	    	//Got some null pointers here...
+	    	if(!event.getWhoClicked().getGameMode().equals(GameMode.CREATIVE)){
+		    	if(getClickedInventory(event.getView(), event.getRawSlot()).getType().equals(InventoryType.CHEST)){  //Top peice...
+		    		//plugin.getLogger().info(getClickedInventory(event.getView(), event.getRawSlot()).getType().toString());
+		    		if(!event.isShiftClick()){
+		    			if(event.isLeftClick()){
+		    				event.setCancelled(true);
+		    				return;
+		    			}
+		    			if(event.isRightClick()){
+		    				event.setCancelled(true);
+		    				return;
+		    			}
+		    		}    		
+		        }//https://hub.spigotmc.org/javadocs/spigot/org/bukkit/event/inventory/InventoryInteractEvent.html
+		    	else{
+		    		//plugin.getLogger().info(getClickedInventory(event.getView(), event.getRawSlot()).getType().toString());
+		    		if(event.isShiftClick()){//AND CURRENT ITEM IS NOT IN LIST...
+		    			event.setCancelled(true);
+						return;
+		    		}
+		    		if(event.isLeftClick() && event.isShiftClick()){//AND CURRENT ITEM IS NOT IN LIST...
+		    			event.setCancelled(true);
+						return;
+		    		}
+		    		if(event.isRightClick() && event.isShiftClick()){//AND CURRENT ITEM IS NOT IN LIST...
+		    			event.setCancelled(true);
+						return;
+		    		}
+		    	}
+	    	}
+	    	
+	    	try{
+		    	if(event.getClick().isRightClick()){
+		    		if(event.getAction().equals(InventoryAction.DROP_ONE_CURSOR) || event.getAction().equals(InventoryAction.DROP_ALL_CURSOR) ){
+		    			event.getWhoClicked().getInventory().remove(event.getCurrentItem());
+		    			//IF Item in acceptable drop list...
+		    			if(plugin.getConfig().getBoolean("debugging")){plugin.getLogger().info(event.getCurrentItem().getType().toString().replace(" ", "_").toUpperCase());}
+		    			if(plugin.getConfig().getStringList("dropping-whitelist").contains(event.getCurrentItem().getType().toString().replace(" ", "_").toUpperCase())){
+		    				event.setCancelled(false);
+		    				return;
+		    			}
+		    			else{
+		    				event.setCancelled(true);
+		    			}
+		    		}
+		    	}    
+	    	}catch(Exception err){
+	    		if(plugin.getConfig().getBoolean("debugging")){
+	    			plugin.getLogger().info("Minor bump in inventory watching (RC) " + err.toString());
 	    		}
 	    	}
-    	}
-    	
-    	try{
-	    	if(event.getClick().isRightClick()){
-	    		if(event.getAction().equals(InventoryAction.DROP_ONE_CURSOR) || event.getAction().equals(InventoryAction.DROP_ALL_CURSOR) ){
-	    			event.getWhoClicked().getInventory().remove(event.getCurrentItem());
-	    			//IF Item in acceptable drop list...
-	    			if(plugin.getConfig().getBoolean("debugging")){plugin.getLogger().info(event.getCurrentItem().getType().toString().replace(" ", "_").toUpperCase());}
-	    			if(plugin.getConfig().getStringList("dropping-whitelist").contains(event.getCurrentItem().getType().toString().replace(" ", "_").toUpperCase())){
-	    				event.setCancelled(false);
-	    				return;
-	    			}
-	    			else{
-	    				event.setCancelled(true);
-	    			}
-	    		}
-	    	}    
-    	}catch(Exception err){
-    		if(plugin.getConfig().getBoolean("debugging")){
-    			plugin.getLogger().info("Minor bump in inventory watching (RC) " + err.toString());
-    		}
-    	}
+    	}catch(Exception nope) {}
     }
 	@EventHandler(priority = EventPriority.HIGHEST)
     public void onPlayerDrop(PlayerDropItemEvent event) {
@@ -271,7 +307,6 @@ public class EventListener implements Listener {
 		} 
     }
 	
-	
 	@EventHandler(priority = EventPriority.HIGH)
 	public void onPlayerDamage(EntityDamageByEntityEvent e) {
 		try {
@@ -283,7 +318,7 @@ public class EventListener implements Listener {
 			try {damageTaker = e.getEntity();}
 			catch(Exception er) {plugin.getLogger().info("Damage taker is casuing an error");}
 
-			if (damageTaker instanceof Player) { 
+			if (damageTaker instanceof Player) {
 				Player taker = (Player) damageTaker;
 			    if (damager instanceof Player) 
 			    { 

@@ -16,14 +16,24 @@ public class ScheduledBackupDB implements Listener {
 	public Database db = null;
 	private String destDir = System.getProperty("user.dir") +"/plugins/Mineswarm/backups/";
 	private String sourceDir = System.getProperty("user.dir") +"/plugins/Mineswarm/";
+	public MineswarmTeams teams = null;
 	
-	public ScheduledBackupDB(Plugin instance) {
+	public ScheduledBackupDB(Plugin instance, MineswarmTeams teams) {
 		plugin = instance;
 		Bukkit.getServer().getPluginManager().registerEvents(this, plugin);
 		this.db = new Database(plugin);
+		this.teams = teams;
 		backup();
-		backupPlayerData();
-		
+		backupPlayerData();	
+		teams.saveTeamData();
+	}
+	public void backupTeamData(){
+		Bukkit.getScheduler().scheduleSyncRepeatingTask(plugin, new Runnable() {
+		    public void run() {
+		    	plugin.getLogger().info("Scheduled Team Data being serialized...");
+		    	teams.saveTeamData();
+		    }
+		}, (2), (((20*1)*60)*5));//runs every 5 minutes
 	}
 	public void backupPlayerData(){
 		Bukkit.getScheduler().scheduleSyncRepeatingTask(plugin, new Runnable() {

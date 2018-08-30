@@ -1,10 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <qualifiedTypeNameHistroy>
-<fullyQualifiedTypeName name="org.bukkit.configuration.file.YamlConfiguration"/>
-<fullyQualifiedTypeName name="org.bukkit.event.player.PlayerDropItemEvent"/>
-<fullyQualifiedTypeName name="org.bukkit.event.inventory.InventoryClickEvent"/>
-<fullyQualifiedTypeName name="org.bukkit.event.inventory.InventoryAction"/>
-<fullyQualifiedTypeName name="java.sql.Connection"/>
 <fullyQualifiedTypeName name="org.bukkit.entity.EntityType"/>
 <fullyQualifiedTypeName name="org.bukkit.craftbukkit.v1_13_R1.entity.CraftLivingEntity"/>
 <fullyQualifiedTypeName name="org.bukkit.craftbukkit.v1_13_R1.inventory.CraftItemStack"/>
@@ -20,7 +15,6 @@
 <fullyQualifiedTypeName name="org.bukkit.inventory.Inventory"/>
 <fullyQualifiedTypeName name="org.bukkit.block.Chest"/>
 <fullyQualifiedTypeName name="org.bukkit.block.Block"/>
-<fullyQualifiedTypeName name="org.bukkit.Location"/>
 <fullyQualifiedTypeName name="java.sql.ResultSet"/>
 <fullyQualifiedTypeName name="java.sql.Statement"/>
 <fullyQualifiedTypeName name="java.sql.Timestamp"/>
@@ -56,8 +50,14 @@
 <fullyQualifiedTypeName name="java.io.FileOutputStream"/>
 <fullyQualifiedTypeName name="java.io.ObjectOutputStream"/>
 <fullyQualifiedTypeName name="java.io.IOException"/>
-<fullyQualifiedTypeName name="org.bukkit.Bukkit"/>
 <fullyQualifiedTypeName name="java.io.FileInputStream"/>
 <fullyQualifiedTypeName name="java.io.ObjectInputStream"/>
 <fullyQualifiedTypeName name="java.io.Serializable"/>
+<fullyQualifiedTypeName name="java.util.Map"/>
+<fullyQualifiedTypeName name="org.bukkit.scheduler.BukkitTask"/>
+<fullyQualifiedTypeName name="org.bukkit.Bukkit"/>
+<fullyQualifiedTypeName name="org.bukkit.Location"/>
+<fullyQualifiedTypeName name="java.util.concurrent.Callable"/>
+<fullyQualifiedTypeName name="org.bukkit.scheduler.BukkitRunnable"/>
+<fullyQualifiedTypeName name="org.bukkit.event.player.PlayerMoveEvent"/>
 </qualifiedTypeNameHistroy>

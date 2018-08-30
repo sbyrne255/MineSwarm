@@ -24,14 +24,15 @@
 		*On Join, load MetaData
 		*On Leave, save MetaData
 	TEAMS
-		teams can join randomly as long as they are at start, from there they can TPA to any player on the team or randomly select a player to TPA to.
+		*teams can join randomly as long as they are at start, from there they can TPA to any player on the team or randomly select a player to TPA to.
 		New teams start at spawn
-		Leaving a team brings you to spawn
-		Creating a team sends everyone back to start
-		Teams are limited to 6ish people
+		*Leaving a team brings you to spawn
+		*Creating a team sends everyone back to start
+		*Teams are limited to 6ish people
 		Teams have team name above head like so: https://bukkit.org/threads/tutorial-scoreboards-teams-with-the-bukkit-api.139655/
+		//On team leave/join GET list of team mates, send as param to update scoreboard.
 		On downed team-mate message all team members...
-		Team owner accepts requests to join, on leave or AFK team owner transfers
+		*Team owner accepts requests to join, on leave or AFK team owner transfers
 			Create Team [Name]
 			Join Team [Name]
 			Delete Team [Name] //if owner
