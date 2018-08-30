@@ -158,12 +158,27 @@ public class MineswarmTeams {
 	public Player getTeamOwner(String team) {
 		return Bukkit.getPlayer(teams.get(team).get(0));
 	}
+	/**
+	 * Returns if Player (player) is part of team (TeamName).
+	 *
+	 * @param Player player you want to check if is in a team
+	 * @param String teamName the team to check if player is part of
+	 * @return      Returns true if player is a part of the team, otherwise false.
+	 * @see         isTeamMember
+	 */
 	public boolean isTeamMember(Player player, String teamName) {
 		if(teams.get(teamName).contains(player.getUniqueId())) {
 			return true;
 		}
 		return false;
 	}
+	/**
+	 * Gets list of Player in a team.
+	 *
+	 * @param String teamName the team to return members of
+	 * @return      Returns List Object of Players (object) of team members for given team name.
+	 * @see         getTeamMembers
+	 */
 	public List<Player> getTeamMembers(String teamName){
 		List<Player> members = new ArrayList<>();
 		for(UUID playerID : teams.get(teamName) ) {
@@ -171,7 +186,6 @@ public class MineswarmTeams {
 		}
 		return members;
 	}
-	
 	/**
 	 * Creates a team instance with a specified owner; if player owner is null that means server is owner and team is random/public team
 	 *
@@ -229,7 +243,6 @@ public class MineswarmTeams {
 		}
 		return false;
 	}
-	
 	public boolean setNewTeamOwner(String teamName) {
 		List<UUID> members = teams.get(teamName);
 		if(members.size() <= 1) {

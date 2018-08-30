@@ -45,7 +45,8 @@ public class Mineswarm extends JavaPlugin implements Listener{
 	public void onEnable(){
 		getLogger().info("Mineswarm is starting...");
 	    getServer().getPluginManager().registerEvents(this, this);
-		getLogger().info("Mineswarm has been enabled");		
+		getLogger().info("Mineswarm has been enabled");	
+		new EventListener(this, teams);		
 		new ScheduledMobs(this);
 		new ScheduledChests(this);
 		new ScheduledBackupDB(this);
