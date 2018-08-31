@@ -724,7 +724,9 @@ public class Database {
                     }                    
                     player.setMetadata("hasdied",new FixedMetadataValue(plugin, rs.getBoolean("has_died")));
                 	player.setMetadata("isdown",new FixedMetadataValue(plugin, rs.getBoolean("isdown")));
-                    player.setMetadata("team_members",new FixedMetadataValue(plugin, rs.getString("team_members")));
+                	if(rs.getString("team_members") != null && rs.getString("team_members") !=  "") {
+                		player.setMetadata("team_members",new FixedMetadataValue(plugin, rs.getString("team_members")));
+                	}
                     player.setMetadata("team_size",new FixedMetadataValue(plugin, rs.getInt("team_size")));
                     player.setMetadata("deaths",new FixedMetadataValue(plugin, rs.getInt("deaths")));
                     player.setMetadata("players_saved",new FixedMetadataValue(plugin, rs.getInt("players_saved")));
@@ -758,8 +760,8 @@ public class Database {
         	pstmt.setBoolean(5, false);
         	pstmt.setBoolean(6, false);
         	pstmt.setString(7, timeStamp);
-        	pstmt.setString(8, player.getName());
-        	pstmt.setInt(9, 1);
+        	try {pstmt.setString(8, player.getMetadata("team_members").get(0).asString());}catch(Exception err) {pstmt.setString(8,null);}
+        	try {pstmt.setInt(9, player.getMetadata("team_size").get(0).asInt());}catch(Exception err) {pstmt.setInt(9,1);}
         	pstmt.setInt(10, 0);
         	pstmt.setInt(11, 0);
         	pstmt.setInt(12, 0);
@@ -793,19 +795,19 @@ public class Database {
         }catch(Exception er){plugin.getLogger().info("Conn check failed. " + er.toString());}
         try {
         	PreparedStatement pstmt = playerConn.prepareStatement(sql);//13 fields...
-        	try { pstmt.setInt(1, player.getMetadata("total_damage_taken").get(0).asInt()); } catch(IndexOutOfBoundsException iob) {pstmt.setInt(1, 0);}
-        	try { pstmt.setInt(2, player.getMetadata("total_damage_delt").get(0).asInt()); } catch(IndexOutOfBoundsException iob) {pstmt.setInt(2, 0);}
+        	try { pstmt.setInt(1, player.getMetadata("total_damage_taken").get(0).asInt()); } catch(Exception iob) {pstmt.setInt(1, 0);}
+        	try { pstmt.setInt(2, player.getMetadata("total_damage_delt").get(0).asInt()); } catch(Exception iob) {pstmt.setInt(2, 0);}
         	try { pstmt.setString(3, player.getMetadata("class").get(0).asString()); } catch(Exception iob) {pstmt.setString(3, "");}
-        	try { pstmt.setBoolean(4, player.getMetadata("hasdied").get(0).asBoolean()); } catch(IndexOutOfBoundsException iob) {pstmt.setBoolean(4, false);}
-        	try { pstmt.setBoolean(5, player.getMetadata("isdown").get(0).asBoolean()); } catch(IndexOutOfBoundsException iob) {pstmt.setBoolean(5, false);}
-        	try { pstmt.setString(6, player.getMetadata("team_members").get(0).asString()); } catch(IndexOutOfBoundsException iob) {pstmt.setString(6, "NOT IMPLEMENTED YET");}
-        	try { pstmt.setInt(7, player.getMetadata("team_size").get(0).asInt()); } catch(IndexOutOfBoundsException iob) {pstmt.setInt(7, 1);}
-        	try { pstmt.setInt(8, player.getMetadata("deaths").get(0).asInt()); } catch(IndexOutOfBoundsException iob) {pstmt.setInt(8, 0);}
-        	try { pstmt.setInt(9, player.getMetadata("players_saved").get(0).asInt()); } catch(IndexOutOfBoundsException iob) {pstmt.setInt(9, 0);}
-        	try { pstmt.setInt(10, player.getMetadata("downs").get(0).asInt()); } catch(IndexOutOfBoundsException iob) {pstmt.setInt(10, 0);}
-        	try { pstmt.setInt(11, player.getMetadata("revived").get(0).asInt()); } catch(IndexOutOfBoundsException iob) {pstmt.setInt(11, 0);}
-        	try { pstmt.setString(12, player.getMetadata("start_time").get(0).asString()); } catch(IndexOutOfBoundsException iob) {pstmt.setString(12, "NOT IMPLEMENTED YET");}
-        	try { pstmt.setString(13, player.getMetadata("mobs_killed").get(0).asString()); } catch(IndexOutOfBoundsException iob) {pstmt.setString(12, "");}
+        	try { pstmt.setBoolean(4, player.getMetadata("hasdied").get(0).asBoolean()); } catch(Exception iob) {pstmt.setBoolean(4, false);}
+        	try { pstmt.setBoolean(5, player.getMetadata("isdown").get(0).asBoolean()); } catch(Exception iob) {pstmt.setBoolean(5, false);}
+        	try { pstmt.setString(6, player.getMetadata("team_members").get(0).asString()); } catch(Exception iob) {pstmt.setString(6, "");}
+        	try { pstmt.setInt(7, player.getMetadata("team_size").get(0).asInt()); } catch(Exception iob) {pstmt.setInt(7, 1);}
+        	try { pstmt.setInt(8, player.getMetadata("deaths").get(0).asInt()); } catch(Exception iob) {pstmt.setInt(8, 0);}
+        	try { pstmt.setInt(9, player.getMetadata("players_saved").get(0).asInt()); } catch(Exception iob) {pstmt.setInt(9, 0);}
+        	try { pstmt.setInt(10, player.getMetadata("downs").get(0).asInt()); } catch(Exception iob) {pstmt.setInt(10, 0);}
+        	try { pstmt.setInt(11, player.getMetadata("revived").get(0).asInt()); } catch(Exception iob) {pstmt.setInt(11, 0);}
+        	try { pstmt.setString(12, player.getMetadata("start_time").get(0).asString()); } catch(Exception iob) {pstmt.setString(12, "NOT IMPLEMENTED YET");}
+        	try { pstmt.setString(13, player.getMetadata("mobs_killed").get(0).asString()); } catch(Exception iob) {pstmt.setString(13, "");}
         	pstmt.setString(14, player.getName());
         	
             pstmt.executeUpdate();          

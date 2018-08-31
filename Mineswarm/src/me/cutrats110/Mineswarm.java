@@ -60,6 +60,7 @@ public class Mineswarm extends JavaPlugin implements Listener{
 	}
 	@Override
 	public void onDisable(){
+		teams.saveTeamData();
 		getLogger().info("Mineswarm has been disabled");
 	}
 	//Player interaction and events.
@@ -277,6 +278,9 @@ public class Mineswarm extends JavaPlugin implements Listener{
 						player.sendMessage("Please enter a team name you want to join");
 					}
 					break;
+				case "joinr": 
+					teams.joinRandom(player);
+					return true;
 				case "add": 
 					try {
 						teams.joinTeamAccept(player, args[1]);

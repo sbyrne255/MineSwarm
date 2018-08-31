@@ -2,12 +2,20 @@
 <section name="Workbench">
 	<section name="org.eclipse.ui.texteditor.FindReplaceDialog">
 		<item value="false" key="isRegEx"/>
-		<item value="createTeam" key="selection"/>
+		<item value="" key="selection"/>
 		<item value="false" key="casesensitive"/>
 		<item value="false" key="incremental"/>
 		<item value="true" key="wrap"/>
 		<item value="false" key="wholeword"/>
 		<list key="findhistory">
+			<item value="plugin.getLogger().info(&quot;team_members NOT SET&quot;);"/>
+			<item value="update"/>
+			<item value="team_members"/>
+			<item value="takes-to-spawn"/>
+			<item value="plugin.getConfig()"/>
+			<item value="size"/>
+			<item value="Random"/>
+			<item value="player.getMetadata(&quot;team"/>
 			<item value="createTeam"/>
 			<item value="plugin"/>
 			<item value="team"/>
@@ -15,16 +23,9 @@
 			<item value="save"/>
 			<item value="mobs_killed"/>
 			<item value="revives"/>
-			<item value="players_saved"/>
-			<item value="NOW"/>
-			<item value="total_damage_taken"/>
-			<item value="start"/>
-			<item value="saved"/>
-			<item value="deaths"/>
-			<item value="team_members"/>
-			<item value="hasdied"/>
 		</list>
 		<list key="replacehistory">
+			<item value="if(debugging){plugin.getLogger().info(&quot;team_members NOT SET&quot;);}"/>
 			<item value=""/>
 			<item value="plugin.getConfig"/>
 			<item value="plugin.getLogger"/>

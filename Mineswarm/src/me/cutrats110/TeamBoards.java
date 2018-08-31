@@ -1,51 +1,83 @@
 package me.cutrats110;
 
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.scoreboard.DisplaySlot;
 import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Scoreboard;
 
 public class TeamBoards {
-	public void makeScoreBoard () {
-		Scoreboard board = Bukkit.getScoreboardManager().getNewScoreboard();	
-				
-		Objective teamMembersBoard = board.registerNewObjective("teamhp", "health","hp");	
-		teamMembersBoard.setDisplaySlot(DisplaySlot.SIDEBAR);
-		teamMembersBoard.setDisplayName("  Team Health  ");
-
-		for(Player player : teamMembers()) {
-			teamMembersBoard.getScore(ChatColor.GREEN + player.getName()+" - HP").setScore((int) player.getHealth());
-		}
-		
-		Objective teamNameBoard = board.registerNewObjective("teamName", "dummy","name");		
-		teamNameBoard.setDisplaySlot(DisplaySlot.BELOW_NAME);
-		teamNameBoard.setDisplayName(getTeamName("Futurama2!"));
-		teamNameBoard.getScore("teamname").setScore(teamSize("Team name"));
-		
-		for(Player player : teamMembers()){//Team members only...
-			player.setScoreboard(board);
-		}
-		
-		
-		//Team class tut: https://bukkit.org/threads/team-systems.411790/
-
+	public Plugin plugin = null;
+	public TeamBoards(Plugin plugin){
+		this.plugin = plugin;
 	}
-	private List<Player> teamMembers() {
-		List<Player> players = new ArrayList<Player>();
-		for(Player online : Bukkit.getOnlinePlayers()){//Team members only...
-			  players.add(online);
+	private HashMap<String, Scoreboard> boards = new HashMap<>();
+	
+	//Make scoreboard should be called when team is created...
+	public void makeScoreBoard (String teamName) {
+		try {
+			Scoreboard board = Bukkit.getScoreboardManager().getNewScoreboard();	
+			
+			
+			Objective teamMembersBoard = board.registerNewObjective("teamhp", "dummy","hp");	
+			teamMembersBoard.setDisplaySlot(DisplaySlot.SIDEBAR);
+			teamMembersBoard.setDisplayName("  Team Health  ");		
+			
+			boards.put(teamName, board);
+		}catch(NullPointerException np) {
+			plugin.getLogger().info("Erroor in makeBoard " + np.getStackTrace());
+			np.printStackTrace();
 		}
-		return players;
+	}
+	
+	//Some bug with random team creations...
+	public void setScoreboard(List<Player> players, String teamName) {
+		try {
+			Scoreboard teamBoard = boards.get(teamName);
+			Objective teamMembersBoard = teamBoard.getObjective("teamhp");
+			if(players != null) {
+				for(Player p : players){//Team members only...
+					try {
+						if(p.isOnline()) {
+							if( (int)p.getHealth() >= 20) {
+								teamMembersBoard.getScore(p.getName()).setScore((int) (p.getHealth()));
+							}else {
+								teamMembersBoard.getScore(p.getName()).setScore((int) (p.getHealth()+1));
+							}
+						}
+					}catch(NullPointerException np) {continue;}
+				}
+				for(Player p : players){//Team members only...
+					p.setScoreboard(teamBoard);
+				}
+			}
+		}catch(Exception er) {
+			plugin.getLogger().info("Error setting scoreboard ");
+			er.printStackTrace();
+		}
+	}
+	public void setScoreboard(List<Player> players, String teamName, Player updatedPlayer, int health) {
 		
-	}
-	private int teamSize(String teamName) {
-		return 5;
-	}
-	private String getTeamName(String playerUUID) {
-		return playerUUID;
+		Scoreboard teamBoard = boards.get(teamName);
+		Objective teamMembersBoard = teamBoard.getObjective("teamhp");
+		
+		for(Player p : players){//Team members only...
+			try {
+				if(p.isOnline()) {
+					if(p != updatedPlayer) {
+						teamMembersBoard.getScore(p.getName()).setScore((int) p.getHealth());
+					}else {
+						teamMembersBoard.getScore(updatedPlayer.getName()).setScore(health);
+					}
+				}
+			}catch(NullPointerException np) {continue;}
+		}
+		for(Player p : players){//Team members only...
+			p.setScoreboard(teamBoard);
+		}
 	}
 }

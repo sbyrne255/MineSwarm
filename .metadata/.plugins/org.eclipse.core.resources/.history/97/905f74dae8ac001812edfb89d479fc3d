@@ -1,0 +1,590 @@
+package me.cutrats110;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+
+import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
+import org.bukkit.Material;
+import org.bukkit.attribute.Attribute;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
+import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.event.entity.EntityRegainHealthEvent;
+import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.inventory.InventoryAction;
+import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryDragEvent;
+import org.bukkit.event.inventory.InventoryType;
+//import org.bukkit.event.inventory.InventoryType;
+import org.bukkit.event.player.PlayerDropItemEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.player.PlayerRespawnEvent;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.InventoryView;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.metadata.FixedMetadataValue;
+import org.bukkit.plugin.Plugin;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
+
+public class EventListener implements Listener {
+	public Plugin plugin;
+	public Database db = null;
+	private boolean debugging = true;
+	private TeamBoards board = new TeamBoards(plugin);
+	private MineswarmTeams teams = null;
+	
+	public EventListener(Plugin instance, MineswarmTeams teams) {
+		plugin = instance;
+		Bukkit.getServer().getPluginManager().registerEvents(this, plugin);
+		debugging = plugin.getConfig().getBoolean("debugging");
+		this.db = new Database(plugin);
+		this.teams = teams;
+	}
+    
+	@EventHandler
+	public void onPlayerQuit(PlayerQuitEvent event) {
+		//Cancel any pending TPs
+		try {
+			if(teams.tpQueue.containsKey(event.getPlayer().getUniqueId())) {
+				teams.tpQueue.get(event.getPlayer().getUniqueId()).cancel();
+				teams.tpQueue.remove(event.getPlayer().getUniqueId());
+			}				
+			//Remove from owner position..
+			if(teams.getTeamOwner(event.getPlayer().getName()).equals(event.getPlayer())) {
+				//Player is owner of team...
+				
+				//Remove from owner,
+				//Re-add team membership
+			}
+		}catch(NullPointerException np) {}
+		
+		db.updatePlayerData(event.getPlayer());        
+    }
+    @EventHandler
+    public void onPlayerJoin(PlayerJoinEvent event)
+    {   	
+        Player player = event.getPlayer();
+        teams.addUUID(player);        
+        if(db.setPlayerData(player) == false) {
+        	//Player did not exist, create them...
+        	db.newPlayer(player);
+        }    
+        
+        
+        try {
+	        if(player.hasMetadata("team_members")) {//If player is part of a team...
+	        	board.makeScoreBoard(player.getMetadata("team_members").get(0).asString());
+	        	board.setScoreboard(teams.getTeamMembers(player.getMetadata("team_members").get(0).asString()), player.getMetadata("team_members").get(0).asString());
+	        }
+	        else {
+	        	plugin.getLogger().info("team_members NOT SET");
+	        }
+        }catch(NullPointerException np) {
+        	plugin.getLogger().info("Error with meta data " + np.toString());
+        }
+        //board.makeScoreBoard();
+    }
+
+	@EventHandler(priority = EventPriority.LOW)
+	public void onPlayerRespawn(PlayerRespawnEvent event) {
+		Player player = event.getPlayer();
+		if(player.hasMetadata("team_members")) {//If player is part of a team...
+	    	board.makeScoreBoard(player.getMetadata("team_members").get(0).asString());
+	    	board.setScoreboard(teams.getTeamMembers(player.getMetadata("team_members").get(0).asString()), player.getMetadata("team_members").get(0).asString());
+	    }
+	    else {
+	    	plugin.getLogger().info("team_members NOT SET");
+	    }			
+	}
+    
+    @EventHandler
+    public void onMove(PlayerMoveEvent e) {
+        if (e.getTo().getBlockX() == e.getFrom().getBlockX() && e.getTo().getBlockY() == e.getFrom().getBlockY() && e.getTo().getBlockZ() == e.getFrom().getBlockZ()) return; //The player hasn't moved
+        if (teams.tpQueue.containsKey(e.getPlayer().getUniqueId())) {
+        	teams.tpQueue.get(e.getPlayer().getUniqueId()).cancel();
+        	teams.tpQueue.remove(e.getPlayer().getUniqueId());
+            e.getPlayer().sendMessage("TP has been cancelled due to movement");
+            return;
+        }
+    }
+    @EventHandler
+    public void onPlayerDeath(PlayerDeathEvent event)
+    {
+    	if (teams.tpQueue.containsKey(event.getEntity().getPlayer().getUniqueId())) {
+        	teams.tpQueue.get(event.getEntity().getPlayer().getUniqueId()).cancel();
+        	teams.tpQueue.remove(event.getEntity().getPlayer().getUniqueId());
+            return;
+        }
+    	
+    	event.getDrops().clear();
+    	
+        Player player = event.getEntity();
+        player.setMetadata("isdown",new FixedMetadataValue(plugin, false));
+        player.setMetadata("hasdied",new FixedMetadataValue(plugin, false));
+        player.removeMetadata("class", plugin);
+        player.setWalkSpeed((float) .2);//0 to prevent walking...
+        player.setGlowing(false);
+        
+        if(player.hasMetadata("deaths")) {
+			player.setMetadata("deaths",new FixedMetadataValue(plugin, player.getMetadata("deaths").get(0).asInt() +1));
+		}
+		else {
+			player.setMetadata("deaths",new FixedMetadataValue(plugin, 1));
+		}
+    }
+	@EventHandler
+	public void onEDeath(EntityDeathEvent event) {
+		
+		if(event.getEntity().getKiller() instanceof Player) {
+			Player player = event.getEntity().getKiller();
+			try {
+				if(player.hasMetadata("mobs_killed")) {
+	    			player.setMetadata("mobs_killed",new FixedMetadataValue(plugin, player.getMetadata("mobs_killed").get(0).asString() + "\n" + event.getEntity().getType().toString()));
+	    		}
+	    		else {
+	    			player.setMetadata("mobs_killed",new FixedMetadataValue(plugin, event.getEntity().getType().toString()));
+	    		}
+			}catch(NullPointerException np) {}
+		}
+		
+		
+		if (event.getEntity().getKiller() != null) 
+		{
+			Player player = event.getEntity().getKiller();
+			if(debugging){player.sendMessage(event.getEntity().getType().toString());}
+			
+			List<String> mobConfig = plugin.getConfig().getStringList("key-dropping-mobs");			
+			if(mobConfig.indexOf(event.getEntity().getType().toString()) != -1)
+			{
+				Random rand = new Random();
+				if((rand.nextInt(Integer.valueOf(mobConfig.get(mobConfig.indexOf(event.getEntity().getType().toString())+1))))+1 == 1 || debugging){
+					try{
+						ItemStack book_drop = new ItemStack( Material.BOOK, 1);//Drops "key" (book
+						//SQL SELECT ZONE...
+						
+						try{
+							int x = event.getEntity().getLocation().getBlockX();
+							int y = event.getEntity().getLocation().getBlockY();
+							int z = event.getEntity().getLocation().getBlockZ();
+							String world = event.getEntity().getLocation().getWorld().toString();
+							String keyinfo = "";
+							try{
+								keyinfo = db.selectZoneLevel(x,y,z,world);
+							}catch(Exception ers){
+								plugin.getLogger().info(ers.toString());
+							}
+							List<String> lore = new ArrayList<>();
+							lore.add(keyinfo);
+							
+							ItemMeta meta = book_drop.getItemMeta();
+							meta.setDisplayName("Key");
+							if(meta.hasLore()){meta.getLore().add(keyinfo);}//This lore should be the key level....
+							else{meta.setLore(lore);}
+							book_drop.setItemMeta(meta);
+						}
+						catch(Exception er){plugin.getLogger().info("Problem with setting custom name or lore in MOBKEYS: " + er.toString());}
+						
+						if(plugin.getConfig().getString("keys-drop-to") == "player"){
+							//Drop on Player
+							player.getLocation().getWorld().dropItem(player.getLocation(), book_drop);
+						}
+						else{
+							//Drop on Zombie...
+							event.getEntity().getLocation().getWorld().dropItem(player.getLocation(), book_drop);
+						}
+					}
+					catch(Exception er){
+						plugin.getLogger().info("Problem with drops: " + er.toString());
+					}
+					
+				}				
+			}
+			try{
+				if(plugin.getConfig().getStringList("item-dropping-mobs").contains(event.getEntity().getType().toString().toUpperCase())){
+					List<String> configElement = plugin.getConfig().getStringList("mob-drops");
+					
+					for(int i = 0; i < configElement.size(); i+=3) {
+						//i = 2
+						//i 0
+						//7-2 = 5
+						Material item = Material.matchMaterial(configElement.get(i));						
+						Random rand = new Random();				
+						
+						if((rand.nextInt(Integer.valueOf(configElement.get(i+1))))+1 == 1 || debugging){
+							ItemStack item_drop = new ItemStack(item, Integer.valueOf(configElement.get(i+2)));//Drops "key" (book
+							if(plugin.getConfig().getString("items-drop-to") == "player"){
+								//Drop on Player
+								player.getLocation().getWorld().dropItem(player.getLocation(), item_drop);
+								break;
+							}
+							else{
+								//Drop on Zombie...
+								event.getEntity().getLocation().getWorld().dropItem(player.getLocation(), item_drop);
+								break;
+							}
+						}
+					}
+				}
+			}catch(Exception er){
+				plugin.getLogger().info("Problem with random item drop: " + er.toString());
+			}
+		}
+	}
+
+    
+    public Inventory getClickedInventory(InventoryView view, int slot) {
+    	try {
+	        Inventory clickedInventory;
+	        if (slot < 0) {
+	            clickedInventory = null;
+	        } else if (view.getTopInventory() != null && slot < view.getTopInventory().getSize()) {
+	            clickedInventory = view.getTopInventory();
+	        } else {
+	            clickedInventory = view.getBottomInventory();
+	        }
+	        return clickedInventory;
+    	}catch(Exception nope) {}
+    	return null;
+    }	 
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onPlayerDrag(InventoryDragEvent event) { 
+    	event.setCancelled(true);
+    }
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onPlayerClick(InventoryClickEvent event) {   
+    	try {
+	    	//Got some null pointers here...
+	    	if(!event.getWhoClicked().getGameMode().equals(GameMode.CREATIVE)){
+		    	if(getClickedInventory(event.getView(), event.getRawSlot()).getType().equals(InventoryType.CHEST)){  //Top peice...
+		    		//plugin.getLogger().info(getClickedInventory(event.getView(), event.getRawSlot()).getType().toString());
+		    		if(!event.isShiftClick()){
+		    			if(event.isLeftClick()){
+		    				event.setCancelled(true);
+		    				return;
+		    			}
+		    			if(event.isRightClick()){
+		    				event.setCancelled(true);
+		    				return;
+		    			}
+		    		}    		
+		        }//https://hub.spigotmc.org/javadocs/spigot/org/bukkit/event/inventory/InventoryInteractEvent.html
+		    	else{
+		    		//plugin.getLogger().info(getClickedInventory(event.getView(), event.getRawSlot()).getType().toString());
+		    		if(event.isShiftClick()){//AND CURRENT ITEM IS NOT IN LIST...
+		    			event.setCancelled(true);
+						return;
+		    		}
+		    		if(event.isLeftClick() && event.isShiftClick()){//AND CURRENT ITEM IS NOT IN LIST...
+		    			event.setCancelled(true);
+						return;
+		    		}
+		    		if(event.isRightClick() && event.isShiftClick()){//AND CURRENT ITEM IS NOT IN LIST...
+		    			event.setCancelled(true);
+						return;
+		    		}
+		    	}
+	    	}
+	    	
+	    	try{
+		    	if(event.getClick().isRightClick()){
+		    		if(event.getAction().equals(InventoryAction.DROP_ONE_CURSOR) || event.getAction().equals(InventoryAction.DROP_ALL_CURSOR) ){
+		    			event.getWhoClicked().getInventory().remove(event.getCurrentItem());
+		    			//IF Item in acceptable drop list...
+		    			if(plugin.getConfig().getBoolean("debugging")){plugin.getLogger().info(event.getCurrentItem().getType().toString().replace(" ", "_").toUpperCase());}
+		    			if(plugin.getConfig().getStringList("dropping-whitelist").contains(event.getCurrentItem().getType().toString().replace(" ", "_").toUpperCase())){
+		    				event.setCancelled(false);
+		    				return;
+		    			}
+		    			else{
+		    				event.setCancelled(true);
+		    			}
+		    		}
+		    	}    
+	    	}catch(Exception err){
+	    		if(plugin.getConfig().getBoolean("debugging")){
+	    			plugin.getLogger().info("Minor bump in inventory watching (RC) " + err.toString());
+	    		}
+	    	}
+    	}catch(Exception nope) {}
+    }
+	@EventHandler(priority = EventPriority.HIGHEST)
+    public void onPlayerDrop(PlayerDropItemEvent event) {
+		if(plugin.getConfig().getBoolean("debugging")){plugin.getLogger().info(event.getItemDrop().getName().toString().replace(" ", "_").toUpperCase());}
+		//IF item in accepted drop list...
+		if(plugin.getConfig().getStringList("dropping-whitelist").contains(event.getItemDrop().getName().toString().replace(" ", "_").toUpperCase())){
+			event.setCancelled(false);
+			return;
+		}
+		else{
+			event.setCancelled(true);
+		} 
+    }
+	
+	@EventHandler(priority = EventPriority.HIGH)
+	public void onPlayerDamage(EntityDamageByEntityEvent e) {
+		try {
+			Entity damageTaker = null;
+			Entity damager = null;
+			
+			try {damager = e.getDamager();}
+			catch(Exception er) {plugin.getLogger().info("Damager is causing an error.");}
+			try {damageTaker = e.getEntity();}
+			catch(Exception er) {plugin.getLogger().info("Damage taker is casuing an error");}
+
+			if (damageTaker instanceof Player) {
+				Player taker = (Player) damageTaker;
+			    if (damager instanceof Player) 
+			    { 
+			    	Player damagerPlayer = (Player) damager;
+				    if(debugging) {plugin.getLogger().info("Player is holding: " + damagerPlayer.getInventory().getItemInMainHand().getType().toString());}
+				    if(taker.hasMetadata("isdown")) 
+				    {
+				        if( (damagerPlayer.getInventory().getItemInMainHand().getType().toString() == Material.PLAYER_HEAD.toString() || damagerPlayer.getInventory().getItemInOffHand().getType().equals(Material.PLAYER_HEAD)) && taker.getMetadata("isdown").get(0).asBoolean()){//Check if player is medic, and or on team.
+				        	taker.sendMessage("A medic has revived you!");
+				        	taker.setMetadata("isdown",new FixedMetadataValue(plugin, false));
+				        	taker.setMetadata("hasdied",new FixedMetadataValue(plugin, true));
+				        	for (PotionEffect effect : taker.getActivePotionEffects()){
+				        		taker.removePotionEffect(effect.getType());
+				        	}
+				        	taker.setHealth(10);
+				        	taker.setWalkSpeed((float) .2);
+				        	taker.setGlowing(false);
+				        	
+				        	if(taker.hasMetadata("revived")) {
+				        		taker.setMetadata("revived",new FixedMetadataValue(plugin, taker.getMetadata("revived").get(0).asInt() + 1));
+				    		}
+				    		else {
+				    			taker.setMetadata("revived",new FixedMetadataValue(plugin, 1));
+				    		}
+				        	
+				        	if(damagerPlayer.hasMetadata("players_saved")) {
+				        		damagerPlayer.setMetadata("players_saved",new FixedMetadataValue(plugin, damagerPlayer.getMetadata("players_saved").get(0).asInt() + 1));
+				    		}
+				    		else {
+				    			damagerPlayer.setMetadata("players_saved",new FixedMetadataValue(plugin, 1));
+				    		}
+							
+				        	
+				        	
+				        	e.setCancelled(true);
+					    	if(damagerPlayer.getInventory().getItemInMainHand().getType().equals(Material.PLAYER_HEAD)) {
+					    		ItemStack heads = new ItemStack(Material.PLAYER_HEAD, damagerPlayer.getInventory().getItemInMainHand().getAmount() -1);
+					    		damagerPlayer.getInventory().setItemInMainHand(heads);
+					    		return;
+					    	}
+					    	if(damagerPlayer.getInventory().getItemInOffHand().getType().equals(Material.PLAYER_HEAD)) {
+					    		ItemStack heads = new ItemStack(Material.PLAYER_HEAD, damagerPlayer.getInventory().getItemInOffHand().getAmount() -1);
+					    		damagerPlayer.getInventory().setItemInOffHand(heads);
+					    		return;
+					    	}
+					    	
+					    	if(taker.hasMetadata("team_members")) {//If player is part of a team...
+					        	board.makeScoreBoard(taker.getMetadata("team_members").get(0).asString());
+					        	board.setScoreboard(teams.getTeamMembers(taker.getMetadata("team_members").get(0).asString()), taker.getMetadata("team_members").get(0).asString());
+					        }
+					        else {
+					        	plugin.getLogger().info("team_members NOT SET");
+					        }
+				        }
+				        else
+				        {
+				        	//IF region PVP ON
+				        	if(db.selectZonePVP(taker.getLocation().getBlockX(), taker.getLocation().getBlockY(), taker.getLocation().getBlockZ(), taker.getLocation().getWorld().toString()) && db.selectZonePVP(damagerPlayer.getLocation().getBlockX(), damagerPlayer.getLocation().getBlockY(), damagerPlayer.getLocation().getBlockZ(), damagerPlayer.getLocation().getWorld().toString()))
+							{e.setCancelled(false);}
+				        	else{e.setCancelled(true);}
+				        }
+				    }
+			    }
+			    else{
+			    	if(taker.getMetadata("isdown").get(0).asBoolean()){
+			    		e.setCancelled(true);
+			    		return;
+			    	}
+			    }
+			}
+			
+			
+			
+			if(damager instanceof Player && !(damageTaker instanceof Player) && !(damager.getMetadata("isdown").get(0).asBoolean())){
+				try {
+				//Player on Mob violence...
+					if(damager.hasMetadata("total_damage_delt")) {
+						damager.setMetadata("total_damage_delt",new FixedMetadataValue(plugin, damager.getMetadata("total_damage_delt").get(0).asInt() + damageTaker.getLastDamageCause().getDamage()));
+		    		}
+		    		else {
+		    			damager.setMetadata("total_damage_delt",new FixedMetadataValue(plugin, damageTaker.getLastDamageCause().getDamage()));
+		    		}
+					e.setCancelled(false);
+				}catch(NullPointerException np) {}
+			}
+			if(damager instanceof Player && !(damageTaker instanceof Player) && damager.getMetadata("isdown").get(0).asBoolean()){
+				//Downed player on Mob violence...
+				e.setCancelled(true);
+			}
+			if(!(damager instanceof Player) && damageTaker instanceof Player && damageTaker.getMetadata("isdown").get(0).asBoolean()){
+				//Mob on Downed Player violence...
+				e.setCancelled(true);
+			}
+		}
+		catch(Exception err) {plugin.getLogger().info("Unhandled Exception: " + err.toString());}
+	}
+	@EventHandler(priority = EventPriority.HIGH)
+	public void dmg(EntityDamageEvent event) 
+	{
+		Double realDamage = event.getFinalDamage();
+		
+		try {
+			Entity e = event.getEntity();
+			if(e instanceof Player) 
+			{
+				Player player = (Player)e;
+				try {
+					if(player.hasMetadata("total_damage_taken")) {
+		    			player.setMetadata("total_damage_taken",new FixedMetadataValue(plugin, player.getMetadata("total_damage_taken").get(0).asInt() + player.getLastDamage()));
+		    		}
+		    		else {
+		    			player.setMetadata("total_damage_taken",new FixedMetadataValue(plugin, player.getLastDamage()));
+		    		}
+				}catch(NullPointerException np) {}
+				
+				
+				
+				if(player.hasMetadata("isdown"))
+				{
+					if(player.getMetadata("isdown").get(0).asBoolean())
+					{
+						if(player.getLastDamageCause().getEntity().equals(player))
+						{
+							if(Double.valueOf(player.getHealth()) <= 1){
+								player.setHealth(0);
+								event.setCancelled(true);//Cancel so damage doesn't kill me twice...
+								return;
+							}
+							else
+							{
+								try{
+									if(player.getHealth() <= 20)
+									{
+										player.setHealth(player.getHealth());
+										board.setScoreboard(teams.getTeamMembers(player.getMetadata("team_members").get(0).asString()), player.getMetadata("team_members").get(0).asString(), player, (int) ((-1) * (player.getHealth()-realDamage)));
+										
+										return;
+									} else {
+										player.setHealth(player.getHealth()+1);
+										//cHECK IF I CAN USE NEGITIVE NUMBERS?!
+										if(player.hasMetadata("team_members")) {//If player is part of a team...
+								        	board.makeScoreBoard(player.getMetadata("team_members").get(0).asString());
+								        	board.setScoreboard(teams.getTeamMembers(player.getMetadata("team_members").get(0).asString()), player.getMetadata("team_members").get(0).asString(), player, (int) ((-1) * (player.getHealth()-realDamage)));
+								        }
+								        else {
+								        	plugin.getLogger().info("team_members NOT SET");
+								        }										return;
+									}
+								}catch(Exception errr){}
+							}
+						}
+						else{
+							event.setCancelled(true);
+						}
+						
+					}
+					else
+					{
+						if(player.hasMetadata("hasdied")) {
+							if((player.getHealth() - player.getLastDamage())<= 1.5 && player.getMetadata("hasdied").get(0).asBoolean() == false){
+								try {
+									teams.alertTeamOfDowns(player.getMetadata("team_members").get(0).asString(), player);									
+								}catch(Exception err) {
+									
+								}
+								if(player.hasMetadata("team_members")) {//If player is part of a team...
+						        	board.makeScoreBoard(player.getMetadata("team_members").get(0).asString());
+						        	board.setScoreboard(teams.getTeamMembers(player.getMetadata("team_members").get(0).asString()), player.getMetadata("team_members").get(0).asString());
+						        }
+						        else {
+						        	plugin.getLogger().info("team_members NOT SET");
+						        }
+								
+								//Maybe set player to non-targetable, heal player, then use potion of damage to decrease health, then remove all potion effects when healed by medic?
+								player.setMetadata("isdown",new FixedMetadataValue(plugin, true));
+								player.setHealth(player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getDefaultValue());
+								player.setWalkSpeed(0);//0 to prevent walking...
+								player.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 1000, 1));
+								player.addPotionEffect(new PotionEffect(PotionEffectType.JUMP, 1000, 250));
+								player.addPotionEffect(new PotionEffect(PotionEffectType.POISON, 1000, 1));//Start damaging player...
+								player.setGlowing(true);
+								player.setSneaking(true);
+		
+								if(player.hasMetadata("downs")) {
+									player.setMetadata("downs",new FixedMetadataValue(plugin, player.getMetadata("downs").get(0).asInt() + 1));
+					    		}
+					    		else {
+					    			player.setMetadata("downs",new FixedMetadataValue(plugin, 1));
+					    		}
+								
+								
+								event.setCancelled(true);
+								return;
+							}
+							//Update scoreboard:
+							else {
+								if(player.hasMetadata("team_members")) {//If player is part of a team...
+						        	board.makeScoreBoard(player.getMetadata("team_members").get(0).asString());
+						        	board.setScoreboard(teams.getTeamMembers(player.getMetadata("team_members").get(0).asString()), player.getMetadata("team_members").get(0).asString(), player, (int) (player.getHealth()-realDamage));
+						        }
+						        else {
+						        	plugin.getLogger().info("team_members NOT SET");
+						        }
+							}
+						}
+						else
+						{
+							event.setCancelled(false);
+							//May not update with correct value as damage has not been done yet...
+							//Maybe pass health as arg with trueDamage - hp (not just damage-hgp
+							if(player.hasMetadata("team_members")) {//If player is part of a team...
+					        	board.makeScoreBoard(player.getMetadata("team_members").get(0).asString());
+					        	board.setScoreboard(teams.getTeamMembers(player.getMetadata("team_members").get(0).asString()), player.getMetadata("team_members").get(0).asString(), player, (int) (player.getHealth()-realDamage));
+					        }
+					        else {
+					        	plugin.getLogger().info("team_members NOT SET");
+					        }
+						}
+					}
+				}
+			}
+			//IF it's not a player...
+		}
+		catch(Exception err) {
+			plugin.getLogger().info("Unahndled Exception in DMG: " + err.toString());
+		}
+
+	}
+
+	@EventHandler(priority = EventPriority.LOW)
+	public void onHealthRegen(EntityRegainHealthEvent event) {
+		if(event.getEntityType().equals(EntityType.PLAYER)) {
+			Player player = (Player) event.getEntity();
+			if(player.hasMetadata("team_members")) {//If player is part of a team...
+		    	board.makeScoreBoard(player.getMetadata("team_members").get(0).asString());
+		    	board.setScoreboard(teams.getTeamMembers(player.getMetadata("team_members").get(0).asString()), player.getMetadata("team_members").get(0).asString());
+		    }
+		    else {
+		    	plugin.getLogger().info("team_members NOT SET");
+		    }			
+		}
+
+	}
+}

@@ -1,10 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <qualifiedTypeNameHistroy>
-<fullyQualifiedTypeName name="org.bukkit.entity.EntityType"/>
-<fullyQualifiedTypeName name="org.bukkit.craftbukkit.v1_13_R1.entity.CraftLivingEntity"/>
-<fullyQualifiedTypeName name="org.bukkit.craftbukkit.v1_13_R1.inventory.CraftItemStack"/>
-<fullyQualifiedTypeName name="org.bukkit.entity.LivingEntity"/>
-<fullyQualifiedTypeName name="org.bukkit.entity.Entity"/>
 <fullyQualifiedTypeName name="org.bukkit.block.DoubleChest"/>
 <fullyQualifiedTypeName name="org.bukkit.inventory.InventoryView"/>
 <fullyQualifiedTypeName name="org.bukkit.event.EventPriority"/>
@@ -39,8 +34,6 @@
 <fullyQualifiedTypeName name="org.bukkit.metadata.FixedMetadataValue"/>
 <fullyQualifiedTypeName name="java.util.Calendar"/>
 <fullyQualifiedTypeName name="java.util.Collection"/>
-<fullyQualifiedTypeName name="java.util.HashMap"/>
-<fullyQualifiedTypeName name="java.util.UUID"/>
 <fullyQualifiedTypeName name="org.bukkit.scoreboard.Team"/>
 <fullyQualifiedTypeName name="org.bukkit.entity.Player"/>
 <fullyQualifiedTypeName name="java.util.Set"/>
@@ -55,9 +48,16 @@
 <fullyQualifiedTypeName name="java.io.Serializable"/>
 <fullyQualifiedTypeName name="java.util.Map"/>
 <fullyQualifiedTypeName name="org.bukkit.scheduler.BukkitTask"/>
-<fullyQualifiedTypeName name="org.bukkit.Bukkit"/>
 <fullyQualifiedTypeName name="org.bukkit.Location"/>
 <fullyQualifiedTypeName name="java.util.concurrent.Callable"/>
 <fullyQualifiedTypeName name="org.bukkit.scheduler.BukkitRunnable"/>
 <fullyQualifiedTypeName name="org.bukkit.event.player.PlayerMoveEvent"/>
+<fullyQualifiedTypeName name="org.bukkit.Bukkit"/>
+<fullyQualifiedTypeName name="org.bukkit.plugin.Plugin"/>
+<fullyQualifiedTypeName name="java.util.HashMap"/>
+<fullyQualifiedTypeName name="java.util.UUID"/>
+<fullyQualifiedTypeName name="org.bukkit.ChatColor"/>
+<fullyQualifiedTypeName name="org.bukkit.event.entity.EntityRegainHealthEvent"/>
+<fullyQualifiedTypeName name="org.bukkit.entity.EntityType"/>
+<fullyQualifiedTypeName name="org.bukkit.event.player.PlayerRespawnEvent"/>
 </qualifiedTypeNameHistroy>
