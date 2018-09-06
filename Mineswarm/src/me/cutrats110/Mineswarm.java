@@ -39,14 +39,15 @@ public class Mineswarm extends JavaPlugin implements Listener{
 	private boolean preventDouble = true;
 	private Database db = null;
 	private Kits kits = new Kits(this);
-	private MineswarmTeams teams = new MineswarmTeams(this);
+	private TeamBoards board = new TeamBoards(this);
+	private MineswarmTeams teams = new MineswarmTeams(this, board);
 	//Util & logging
 	@Override
 	public void onEnable(){
 		getLogger().info("Mineswarm is starting...");
 	    getServer().getPluginManager().registerEvents(this, this);
 		getLogger().info("Mineswarm has been enabled");	
-		new EventListener(this, teams);		
+		new EventListener(this, teams, board);		
 		new ScheduledMobs(this);
 		new ScheduledChests(this);
 		new ScheduledBackupDB(this, teams);
@@ -321,6 +322,19 @@ public class Mineswarm extends JavaPlugin implements Listener{
 						player.sendMessage("Please enter the player name you want to kick.");
 					}
 					break;
+				case "list":
+					try {
+						if(player.hasMetadata("team_members") && player.getMetadata("team_members").get(0).asString().length() > 0) {
+							for(String name : teams.getTeamMembersNames(player.getMetadata("team_members").get(0).asString())) {
+								player.sendMessage(name);
+							}
+							
+						}
+						return true;
+					}catch(IndexOutOfBoundsException ib) {
+						player.sendMessage("Please enter the player name you want to kick.");
+					}
+					break;
 				case "save":
 					try {
 						teams.saveTeamData();
@@ -550,6 +564,15 @@ public class Mineswarm extends JavaPlugin implements Listener{
 					player.sendMessage("You can't use more than 1 class, die to pick a new class >:)");
 					return true;
 				}
+			}
+			catch(Exception er){
+				player.sendMessage("Error on class command: " + er.toString());
+				return false;
+			}
+		}
+		if (cmd.getName().equalsIgnoreCase("inhand")){
+			try{
+				player.sendMessage(player.getInventory().getItemInMainHand().getType().toString());
 			}
 			catch(Exception er){
 				player.sendMessage("Error on class command: " + er.toString());

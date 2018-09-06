@@ -1,5 +1,8 @@
 //FEATURE:
 	MAYBE CHECK FULL INVENTORY FOR KEY INSTEAD OF JUST HANDS
+//BUGS:
+	On owner leave teams get all fucked (other members appear to not be in teams, but they are...
+	Sever team generates new team on each request, does not fill one team before moving on...
 //TODO:
 	*Load a configfile
 		*Enable a YML

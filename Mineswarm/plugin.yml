@@ -66,3 +66,7 @@ commands:
    description: GMAH
    permission-message: No perms yo
    usage: /[join] [leave] [create]
+  inhand:
+   description: Gets the exact type name for the item in main hand (used for making config)
+   permission-message: No perms yo
+   usagage: /inhand

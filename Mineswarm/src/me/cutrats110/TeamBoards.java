@@ -36,6 +36,9 @@ public class TeamBoards {
 	
 	//Some bug with random team creations...
 	public void setScoreboard(List<Player> players, String teamName) {
+		if(teamName.length() <=0) {
+			return;
+		}
 		try {
 			Scoreboard teamBoard = boards.get(teamName);
 			Objective teamMembersBoard = teamBoard.getObjective("teamhp");
@@ -56,8 +59,7 @@ public class TeamBoards {
 				}
 			}
 		}catch(Exception er) {
-			plugin.getLogger().info("Error setting scoreboard ");
-			er.printStackTrace();
+			plugin.getLogger().info("Error setting scoreboard " + er.toString());
 		}
 	}
 	public void setScoreboard(List<Player> players, String teamName, Player updatedPlayer, int health) {
@@ -77,7 +79,15 @@ public class TeamBoards {
 			}catch(NullPointerException np) {continue;}
 		}
 		for(Player p : players){//Team members only...
-			p.setScoreboard(teamBoard);
+			try {
+				if(p.isOnline()) {
+					p.setScoreboard(teamBoard);	
+				}
+			}catch(NullPointerException np) {continue;}
 		}
 	}
+	public void removeScoreboard(Player player) {
+		player.setScoreboard(Bukkit.getScoreboardManager().getNewScoreboard());
+	}
+	
 }

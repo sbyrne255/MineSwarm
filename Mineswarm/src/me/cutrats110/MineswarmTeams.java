@@ -19,12 +19,10 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitTask;
 //It is POSSIBLE a medic could TP to a downed player and save them, or a downed player could TP to a medic/team... Considering if this is a bug of feature...
 //Note, I may also change how player is selected, if an arg is given to TP to a specific player, maybe give them a heads up?
-	//Maybe give them an option to deny or block it? (if so, just get sender.uid, lookup and cancel event.
+//Maybe give them an option to deny or block it? (if so, just get sender.uid, lookup and cancel event.
 //For random player it may be nice to allow cancel or tell the player someone will be TPing to them shortly
-	//On one hand this makes sure they aren't jumping off a cliff or running near lava, but also gives them a heads up to get ready
-	//Allowing the player to exploit the system potentially...
-
-
+//On one hand this makes sure they aren't jumping off a cliff or running near lava, but also gives them a heads up to get ready
+//Allowing the player to exploit the system potentially...
 // *^createTeam (name, overload-player) Method
 // *^joinTeam Method (name, player)
 // *^leaveTeam Method (name, player)
@@ -62,11 +60,28 @@ public class MineswarmTeams {
 	// Player, team name (assumes all requests are to tp)
 	// private HashMap<Player, String> tpRequests = new HashMap<>();//Broadcast
 	// request to all team members...//Waiting on thsi because of bukkit
-	// requirements to check if they have moved, damaged ect...
-	private List<UUID> servers = new ArrayList<>(); 
+	// requirements to check if they have moved, damaged ect..
+	private List<UUID> servers = new ArrayList<>();
+	public TeamBoards board;
+	private boolean debugging = false;
+	
 
+	public MineswarmTeams(Plugin instance) {
+		this.plugin = instance;
+		this.debugging = plugin.getConfig().getBoolean("debugging");
+		loadTeamData();
+	}
+	public MineswarmTeams(Plugin instance, TeamBoards board) {
+		this.plugin = instance;
+		this.board = board;
+		loadTeamData();
+	}
+
+	
+	
 	/**
-	 * Creates a team instance without a specified owner, rather a random UUID saved in servers list
+	 * Creates a team instance without a specified owner, rather a random UUID saved
+	 * in servers list
 	 *
 	 * @return Returns true if team is successfully created.
 	 * @see createTeam
@@ -95,6 +110,7 @@ public class MineswarmTeams {
 		}
 		return false;
 	}
+
 	/**
 	 * Creates a team instance with a specified owner; if player owner is null that
 	 * means server is owner and team is random/public team
@@ -134,10 +150,22 @@ public class MineswarmTeams {
 							playerList.add(player.getUniqueId());
 							teams.put(name, playerList);
 							player.setMetadata("team_members", new FixedMetadataValue(plugin, name));
-							if(plugin.getConfig().getBoolean("creating-team-takes-to-spawn")) {
+							if (plugin.getConfig().getBoolean("creating-team-takes-to-spawn")) {
 								player.teleport(player.getWorld().getSpawnLocation());
 							}
-							
+							try {
+								if(player.hasMetadata("team_members") && player.getMetadata("team_members").get(0).toString().length() >= 1) {
+							    	board.makeScoreBoard(player.getMetadata("team_members").get(0).asString());
+							    	board.setScoreboard(getTeamMembers(player.getMetadata("team_members").get(0).asString()), player.getMetadata("team_members").get(0).asString());
+							    }
+							    else {
+							    	if(debugging){plugin.getLogger().info("team_members NOT SET");}
+							    }	
+							}catch(NullPointerException np) {}
+							catch(Exception err) {
+								plugin.getLogger().info("Problem making team " + err.toString());
+							}
+
 							return true;
 						} else {
 							// Make team...
@@ -146,8 +174,20 @@ public class MineswarmTeams {
 							playerList.add(player.getUniqueId());
 							teams.put(name, playerList);
 							player.setMetadata("team_members", new FixedMetadataValue(plugin, name));
-							if(plugin.getConfig().getBoolean("creating-team-takes-to-spawn")) {
+							if (plugin.getConfig().getBoolean("creating-team-takes-to-spawn")) {
 								player.teleport(player.getWorld().getSpawnLocation());
+							}
+							try {
+								if(player.hasMetadata("team_members") && player.getMetadata("team_members").get(0).toString().length() >= 1) {
+							    	board.makeScoreBoard(player.getMetadata("team_members").get(0).asString());
+							    	board.setScoreboard(getTeamMembers(player.getMetadata("team_members").get(0).asString()), player.getMetadata("team_members").get(0).asString());
+							    }
+							    else {
+							    	if(debugging){plugin.getLogger().info("team_members NOT SET");}
+							    }	
+							}catch(NullPointerException np) {}
+							catch(Exception err) {
+								plugin.getLogger().info("Problem leaving game" + err.toString());
 							}
 							return true;
 
@@ -165,14 +205,15 @@ public class MineswarmTeams {
 		List<UUID> membersID;
 		String teamName = "";
 		int loop = 0;
-		//Get team members in server team, 0,1,2,3,ect if the server is full, try the next server team
+		// Get team members in server team, 0,1,2,3,ect if the server is full, try the
+		// next server team
 		try {
-			while(teams.get(servers.get(loop).toString()).size() >= plugin.getConfig().getInt("max-team-size")) {
-				loop ++;
+			while (teams.get(servers.get(loop).toString()).size() >= plugin.getConfig().getInt("max-team-size")) {
+				loop++;
 			}
-		}catch(IndexOutOfBoundsException ib) {
+		} catch (IndexOutOfBoundsException ib) {
 			createTeam();
-		}finally {
+		} finally {
 			teamName = servers.get(loop).toString();
 		}
 		membersID = teams.get(teamName);// All team members UUIDs
@@ -182,75 +223,81 @@ public class MineswarmTeams {
 			teams.put(teamName, membersID);// Update hashmap with new player added
 			players.put(requesty.getUniqueId(), teamName);
 			requesty.setMetadata("team_members", new FixedMetadataValue(plugin, teamName));
-			requesty.sendMessage("Team request has been accepted!");
+			requesty.sendMessage("You have joined a random server-owned team!");
+			try {
+				if(requesty.hasMetadata("team_members") && requesty.getMetadata("team_members").get(0).toString().length() >= 1) {
+			    	board.makeScoreBoard(requesty.getMetadata("team_members").get(0).asString());
+			    	board.setScoreboard(getTeamMembers(requesty.getMetadata("team_members").get(0).asString()), requesty.getMetadata("team_members").get(0).asString());
+			    }
+			    else {
+			    	if(debugging){plugin.getLogger().info("team_members NOT SET");}
+			    }	
+			}catch(NullPointerException np) {}
+			catch(Exception err) {
+				plugin.getLogger().info("Problem joining team" + err.toString());
+			}
 		}
-	}
-	
-	
-	
-
-	public MineswarmTeams(Plugin instance) {
-		this.plugin = instance;
-		loadTeamData();
 	}
 
 	public void addTPAQue(Player player) {
-		tpQueue.put(player.getUniqueId(), Bukkit.getScheduler().runTaskTimer(plugin, ()->{
+		tpQueue.put(player.getUniqueId(), Bukkit.getScheduler().runTaskTimer(plugin, () -> {
 			List<Player> onlineTeamMates = new ArrayList<>();
-			for (Player teamate : getTeamMembers(player.getMetadata("team_members").get(0).asString()) ) {
+			for (Player teamate : getTeamMembers(player.getMetadata("team_members").get(0).asString())) {
 				try {
-					if(teamate.isOnline()) {
+					if (teamate.isOnline()) {
 						onlineTeamMates.add(teamate);
 					}
-				}catch(NullPointerException np) {
+				} catch (NullPointerException np) {
 					continue;
 				}
 			}
-			if(onlineTeamMates.size() < 2) {
+			if (onlineTeamMates.size() < 2) {
 				player.sendMessage("No teamate are online but you");
-			}else {
+			} else {
 				Random rand = new Random();
 				player.teleport(onlineTeamMates.get(rand.nextInt(onlineTeamMates.size())));
 			}
 			tpQueue.get(player.getUniqueId()).cancel();
 			tpQueue.remove(player.getUniqueId());
-			
-		}, 300, 200));	
+
+		}, 300, 200));
 	}
 
 	public boolean addTPAQue(Player player, String toPlayer) {
-		tpQueue.put(player.getUniqueId(), Bukkit.getScheduler().runTaskTimer(plugin, ()->{
+		tpQueue.put(player.getUniqueId(), Bukkit.getScheduler().runTaskTimer(plugin, () -> {
 			try {
-				Player to = getPlayerByUUID(UUIDLookup.get(toPlayer)); 
-				if(isTeamMember(to, player.getMetadata("team_members").get(0).asString())) {
-					if(to.isOnline()) {
+				Player to = getPlayerByUUID(UUIDLookup.get(toPlayer));
+				if (isTeamMember(to, player.getMetadata("team_members").get(0).asString())) {
+					if (to.isOnline()) {
 						player.teleport(to);
-					}	
+					}
 				} else {
 					player.sendMessage("That player is not part of your team.");
 				}
-			}catch(NullPointerException np) {
-				//Player is offline...
+			} catch (NullPointerException np) {
+				// Player is offline...
 				player.sendMessage("That player is offline now, you can only TP to online players");
 			}
 			tpQueue.get(player.getUniqueId()).cancel();
 			tpQueue.remove(player.getUniqueId());
-		}, 300, 200));//Time to wait before first call, time to wait for repeating calls (which should never happen)
+		}, 300, 200));// Time to wait before first call, time to wait for repeating calls (which
+						// should never happen)
 		return true;
 	}
 
 	public void alertTeamOfDowns(String teamName, Player downedPlayer) {
 		List<Player> teamMates = getTeamMembers(teamName);
-		for(Player player : teamMates) {
+		for (Player player : teamMates) {
 			try {
-				if(player.isOnline() && player != downedPlayer) {
+				if (player.isOnline() && player != downedPlayer) {
 					player.sendMessage(ChatColor.RED + downedPlayer.getName() + " IS DOWN");
 				}
+			} catch (NullPointerException err) {
+				continue;
 			}
-			catch(NullPointerException err) {continue;}
 		}
 	}
-	
+
 	public void addUUID(Player player) {// Gets called on join event...
 		UUIDLookup.put(player.getName(), player.getUniqueId());
 	}
@@ -294,7 +341,7 @@ public class MineswarmTeams {
 		}
 		return true;
 	}
-//Can't find player...
+
 	public boolean joinTeamAccept(Player sender, String playerName) {
 		try {
 			List<UUID> membersID = null;
@@ -316,12 +363,25 @@ public class MineswarmTeams {
 						players.put(requesty.getUniqueId(), teamName);
 						requesty.setMetadata("team_members", new FixedMetadataValue(plugin, teamName));
 						requesty.sendMessage("Team request has been accepted!");
+						try {
+							if(requesty.hasMetadata("team_members") && requesty.getMetadata("team_members").get(0).toString().length() >= 1) {
+						    	board.makeScoreBoard(requesty.getMetadata("team_members").get(0).asString());
+						    	board.setScoreboard(getTeamMembers(requesty.getMetadata("team_members").get(0).asString()), requesty.getMetadata("team_members").get(0).asString());
+						    }
+						    else {
+						    	if(debugging){plugin.getLogger().info("team_members NOT SET");}
+						    }	
+						}catch(NullPointerException np) {}
+						catch(Exception err) {
+							plugin.getLogger().info("Problem joining team" + err.toString());
+						}
 					} else {
 						if (membersID.get(0).equals(null)) {
 							// Find next public team to join...
 							plugin.getLogger().info("Find next public team...");
 						} else {
-							sender.sendMessage("Team is full, you may only have " + String.valueOf(maxSize) + " players per team.");
+							sender.sendMessage("Team is full, you may only have " + String.valueOf(maxSize)
+									+ " players per team.");
 						}
 					}
 				} else {
@@ -378,9 +438,24 @@ public class MineswarmTeams {
 					players.remove(player.getUniqueId());// Set player list to be in a null team
 					player.sendMessage("You have left the team");
 					player.setMetadata("team_members", new FixedMetadataValue(plugin, ""));
-					if(plugin.getConfig().getBoolean("leaving-team-takes-to-spawn")) {
+					if (plugin.getConfig().getBoolean("leaving-team-takes-to-spawn")) {
 						player.teleport(player.getWorld().getSpawnLocation());
 					}
+					
+					try {
+						if(player.hasMetadata("team_members") && player.getMetadata("team_members").get(0).toString().length() >= 1) {
+					    	board.makeScoreBoard(player.getMetadata("team_members").get(0).asString());
+					    	board.setScoreboard(getTeamMembers(player.getMetadata("team_members").get(0).asString()), player.getMetadata("team_members").get(0).asString());
+					    }
+					    else {
+					    	if(debugging){plugin.getLogger().info("team_members NOT SET");}
+					    }	
+					}catch(NullPointerException np) {}
+					catch(Exception err) {
+						plugin.getLogger().info("Problem joining team" + err.toString());
+					}
+					
+					board.removeScoreboard(player);
 					return true;
 				} else {// Standard member is leaving team...
 					membersID.remove(player.getUniqueId());
@@ -388,9 +463,23 @@ public class MineswarmTeams {
 					players.remove(player.getUniqueId());// Set player list to be in a null team
 					player.sendMessage("You have left the team");
 					player.setMetadata("team_members", new FixedMetadataValue(plugin, ""));
-					if(plugin.getConfig().getBoolean("leaving-team-takes-to-spawn")) {
+					if (plugin.getConfig().getBoolean("leaving-team-takes-to-spawn")) {
 						player.teleport(player.getWorld().getSpawnLocation());
 					}
+					try {
+						if(player.hasMetadata("team_members") && player.getMetadata("team_members").get(0).toString().length() >= 1) {
+					    	board.makeScoreBoard(player.getMetadata("team_members").get(0).asString());
+					    	board.setScoreboard(getTeamMembers(player.getMetadata("team_members").get(0).asString()), player.getMetadata("team_members").get(0).asString());
+					    }
+					    else {
+					    	if(debugging){plugin.getLogger().info("team_members NOT SET");}
+					    }	
+					}catch(NullPointerException np) {}
+					catch(Exception err) {
+						plugin.getLogger().info("Problem joining team" + err.toString());
+					}
+					
+					board.removeScoreboard(player);
 
 					return true;
 				}
@@ -441,33 +530,47 @@ public class MineswarmTeams {
 	public List<Player> getTeamMembers(String teamName) {
 		List<Player> members = new ArrayList<>();
 		for (UUID playerID : teams.get(teamName)) {
-			members.add(getPlayerByUUID(playerID));
+			if (getPlayerByUUID(playerID) != null) {
+				members.add(getPlayerByUUID(playerID));
+			}
+		}
+		return members;
+	}
+	/**
+	 * Gets list of Players names in a team.
+	 *
+	 * @param String teamName the team to return members of
+	 * @return Returns List Object of names (object) of team members for given
+	 *         team name.
+	 * @see getTeamMembersNames
+	 */
+	public List<String> getTeamMembersNames(String teamName) {
+		List<String> members = new ArrayList<>();
+		for (UUID playerID : teams.get(teamName)) {						
+			if(plugin.getServer().getOfflinePlayer(playerID).isOnline()) {
+				members.add(plugin.getServer().getOfflinePlayer(playerID).getName() + ChatColor.GREEN +  " - Online");	
+			}
+			else {
+				members.add(plugin.getServer().getOfflinePlayer(playerID).getName() + ChatColor.RED + " - Offline");
+			}
 		}
 		return members;
 	}
 
 	public boolean setNewTeamOwner(String teamName) {
 		List<UUID> members = teams.get(teamName);
-		if (members.size() <= 1) {
-			teams.remove(teamName);
+		if (members.size() == 1) {//Do nothing if only 1 player in team
+			plugin.getLogger().info("Wut");
 			return true;
 		} else {
-			Random rand = new Random();
-			int n = rand.nextInt(members.size());
-			Player newOwner = getPlayerByUUID(members.get(n));
-			List<UUID> newMembers = new ArrayList<>();
-			newMembers.add(newOwner.getUniqueId());
-			for (UUID player : members) {
-				if (newOwner.equals(getPlayerByUUID(player))) {
-					continue;
-				} else {
-					newMembers.add(player);
-				}
-			}
-			teams.put(teamName, newMembers);
-
+			UUID owner = members.get(0);
+			members.set(0, members.get(1));
+			members.set(1, owner);
 		}
-		return false;
+			teams.remove(teamName);
+			teams.put(teamName, members);
+			plugin.getLogger().info("Moved team so : " + plugin.getServer().getOfflinePlayer(teams.get(teamName).get(0)).getName());
+		return true;
 	}
 
 	public boolean setNewTeamOwner(String teamName, String newOwnerName) {
@@ -486,14 +589,23 @@ public class MineswarmTeams {
 	}
 
 	public boolean kickTeamMember(String kicky, Player kicker) {
-		if (getTeamOwner(players.get(kicker.getUniqueId())).equals(kicker)
-				&& isTeamMember(Bukkit.getPlayer(UUIDLookup.get(kicky)), players.get(kicker.getUniqueId()))) {
-			// Kicker is team owner and kicky is a member of the kicker's team.
-			leaveTeam(Bukkit.getPlayer(UUIDLookup.get(kicky)));// Execute the leave function on behalf of kicked player.
-			return true;
+		//Ask if the kicker is the team owner of the team they are on.
+		if(getTeamOwner(players.get(kicker.getUniqueId())).equals(kicker)) {	
+			//Get if kicky is on the same team as kicker.
+			if (isTeamMember(Bukkit.getPlayer(UUIDLookup.get(kicky)), players.get(kicker.getUniqueId()))) {
+				// Kicker is team owner and kicky is a member of the kicker's team.
+				leaveTeam(Bukkit.getPlayer(UUIDLookup.get(kicky)));// Execute the leave function on behalf of kicked player.
+				return true;
+			}
+			else {
+				kicker.sendMessage("That player is not on your team");
+			}
+		}else {
+			kicker.sendMessage("You are not listed as the team owner");
 		}
 		return false;
 	}
+
 	@SuppressWarnings("unchecked")
 	public boolean loadTeamData() {
 		try {

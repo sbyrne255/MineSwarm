@@ -2,12 +2,20 @@
 <section name="Workbench">
 	<section name="org.eclipse.ui.texteditor.FindReplaceDialog">
 		<item value="false" key="isRegEx"/>
-		<item value="" key="selection"/>
+		<item value="(int) (Math.round(player.getHealth())" key="selection"/>
 		<item value="false" key="casesensitive"/>
 		<item value="false" key="incremental"/>
 		<item value="true" key="wrap"/>
 		<item value="false" key="wholeword"/>
 		<list key="findhistory">
+			<item value="(int) (player.getHealth()"/>
+			<item value="Gay"/>
+			<item value="}catch(Exception err) {plugin.getLogger().info(&quot;GAY&quot;);}"/>
+			<item value="StackTrace"/>
+			<item value="stack"/>
+			<item value=".hasMetadata(&quot;team_members&quot;)"/>
+			<item value="if(player.hasMetadata(&quot;team_members&quot;))"/>
+			<item value="if(player.hasMetadata(&quot;team_members&quot;)"/>
 			<item value="plugin.getLogger().info(&quot;team_members NOT SET&quot;);"/>
 			<item value="update"/>
 			<item value="team_members"/>
@@ -15,18 +23,14 @@
 			<item value="plugin.getConfig()"/>
 			<item value="size"/>
 			<item value="Random"/>
-			<item value="player.getMetadata(&quot;team"/>
-			<item value="createTeam"/>
-			<item value="plugin"/>
-			<item value="team"/>
-			<item value="class"/>
-			<item value="save"/>
-			<item value="mobs_killed"/>
-			<item value="revives"/>
 		</list>
 		<list key="replacehistory">
-			<item value="if(debugging){plugin.getLogger().info(&quot;team_members NOT SET&quot;);}"/>
+			<item value="(int) (Math.round(player.getHealth())"/>
+			<item value="}catch(NullPointerException np) {} catch(Exception err) {plugin.getLogger().info(&quot;Other Error&quot;);}"/>
+			<item value="}catch(NullPointerException np) {} }catch(Exception err) {plugin.getLogger().info(&quot;Other Error&quot;);}"/>
+			<item value="if(player.hasMetadata(&quot;team_members&quot;) &amp;&amp; player.getMetadata(&quot;team_members&quot;).get(0).toString().length() &gt;= 1)"/>
 			<item value=""/>
+			<item value="if(debugging){plugin.getLogger().info(&quot;team_members NOT SET&quot;);}"/>
 			<item value="plugin.getConfig"/>
 			<item value="plugin.getLogger"/>
 			<item value="this.getConfig"/>

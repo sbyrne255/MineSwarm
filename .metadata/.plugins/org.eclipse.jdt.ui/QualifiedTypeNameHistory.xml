@@ -1,13 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <qualifiedTypeNameHistroy>
-<fullyQualifiedTypeName name="org.bukkit.block.DoubleChest"/>
-<fullyQualifiedTypeName name="org.bukkit.inventory.InventoryView"/>
-<fullyQualifiedTypeName name="org.bukkit.event.EventPriority"/>
-<fullyQualifiedTypeName name="org.bukkit.event.inventory.InventoryMoveItemEvent"/>
-<fullyQualifiedTypeName name="org.bukkit.event.inventory.InventoryType"/>
-<fullyQualifiedTypeName name="org.bukkit.event.inventory.InventoryDragEvent"/>
-<fullyQualifiedTypeName name="org.bukkit.GameMode"/>
-<fullyQualifiedTypeName name="org.bukkit.inventory.Inventory"/>
 <fullyQualifiedTypeName name="org.bukkit.block.Chest"/>
 <fullyQualifiedTypeName name="org.bukkit.block.Block"/>
 <fullyQualifiedTypeName name="java.sql.ResultSet"/>
@@ -60,4 +52,12 @@
 <fullyQualifiedTypeName name="org.bukkit.event.entity.EntityRegainHealthEvent"/>
 <fullyQualifiedTypeName name="org.bukkit.entity.EntityType"/>
 <fullyQualifiedTypeName name="org.bukkit.event.player.PlayerRespawnEvent"/>
+<fullyQualifiedTypeName name="java.util.concurrent.ThreadLocalRandom"/>
+<fullyQualifiedTypeName name="org.json.simple.JSONArray"/>
+<fullyQualifiedTypeName name="org.apache.commons.io.IOUtils"/>
+<fullyQualifiedTypeName name="org.apache.logging.log4j.core.util.IOUtils"/>
+<fullyQualifiedTypeName name="java.net.URL"/>
+<fullyQualifiedTypeName name="org.json.simple.JSONValue"/>
+<fullyQualifiedTypeName name="org.json.simple.JSONObject"/>
+<fullyQualifiedTypeName name="org.json.simple.parser.ParseException"/>
 </qualifiedTypeNameHistroy>

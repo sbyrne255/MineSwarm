@@ -1,0 +1,595 @@
+package me.cutrats110;
+
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import org.apache.commons.io.FileUtils;
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
+import org.bukkit.block.BlockState;
+import org.bukkit.block.Chest;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
+import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.material.Door;
+import org.bukkit.material.Openable;
+import org.bukkit.metadata.FixedMetadataValue;
+import org.bukkit.plugin.java.JavaPlugin;
+
+public class Mineswarm extends JavaPlugin implements Listener{
+
+	public final String version = "1.13.a";
+	//private boolean debugging = this.getConfig().getBoolean("debugging");
+	private boolean preventDouble = true;
+	private Database db = null;
+	private Kits kits = new Kits(this);
+	private MineswarmTeams teams = new MineswarmTeams(this);
+	//Util & logging
+	@Override
+	public void onEnable(){
+		getLogger().info("Mineswarm is starting...");
+	    getServer().getPluginManager().registerEvents(this, this);
+		getLogger().info("Mineswarm has been enabled");	
+		new EventListener(this, teams);		
+		new ScheduledMobs(this);
+		new ScheduledChests(this);
+		new ScheduledBackupDB(this, teams);
+        this.saveDefaultConfig();
+        db = new Database(this);
+		db.connect();
+		db.createTable();
+		db.createMobsTable();
+		db.createChestsTable();
+		db.createPlayersTable();			
+	}
+	@Override
+	public void onDisable(){
+		teams.saveTeamData();
+		getLogger().info("Mineswarm has been disabled");
+	}
+	//Player interaction and events.
+	@EventHandler
+	public void onPlayerInteract(PlayerInteractEvent event) {
+		try{
+			Player player = event.getPlayer();
+			boolean opendoor = false;
+			if(preventDouble){
+				try{
+					if (event.getAction() == Action.RIGHT_CLICK_BLOCK && event.getClickedBlock().getType().toString().toLowerCase().replace("_", "").contains("irondoor")) 
+					{
+						Block block = event.getClickedBlock();
+						String blockID = "X:" + String.valueOf(block.getX()) + "Z:"+String.valueOf(block.getZ()) + "W:"+String.valueOf(block.getWorld());
+						int blockY = block.getY();
+						String level = db.selectDoor(blockID, blockY);
+						level = "[" + level + "]";
+						
+						BlockState state = block.getState();
+						
+						if(player.getInventory().getItemInMainHand().hasItemMeta()){
+							if(player.getInventory().getItemInMainHand().getItemMeta().getLore().toString().equals(level) || player.getInventory().getItemInMainHand().getItemMeta().getLore().toString().equals("Key HERE"))
+							{
+								try{
+									state = block.getRelative(BlockFace.DOWN).getState();
+						            Openable door = (Openable)state.getData();
+						            if(door.isOpen()){
+						            	return;
+						            }
+						            else{
+						            	opendoor = true;
+						            	player.getInventory().getItemInMainHand().setAmount(player.getInventory().getItemInMainHand().getAmount()-1);//Remove 1 from inventory
+						            }
+								}catch(Exception doorer){
+									state = event.getClickedBlock().getState();
+						            Openable door = (Openable)state.getData();
+						            if(door.isOpen()){
+						            	return;
+						            }
+						            else{
+						            	opendoor = true;
+						            	player.getInventory().getItemInMainHand().setAmount(player.getInventory().getItemInMainHand().getAmount()-1);//Remove 1 from inventory	
+						            }
+								}	
+															
+							}
+							else {
+								player.sendMessage("You need a " + level + " key to open this door");
+							}
+						}
+						else{
+							if(player.getInventory().getItemInOffHand().hasItemMeta()){
+								if(player.getInventory().getItemInOffHand().getItemMeta().getLore().toString().equals(level) || player.getInventory().getItemInOffHand().getItemMeta().getLore().toString().equals("Master Key")){
+									//Key matches door, and it is a key...
+									try{
+										state = block.getRelative(BlockFace.DOWN).getState();
+							            Openable door = (Openable)state.getData();
+							            if(door.isOpen()){
+							            	return;
+							            }
+							            else{
+							            	opendoor = true;
+							            	player.getInventory().getItemInOffHand().setAmount(player.getInventory().getItemInOffHand().getAmount()-1);//Remove 1 from inventory
+							            }
+									}catch(Exception doorer){
+										state = event.getClickedBlock().getState();
+							            Openable door = (Openable)state.getData();
+							            if(door.isOpen()){
+							            	return;
+							            }
+							            else{
+							            	opendoor = true;
+							            	player.getInventory().getItemInOffHand().setAmount(player.getInventory().getItemInOffHand().getAmount()-1);//Remove 1 from inventory
+							            }
+									}							
+								}
+							}
+							else {
+								player.sendMessage("You need a " + level + " key to open this door");
+							}
+						}
+						if(opendoor){
+							try{
+					            state = block.getRelative(BlockFace.DOWN).getState();
+					            Openable door = (Openable)state.getData();
+					            door.setOpen(true);
+					            state.setData((Door)door);
+					            state.update();
+							}
+							catch(Exception err)
+							{
+								state = event.getClickedBlock().getState();
+					            Openable door = (Openable)state.getData();
+					            door.setOpen(true);
+					            state.setData((Door)door);
+					            state.update();
+							}
+							//Schedule Close
+						    	getServer().getScheduler().scheduleSyncDelayedTask(this, new Runnable() 
+						    	{
+							    	public void run() 
+							    	{
+							    		BlockState state = block.getState();
+										try{
+								            state = event.getClickedBlock().getRelative(BlockFace.DOWN).getState();
+								            Openable door = (Openable)state.getData();
+								            door.setOpen(false);
+								            state.setData((Door)door);
+								            state.update();
+										}catch(Exception err)
+										{
+											state = event.getClickedBlock().getState();
+								            Openable door = (Openable)state.getData();
+								            door.setOpen(false);
+								            state.setData((Door)door);
+								            state.update();
+										}
+							    	}
+						    	}, 55L);
+						    event.setCancelled(true);//Probably want to cancel but shouldn't matter in adventure mode
+						    return;
+						}
+				}
+			}
+			catch(Exception err)
+			{
+				getLogger().info("Problem with opening door in MineSwarm. " + err.toString());
+			}
+			preventDouble = false; }else{ preventDouble = true;	}
+			
+			if(event.getAction().equals(Action.RIGHT_CLICK_BLOCK) && event.getClickedBlock().getType().equals(Material.JUNGLE_BUTTON)) {
+				File f = new File(System.getProperty("user.dir") +"/plugins/Mineswarm/buttons.yml");
+				List<String> lines = FileUtils.readLines(f, "UTF-8");
+				for (String line : lines) {
+					List<String> button = Arrays.asList(line.split("\\s*,\\s*"));
+					if(button.get(0).equals(String.valueOf(event.getClickedBlock().getX())) && button.get(1).equals(String.valueOf(event.getClickedBlock().getY())) && button.get(2).equals(String.valueOf(event.getClickedBlock().getZ())) && button.get(3).equals(String.valueOf(event.getClickedBlock().getWorld().getName()))) {
+						try{
+							if(!(player.hasMetadata("class"))) {
+								kits.giveKit(player, button.get(4));
+								return;
+							}
+							else
+							{
+								player.sendMessage("You can't use more than 1 class, die to pick a new class >:)");
+								return;
+							}
+						}
+						catch(Exception er){
+							player.sendMessage("Error on class command: " + er.toString());
+							return;
+						}
+						
+					}
+					else {
+						getLogger().info("Didn't meet if requirment....");
+					}
+					
+				}
+				
+			}
+			
+			if((event.getAction() == Action.RIGHT_CLICK_BLOCK || event.getAction() == Action.LEFT_CLICK_BLOCK) && (player.getInventory().getItemInMainHand().getItemMeta().getDisplayName().contains("MCMS Marking Tool"))){
+				try{
+					if(event.getAction() == Action.RIGHT_CLICK_BLOCK && player.getInventory().getItemInMainHand().getItemMeta().getDisplayName().contains("MCMS Marking Tool")){
+						player.setMetadata("pos2x",new FixedMetadataValue(this,event.getClickedBlock().getLocation().getBlockX()));
+						player.setMetadata("pos2z",new FixedMetadataValue(this,event.getClickedBlock().getLocation().getBlockZ()));
+						player.setMetadata("pos2y",new FixedMetadataValue(this,event.getClickedBlock().getLocation().getBlockY()));
+						player.setMetadata("world2",new FixedMetadataValue(this,event.getClickedBlock().getLocation().getWorld()));
+					}
+				}catch(Exception er){player.sendMessage("Error on right hand: " + er.toString());}
+				try{
+					if(event.getAction() == Action.LEFT_CLICK_BLOCK && player.getInventory().getItemInMainHand().getItemMeta().getDisplayName().contains("MCMS Marking Tool")){
+						player.setMetadata("pos1x",new FixedMetadataValue(this,event.getClickedBlock().getLocation().getBlockX()));
+						player.setMetadata("pos1z",new FixedMetadataValue(this,event.getClickedBlock().getLocation().getBlockZ()));
+						player.setMetadata("pos1y",new FixedMetadataValue(this,event.getClickedBlock().getLocation().getBlockY()));
+						player.setMetadata("world1",new FixedMetadataValue(this,event.getClickedBlock().getLocation().getWorld()));
+					}
+				}catch(Exception er){player.sendMessage("Error on right hand: " + er.toString());}
+				
+				event.setCancelled(true);//Probably want to cancel but shouldn't matter in adventure mode
+			}
+		}catch(Exception noncrit){
+			//getLogger().info("Some uncaught error, only happens when hand is empt right clicking; probably bukkit.");
+		}
+	}
+	
+	//Command based functions.
+	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args){	
+		Player player = (Player) sender;
+		if (cmd.getName().equalsIgnoreCase("doorlevel") && sender instanceof Player){
+			Block block = player.getTargetBlock(null, 100);
+			Location bl = block.getLocation();
+			player.sendMessage(bl.toString());
+			
+			
+			return true;
+		}
+		
+		if (cmd.getName().equalsIgnoreCase("msteam") && sender instanceof Player){
+			switch(args[0]) {
+				case "tpr":
+					teams.addTPAQue(player);
+					break;
+				case "tpp":
+					teams.addTPAQue(player, args[1]);
+					break;
+				case "no":
+					teams.tpQueue.get(player.getUniqueId()).cancel();
+					break;
+				case "join": 
+					try {
+						teams.joinTeam(player, args[1]);
+						return true;
+					}catch(IndexOutOfBoundsException ib) {
+						player.sendMessage("Please enter a team name you want to join");
+					}
+					break;
+				case "joinr": 
+					teams.joinRandom(player);
+					return true;
+				case "add": 
+					try {
+						teams.joinTeamAccept(player, args[1]);
+						return true;
+					}catch(IndexOutOfBoundsException ib) {
+						player.sendMessage("Please enter the player name you want to let join");
+					}
+					break;
+				case "deny": 
+					try {
+						teams.joinTeamDeny(player, args[1]);
+						return true;
+					}catch(IndexOutOfBoundsException ib) {
+						player.sendMessage("Please enter the player name you want to deny joining");
+					}
+					break;
+				case "leave":
+					try {
+						teams.leaveTeam(player);
+						return true;
+					}catch(Exception exc) {
+						player.sendMessage("Error: " + exc.toString());
+					}
+					break;
+				case "create":
+					try {
+						teams.createTeam(args[1], player);
+						return true;
+					}catch(IndexOutOfBoundsException ib) {
+						player.sendMessage("Please enter a team name you want to create");
+					}
+					break;
+				case "kick":
+					try {
+						teams.kickTeamMember(args[1], player);
+						return true;
+					}catch(IndexOutOfBoundsException ib) {
+						player.sendMessage("Please enter the player name you want to kick.");
+					}
+					break;
+				case "save":
+					try {
+						teams.saveTeamData();
+						return true;
+					}catch(Exception exc) {
+						player.sendMessage("Problem saving: " + exc.toString());
+					}
+					break;
+			}
+			//player.sendMessage(bl.toString());
+			
+			
+			return true;
+		}
+		
+		
+		//MCMS Marking Tool
+		if (cmd.getName().equalsIgnoreCase("markingtool") && sender instanceof Player){
+			ItemStack markingTool = new ItemStack( Material.GOLDEN_HOE, 1);
+			List<String> lore = new ArrayList<>();
+			lore.add("Marking Tool: Left click POS1, Right click POS2");
+			
+			ItemMeta meta = markingTool.getItemMeta();
+			meta.setDisplayName("MCMS Marking Tool");
+			if(meta.hasLore()){meta.getLore().add("Marking Tool: Left click POS1, Right click POS2");}
+			else{meta.setLore(lore);}
+			markingTool.setItemMeta(meta);
+			player.getLocation().getWorld().dropItem(player.getLocation(), markingTool);			
+			
+			return true;
+		}
+		if (cmd.getName().equalsIgnoreCase("showzone") && sender instanceof Player){		
+			try{
+				List<String> zoneData = db.showZone(player.getLocation().getBlockX(), player.getLocation().getBlockY(), player.getLocation().getBlockZ(), player.getLocation().getWorld().toString());
+				for(String x : zoneData){
+					player.sendMessage(x);
+				}
+				return true;
+			}
+			catch(Exception er){
+				player.sendMessage("Error on show location/s: " + er.toString());
+			}
+		}
+		if (cmd.getName().equalsIgnoreCase("gotozone") && sender instanceof Player){		
+			try{
+				List<String> zoneData = db.tpToZone(args[0]);
+				if(zoneData.size() >= 1){
+					Location location = new Location (Bukkit.getWorld(zoneData.get(0)), Integer.valueOf(zoneData.get(1)), Integer.valueOf(zoneData.get(2)), Integer.valueOf(zoneData.get(3)));
+					player.teleport(location);
+					return true;
+				}
+				else{
+					return false;
+				}
+			}
+			catch(Exception er){
+				player.sendMessage("Error on show location/s: " + er.toString());
+			}
+		}
+		if (cmd.getName().equalsIgnoreCase("makezone") && sender instanceof Player){			
+			try{
+				if (player.hasMetadata("pos1x") && player.hasMetadata("pos1z") && player.hasMetadata("pos1y") && player.hasMetadata("pos2z") && player.hasMetadata("pos2x")&& player.hasMetadata("pos2y")&& player.hasMetadata("world1")&& player.hasMetadata("world2")){
+					if(!player.getMetadata("world1").get(0).asString().equals(player.getMetadata("world2").get(0).asString())){
+						player.sendMessage("You cannot set a single zone that spans multiple worlds.");
+						player.sendMessage(player.getMetadata("world1").get(0).asString());
+						player.sendMessage(player.getMetadata("world2").get(0).asString());
+						//return true;
+					}
+					int min_x, min_z, min_y;
+					int max_x, max_z, max_y;
+					
+					if(player.getMetadata("pos1x").get(0).asInt() > player.getMetadata("pos2x").get(0).asInt()){
+						max_x = player.getMetadata("pos1x").get(0).asInt(); 
+						min_x = player.getMetadata("pos2x").get(0).asInt();
+					} else {
+						max_x = player.getMetadata("pos2x").get(0).asInt();
+						min_x = player.getMetadata("pos1x").get(0).asInt();
+					}
+					
+					if(player.getMetadata("pos1z").get(0).asInt() > player.getMetadata("pos2z").get(0).asInt()){
+						max_z = player.getMetadata("pos1z").get(0).asInt(); 
+						min_z = player.getMetadata("pos2z").get(0).asInt();
+					} else {
+						max_z = player.getMetadata("pos2z").get(0).asInt();
+						min_z = player.getMetadata("pos1z").get(0).asInt();
+					}
+					
+					if(player.getMetadata("pos1y").get(0).asInt() > player.getMetadata("pos2y").get(0).asInt()){
+						max_y = player.getMetadata("pos1y").get(0).asInt(); 
+						min_y = player.getMetadata("pos2y").get(0).asInt();
+					} else {
+						max_y = player.getMetadata("pos2y").get(0).asInt();
+						min_y = player.getMetadata("pos1y").get(0).asInt();
+					}
+					
+					db.makeZone(args[0].replace("_", " "), min_x, min_y, min_z, max_x, max_y, max_z, args[1].replace("_", " "), player.getName(), player.getMetadata("world1").get(0).asString(), Boolean.valueOf(args[2]), Integer.valueOf(args[3]));
+
+					return true;
+				}
+				else {
+					player.sendMessage("One of the positions is not set, please set both positions before displaying zone");
+					return true;
+				}
+			}
+			catch(Exception er){
+				player.sendMessage("Error on show location/s: " + er.toString());
+			}
+		}
+		if (cmd.getName().equalsIgnoreCase("makedoor") && sender instanceof Player){			
+			try{
+				Block block = player.getTargetBlock(null, 10);
+				String blockID = "X:" + String.valueOf(block.getX()) + "Z:"+String.valueOf(block.getZ()) + "W:"+String.valueOf(block.getWorld());
+				int blockY = block.getY();
+				db.makeDoor(blockID, blockY, args[0].replace("_", " "), player.getName());
+				return true;
+			}
+			catch(Exception er){
+				player.sendMessage("Error on show location/s: " + er.toString());
+			}
+		}
+		if (cmd.getName().equalsIgnoreCase("deletedoor") && sender instanceof Player){			
+			try{
+				Block block = player.getTargetBlock(null, 10);
+				String blockID = "X:" + String.valueOf(block.getX()) + "Z:"+String.valueOf(block.getZ()) + "W:"+String.valueOf(block.getWorld());
+				int blockY = block.getY();
+				db.deleteDoor(blockID, blockY, player.getName());
+				return true;
+			}
+			catch(Exception er){
+				player.sendMessage("Error on show location/s: " + er.toString());
+			}
+		}
+		if (cmd.getName().equalsIgnoreCase("destroydoor") && sender instanceof Player){			
+			try{
+				Block block = player.getTargetBlock(null, 10);
+				String blockID = "X:" + String.valueOf(block.getX()) + "Z:"+String.valueOf(block.getZ()) + "W:"+String.valueOf(block.getWorld());
+				int blockY = block.getY();
+				db.destroyDoor(blockID, blockY);
+				return true;
+			}
+			catch(Exception er){
+				player.sendMessage("Error on show location/s: " + er.toString());
+			}
+		}
+		if (cmd.getName().equalsIgnoreCase("makespawner") && sender instanceof Player){			
+			try{
+				int min_x, min_z, min_y;
+				int max_x, max_z, max_y;
+				
+				Block block = player.getTargetBlock(null, 10);
+				min_x = block.getX() - Integer.valueOf(args[0]);
+				min_y = block.getY() - Integer.valueOf(args[0]);
+				min_z = block.getZ() - Integer.valueOf(args[0]);
+				
+				max_x = block.getX() + Integer.valueOf(args[0]);
+				max_y = block.getY() + Integer.valueOf(args[0]);
+				max_z = block.getZ() + Integer.valueOf(args[0]);
+				db.makeSpawner(min_x, min_y, min_z, max_x, max_y, max_z, block.getWorld().toString().replace("CraftWorld{name=", "").replace("}", ""), Integer.valueOf(args[0]), args[1], Integer.valueOf(args[2]), Integer.valueOf(args[3]), Integer.valueOf(args[4]), Integer.valueOf(args[5]), Integer.valueOf(args[6]), args[7], Integer.valueOf(args[8]));
+
+				return true;
+			}
+			catch(Exception er){
+				player.sendMessage("Error ON INSERT: " + er.toString());
+			}
+		}
+		if (cmd.getName().equalsIgnoreCase("save") && sender instanceof Player){			
+			try{
+
+				return true;
+			}
+			catch(Exception er){
+				player.sendMessage("Error ON DB BACKUP: " + er.toString());
+			}
+		}
+		if (cmd.getName().equalsIgnoreCase("chest") && sender instanceof Player){
+			
+			Chest chest;			
+			try {
+				Block block = player.getTargetBlock(null, 10);
+                chest = (Chest) block.getState();
+			}
+			catch(Exception err){
+				player.sendMessage("That block could not be casted as a chest.");
+				return true;
+			}
+			
+			if(args.length <= 1) {
+				player.sendMessage("Arguments must be ITEM QUANTITY such as: DIRT 12");
+				return false;
+			}
+			if ( (args.length & 1) != 0 ) { 
+				player.sendMessage("Missing argumenets, args should be ITEM QUANTITY");
+				return false;
+			}
+			
+			try{
+				String items = "";
+				for(int i = 0; i < args.length;i+=2) {
+					try {
+						new ItemStack(Material.getMaterial(args[i].toString()), Integer.valueOf(args[i+1]));
+					}catch(Exception problem) {
+						player.sendMessage("Could not convert one of more of the args to an item stack.");
+						return false;
+					}
+				}
+				
+				for(String item : args) {
+					items += item +",";
+				}items = items.replaceAll(",$", "");
+				
+				db.createChest(chest.getX(), chest.getY(), chest.getZ(), chest.getWorld().getName(), player.getName(), items);
+
+				return true;
+			}
+			catch(Exception er){
+				player.sendMessage("Error ON INSERT: " + er.toString());
+			}
+		}
+		if (cmd.getName().equalsIgnoreCase("class")){
+			try{
+				if(!(player.hasMetadata("class"))) {
+					kits.giveKit(player, args[0]);
+					return true;
+				}
+				else
+				{
+					player.sendMessage("You can't use more than 1 class, die to pick a new class >:)");
+					return true;
+				}
+			}
+			catch(Exception er){
+				player.sendMessage("Error on class command: " + er.toString());
+				return false;
+			}
+		}
+		if (cmd.getName().equalsIgnoreCase("inhand")){
+			try{
+				player.sendMessage(player.getInventory().getItemInMainHand().getType().toString());
+			}
+			catch(Exception er){
+				player.sendMessage("Error on class command: " + er.toString());
+				return false;
+			}
+		}
+		if (cmd.getName().equalsIgnoreCase("makebutton")){
+			try{
+				
+				
+				Block block = player.getTargetBlock(null, 10);
+				if(block.getType().equals(Material.JUNGLE_BUTTON)) {
+					
+					File f = new File(System.getProperty("user.dir") +"/plugins/Mineswarm/buttons.yml");
+		    		f.createNewFile();
+		    		
+					try {
+					    Files.write(Paths.get(f.getPath()), (String.valueOf(block.getX()) + "," + (String.valueOf(block.getY()) +"," + String.valueOf(block.getZ()) + "," + block.getWorld().getName() +","+ args[0] + "\n")).getBytes(), StandardOpenOption.APPEND);
+					}catch (IOException e) {
+						this.getLogger().info(e.toString());
+					}
+					return true;
+				}
+			}
+			catch(Exception er){
+				player.sendMessage("Error on button make command: " + er.toString());
+				return false;
+			}
+		}
+		return false;
+	}
+	//BETTER IDEA WHEN THIS WORKS... 
+	//USE MARKED REGION AS REGION TO CHECK PLAYERS AGAINST, THEN USE BLOCK PLAYER IS LOOKING AT FOR SPAWNER LOCATION (NO OFFSETS)
+}
