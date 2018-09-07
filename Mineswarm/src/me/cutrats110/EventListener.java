@@ -73,7 +73,7 @@ public class EventListener implements Listener {
 		}catch(NullPointerException np) {}
 		try {
 		//Remove from owner position..
-		if(teams.getTeamOwner(player.getName()).equals(player)) {
+		if(teams.getTeamOwner(player.getMetadata("team_members").get(0).asString()).equals(player)) {
 			if(debugging) {plugin.getLogger().info("Exiting player is team owner");}
 			//Player is owner of team...
 			teams.setNewTeamOwner(player.getMetadata("team_members").get(0).asString());

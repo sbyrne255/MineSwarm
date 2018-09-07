@@ -1,8 +1,6 @@
 //FEATURE:
 	MAYBE CHECK FULL INVENTORY FOR KEY INSTEAD OF JUST HANDS
 //BUGS:
-	On owner leave teams get all fucked (other members appear to not be in teams, but they are...
-	Sever team generates new team on each request, does not fill one team before moving on...
 //TODO:
 	*Load a configfile
 		*Enable a YML
@@ -26,8 +24,8 @@
 		*Use SQLite to save MetaData changes, if it is too slow que up a task list for each item (low priority)
 		*On Join, load MetaData
 		*On Leave, save MetaData
-	TEAMS
-		AFK/Leaving kicks you from own spot...
+	*TEAMS
+		*AFK/Leaving kicks you from own spot...//Essentials will handle the AFK kicks, on leave/onkick event will be the action.
 		*New teams start at spawn
 		*Leaving a team brings you to spawn
 		*Creating a team sends everyone back to start

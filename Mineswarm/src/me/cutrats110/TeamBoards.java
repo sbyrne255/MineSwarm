@@ -29,8 +29,7 @@ public class TeamBoards {
 			
 			boards.put(teamName, board);
 		}catch(NullPointerException np) {
-			plugin.getLogger().info("Erroor in makeBoard " + np.getStackTrace());
-			np.printStackTrace();
+			plugin.getLogger().info("Erroor in makeBoard " + np.toString());
 		}
 	}
 	

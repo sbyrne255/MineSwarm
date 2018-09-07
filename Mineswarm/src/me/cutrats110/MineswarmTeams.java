@@ -86,29 +86,29 @@ public class MineswarmTeams {
 	 * @return Returns true if team is successfully created.
 	 * @see createTeam
 	 */
-	public boolean createTeam() {
+	public String createTeam() {
 		try {
 			String name = java.util.UUID.randomUUID().toString();
 			// Team name is available and team owner is NOT part of another team.
 			List<UUID> teamCheck = new ArrayList<>();
 			teamCheck = teams.get(name);// Get all UUIDs associated with that team name...
 			if (teamCheck != null) {
-				return false;
+				return null;
 			} else {
 				if (teams.containsKey(name)) {
-					return false;
+					return null;
 				} else {
 					servers.add(UUID.fromString(name));
 					List<UUID> playerList = new ArrayList<>();
 					playerList.add(UUID.fromString(name));
 					teams.put(name, playerList);
-					return true;
+					return name;
 				}
 			}
 		} catch (Exception err) {
 			plugin.getLogger().info("Problem with making server team: " + err.toString());
 		}
-		return false;
+		return null;
 	}
 
 	/**
@@ -204,18 +204,22 @@ public class MineswarmTeams {
 	public void joinRandom(Player player) {
 		List<UUID> membersID;
 		String teamName = "";
-		int loop = 0;
-		// Get team members in server team, 0,1,2,3,ect if the server is full, try the
-		// next server team
-		try {
-			while (teams.get(servers.get(loop).toString()).size() >= plugin.getConfig().getInt("max-team-size")) {
-				loop++;
+		
+		for(UUID server : servers) {
+			if (teams.get(server.toString()).size() >= plugin.getConfig().getInt("max-team-size")+1) {//Server is at or above max size. (+1 because server is a "player")
+				continue;				
 			}
-		} catch (IndexOutOfBoundsException ib) {
-			createTeam();
-		} finally {
-			teamName = servers.get(loop).toString();
+			else {
+				//Join this one...
+				teamName = server.toString();
+				if(debugging) {plugin.getLogger().info("Joining team: " + teamName);}
+			}
 		}
+		if(teamName == "" ){
+			if(debugging) {plugin.getLogger().info("No server teams were open, creating a new one.");}
+			teamName = createTeam();
+		}
+			
 		membersID = teams.get(teamName);// All team members UUIDs
 		Player requesty = Bukkit.getPlayer(UUIDLookup.get(player.getName()));
 		if (requesty != null) {
@@ -437,10 +441,6 @@ public class MineswarmTeams {
 					setNewTeamOwner(team);// Sets new owner...
 					players.remove(player.getUniqueId());// Set player list to be in a null team
 					player.sendMessage("You have left the team");
-					player.setMetadata("team_members", new FixedMetadataValue(plugin, ""));
-					if (plugin.getConfig().getBoolean("leaving-team-takes-to-spawn")) {
-						player.teleport(player.getWorld().getSpawnLocation());
-					}
 					
 					try {
 						if(player.hasMetadata("team_members") && player.getMetadata("team_members").get(0).toString().length() >= 1) {
@@ -453,6 +453,11 @@ public class MineswarmTeams {
 					}catch(NullPointerException np) {}
 					catch(Exception err) {
 						plugin.getLogger().info("Problem joining team" + err.toString());
+					}
+					
+					player.setMetadata("team_members", new FixedMetadataValue(plugin, ""));
+					if (plugin.getConfig().getBoolean("leaving-team-takes-to-spawn")) {
+						player.teleport(player.getWorld().getSpawnLocation());
 					}
 					
 					board.removeScoreboard(player);
@@ -462,10 +467,6 @@ public class MineswarmTeams {
 					teams.put(team, membersID);
 					players.remove(player.getUniqueId());// Set player list to be in a null team
 					player.sendMessage("You have left the team");
-					player.setMetadata("team_members", new FixedMetadataValue(plugin, ""));
-					if (plugin.getConfig().getBoolean("leaving-team-takes-to-spawn")) {
-						player.teleport(player.getWorld().getSpawnLocation());
-					}
 					try {
 						if(player.hasMetadata("team_members") && player.getMetadata("team_members").get(0).toString().length() >= 1) {
 					    	board.makeScoreBoard(player.getMetadata("team_members").get(0).asString());
@@ -479,6 +480,10 @@ public class MineswarmTeams {
 						plugin.getLogger().info("Problem joining team" + err.toString());
 					}
 					
+					player.setMetadata("team_members", new FixedMetadataValue(plugin, ""));
+					if (plugin.getConfig().getBoolean("leaving-team-takes-to-spawn")) {
+						player.teleport(player.getWorld().getSpawnLocation());
+					}					
 					board.removeScoreboard(player);
 
 					return true;
@@ -559,8 +564,9 @@ public class MineswarmTeams {
 
 	public boolean setNewTeamOwner(String teamName) {
 		List<UUID> members = teams.get(teamName);
-		if (members.size() == 1) {//Do nothing if only 1 player in team
-			plugin.getLogger().info("Wut");
+		if (members.size() <= 1) {//Do nothing if only 1 player in team
+			if(debugging) {plugin.getLogger().info("Removing team due to lack of players.");}
+			teams.remove(teamName);
 			return true;
 		} else {
 			UUID owner = members.get(0);
@@ -569,7 +575,7 @@ public class MineswarmTeams {
 		}
 			teams.remove(teamName);
 			teams.put(teamName, members);
-			plugin.getLogger().info("Moved team so : " + plugin.getServer().getOfflinePlayer(teams.get(teamName).get(0)).getName());
+			if(debugging) {plugin.getLogger().info("Moved team so : " + plugin.getServer().getOfflinePlayer(teams.get(teamName).get(0)).getName());}
 		return true;
 	}
 
@@ -595,6 +601,20 @@ public class MineswarmTeams {
 			if (isTeamMember(Bukkit.getPlayer(UUIDLookup.get(kicky)), players.get(kicker.getUniqueId()))) {
 				// Kicker is team owner and kicky is a member of the kicker's team.
 				leaveTeam(Bukkit.getPlayer(UUIDLookup.get(kicky)));// Execute the leave function on behalf of kicked player.
+				try {
+					if(kicker.hasMetadata("team_members") && kicker.getMetadata("team_members").get(0).toString().length() >= 1) {
+				    	board.makeScoreBoard(kicker.getMetadata("team_members").get(0).asString());
+				    	board.setScoreboard(getTeamMembers(kicker.getMetadata("team_members").get(0).asString()), kicker.getMetadata("team_members").get(0).asString());
+				    }
+				    else {
+				    	if(debugging){plugin.getLogger().info("team_members NOT SET");}
+				    }	
+				}catch(NullPointerException np) {}
+				catch(Exception err) {
+					plugin.getLogger().info("Problem joining team" + err.toString());
+				}
+				
+				board.removeScoreboard(Bukkit.getPlayer(UUIDLookup.get(kicky)));
 				return true;
 			}
 			else {
