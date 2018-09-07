@@ -57,7 +57,8 @@ public class Mineswarm extends JavaPlugin implements Listener{
 		db.createTable();
 		db.createMobsTable();
 		db.createChestsTable();
-		db.createPlayersTable();			
+		db.createPlayersTable();		
+		db.createScoresTable();
 	}
 	@Override
 	public void onDisable(){
@@ -263,10 +264,22 @@ public class Mineswarm extends JavaPlugin implements Listener{
 		if (cmd.getName().equalsIgnoreCase("msteam") && sender instanceof Player){
 			switch(args[0]) {
 				case "tpr":
+					if(teams.tpQueue.get(player.getUniqueId()) != null) {
+						//A Request already exists, cancel the first one.
+						teams.tpQueue.get(player.getUniqueId()).cancel();
+						teams.tpQueue.remove(player.getUniqueId());
+					}
 					teams.addTPAQue(player);
+					player.sendMessage("You will be TPed in ~20 seconds, do not move or this will be cancelled");
 					break;
 				case "tpp":
+					if(teams.tpQueue.get(player.getUniqueId()) != null) {
+						//A Request already exists, cancel the first one.
+						teams.tpQueue.get(player.getUniqueId()).cancel();
+						teams.tpQueue.remove(player.getUniqueId());
+					}
 					teams.addTPAQue(player, args[1]);
+					player.sendMessage("You will be TPed in ~20 seconds, do not move or this will be cancelled");
 					break;
 				case "no":
 					teams.tpQueue.get(player.getUniqueId()).cancel();
@@ -324,8 +337,8 @@ public class Mineswarm extends JavaPlugin implements Listener{
 					break;
 				case "list":
 					try {
-						if(player.hasMetadata("team_members") && player.getMetadata("team_members").get(0).asString().length() > 0) {
-							for(String name : teams.getTeamMembersNames(player.getMetadata("team_members").get(0).asString())) {
+						if(player.hasMetadata("team_name") && player.getMetadata("team_name").get(0).asString().length() > 0) {
+							for(String name : teams.getTeamMembersNames(player.getMetadata("team_name").get(0).asString())) {
 								player.sendMessage(name);
 							}
 							

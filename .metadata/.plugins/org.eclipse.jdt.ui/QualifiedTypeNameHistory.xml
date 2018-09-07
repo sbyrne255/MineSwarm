@@ -1,14 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <qualifiedTypeNameHistroy>
-<fullyQualifiedTypeName name="org.bukkit.block.Chest"/>
-<fullyQualifiedTypeName name="org.bukkit.block.Block"/>
-<fullyQualifiedTypeName name="java.sql.ResultSet"/>
-<fullyQualifiedTypeName name="java.sql.Statement"/>
-<fullyQualifiedTypeName name="java.sql.Timestamp"/>
-<fullyQualifiedTypeName name="java.util.Date"/>
-<fullyQualifiedTypeName name="java.io.File"/>
-<fullyQualifiedTypeName name="me.cutrats110.ScheduledBackupDB"/>
-<fullyQualifiedTypeName name="org.bukkit.inventory.ItemStack"/>
 <fullyQualifiedTypeName name="net.minecraft.server.v1_13_R1.Material"/>
 <fullyQualifiedTypeName name="org.bukkit.Material"/>
 <fullyQualifiedTypeName name="org.bukkit.inventory.meta.BookMeta"/>
@@ -44,7 +35,6 @@
 <fullyQualifiedTypeName name="java.util.concurrent.Callable"/>
 <fullyQualifiedTypeName name="org.bukkit.scheduler.BukkitRunnable"/>
 <fullyQualifiedTypeName name="org.bukkit.event.player.PlayerMoveEvent"/>
-<fullyQualifiedTypeName name="org.bukkit.Bukkit"/>
 <fullyQualifiedTypeName name="org.bukkit.plugin.Plugin"/>
 <fullyQualifiedTypeName name="java.util.HashMap"/>
 <fullyQualifiedTypeName name="java.util.UUID"/>
@@ -52,7 +42,6 @@
 <fullyQualifiedTypeName name="org.bukkit.event.entity.EntityRegainHealthEvent"/>
 <fullyQualifiedTypeName name="org.bukkit.entity.EntityType"/>
 <fullyQualifiedTypeName name="org.bukkit.event.player.PlayerRespawnEvent"/>
-<fullyQualifiedTypeName name="java.util.concurrent.ThreadLocalRandom"/>
 <fullyQualifiedTypeName name="org.json.simple.JSONArray"/>
 <fullyQualifiedTypeName name="org.apache.commons.io.IOUtils"/>
 <fullyQualifiedTypeName name="org.apache.logging.log4j.core.util.IOUtils"/>
@@ -60,4 +49,15 @@
 <fullyQualifiedTypeName name="org.json.simple.JSONValue"/>
 <fullyQualifiedTypeName name="org.json.simple.JSONObject"/>
 <fullyQualifiedTypeName name="org.json.simple.parser.ParseException"/>
+<fullyQualifiedTypeName name="org.bukkit.Bukkit"/>
+<fullyQualifiedTypeName name="java.util.concurrent.ThreadLocalRandom"/>
+<fullyQualifiedTypeName name="org.bukkit.event.entity.EntityDamageEvent.DamageCause"/>
+<fullyQualifiedTypeName name="org.bukkit.entity.Arrow"/>
+<fullyQualifiedTypeName name="org.bukkit.event.entity.ProjectileHitEvent"/>
+<fullyQualifiedTypeName name="org.bukkit.potion.Potion"/>
+<fullyQualifiedTypeName name="org.bukkit.entity.SplashPotion"/>
+<fullyQualifiedTypeName name="org.bukkit.entity.Projectile"/>
+<fullyQualifiedTypeName name="org.bukkit.entity.ThrownPotion"/>
+<fullyQualifiedTypeName name="org.bukkit.entity.LivingEntity"/>
+<fullyQualifiedTypeName name="org.bukkit.potion.PotionEffectType"/>
 </qualifiedTypeNameHistroy>

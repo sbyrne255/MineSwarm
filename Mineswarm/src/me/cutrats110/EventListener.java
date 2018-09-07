@@ -8,9 +8,12 @@ import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.attribute.Attribute;
+import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.SplashPotion;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -73,10 +76,10 @@ public class EventListener implements Listener {
 		}catch(NullPointerException np) {}
 		try {
 		//Remove from owner position..
-		if(teams.getTeamOwner(player.getMetadata("team_members").get(0).asString()).equals(player)) {
+		if(teams.getTeamOwner(player.getMetadata("team_name").get(0).asString()).equals(player)) {
 			if(debugging) {plugin.getLogger().info("Exiting player is team owner");}
 			//Player is owner of team...
-			teams.setNewTeamOwner(player.getMetadata("team_members").get(0).asString());
+			teams.setNewTeamOwner(player.getMetadata("team_name").get(0).asString());
 		}
 		}catch(Exception err) {
 			plugin.getLogger().info(err.toString());
@@ -84,12 +87,12 @@ public class EventListener implements Listener {
 		
 		db.updatePlayerData(event.getPlayer());
 		try {
-			if(player.hasMetadata("team_members") && player.getMetadata("team_members").get(0).toString().length() >= 1) {
-		    	board.makeScoreBoard(player.getMetadata("team_members").get(0).asString());
-		    	board.setScoreboard(teams.getTeamMembers(player.getMetadata("team_members").get(0).asString()), player.getMetadata("team_members").get(0).asString());
+			if(player.hasMetadata("team_name") && player.getMetadata("team_name").get(0).toString().length() >= 1) {
+		    	board.makeScoreBoard(player.getMetadata("team_name").get(0).asString());
+		    	board.setScoreboard(teams.getTeamMembers(player.getMetadata("team_name").get(0).asString()), player.getMetadata("team_name").get(0).asString());
 		    }
 		    else {
-		    	if(debugging){plugin.getLogger().info("team_members NOT SET");}
+		    	if(debugging){plugin.getLogger().info("team_name NOT SET");}
 		    }	
 		}catch(NullPointerException np) {}
 		catch(IllegalStateException ic) {}//Thrown due to player being disconnected, can't set a DCed players scoreboard, can update teams though.
@@ -110,12 +113,12 @@ public class EventListener implements Listener {
         
         
         try {
-	        if(player.hasMetadata("team_members") && player.getMetadata("team_members").get(0).toString().length() >= 1) {//If player is part of a team...
-	        	board.makeScoreBoard(player.getMetadata("team_members").get(0).asString());
-	        	board.setScoreboard(teams.getTeamMembers(player.getMetadata("team_members").get(0).asString()), player.getMetadata("team_members").get(0).asString());
+	        if(player.hasMetadata("team_name") && player.getMetadata("team_name").get(0).toString().length() >= 1) {//If player is part of a team...
+	        	board.makeScoreBoard(player.getMetadata("team_name").get(0).asString());
+	        	board.setScoreboard(teams.getTeamMembers(player.getMetadata("team_name").get(0).asString()), player.getMetadata("team_name").get(0).asString());
 	        }
 	        else {
-	        	if(debugging){plugin.getLogger().info("team_members NOT SET");}
+	        	if(debugging){plugin.getLogger().info("team_name NOT SET");}
 	        }
         }catch(NullPointerException np) {}
         catch(Exception err) {plugin.getLogger().info("Error on player join with Meta data: " + err.toString());}
@@ -126,12 +129,12 @@ public class EventListener implements Listener {
 		try {
 			//May not update with correct value as damage has not been done yet...
 			//Maybe pass health as arg with trueDamage - hp (not just damage-hgp
-			if(player.hasMetadata("team_members") && player.getMetadata("team_members").get(0).toString().length() >= 1) {//If player is part of a team...
-	        	board.makeScoreBoard(player.getMetadata("team_members").get(0).asString());
-	        	board.setScoreboard(teams.getTeamMembers(player.getMetadata("team_members").get(0).asString()), player.getMetadata("team_members").get(0).asString(), player, 20);
+			if(player.hasMetadata("team_name") && player.getMetadata("team_name").get(0).toString().length() >= 1) {//If player is part of a team...
+	        	board.makeScoreBoard(player.getMetadata("team_name").get(0).asString());
+	        	board.setScoreboard(teams.getTeamMembers(player.getMetadata("team_name").get(0).asString()), player.getMetadata("team_name").get(0).asString(), player, 20);
 	        }
 	        else {
-	        	if(debugging){plugin.getLogger().info("team_members NOT SET");}
+	        	if(debugging){plugin.getLogger().info("team_name NOT SET");}
 	        }
 		}catch(NullPointerException np) {} catch(Exception err) {plugin.getLogger().info("Other Error");}			
 	}
@@ -359,6 +362,44 @@ public class EventListener implements Listener {
 		} 
     }
 	
+	
+	
+	@EventHandler(priority = EventPriority.HIGH)
+	public void PotionSplashEvent(org.bukkit.event.entity.PotionSplashEvent event){
+		if(event.getPotion().getShooter() instanceof Player) {
+			//Loop through all effect entities.
+			for(Entity ent : event.getAffectedEntities()) {
+				//If entity is a player...
+				if(ent instanceof Player) {
+					for (PotionEffect effect : event.getPotion().getEffects()) {
+						if(effect.getType().equals(PotionEffectType.FIRE_RESISTANCE)) {
+							
+						}
+						if(effect.getType().equals(PotionEffectType.REGENERATION)) {
+							
+						}
+					}//if we want all splash health to not heal just stick this at the top and break (cancel false) if it's an "accepted" potion (from config?)
+					//If we want medic and such to be able to use all potions loop through like this checking criteria.
+				}else {
+					//ALTERNATIVE, CANCEL THE EVENT BUT SCHEDULE TO ADD THE EFFECT TO EVERY MOB 1TICK AFTER...
+					//THIS WORKS, IT CANCELS ALL POTIONS ON PLAYERS SENT BY PLAYERS...
+					//PROBABLY NEED TO ADD SOME EXECEPTIONS SUCH AS MEDICS BEING ALLOWED TO USE HEALING POTIONS?
+					if(ent instanceof LivingEntity) {
+				    	plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() 
+				    	{
+					    	public void run() 
+					    	{
+					    		LivingEntity mob = (LivingEntity) ent;
+								mob.addPotionEffects(event.getPotion().getEffects());
+					    	}
+				    	}, 1L);
+				    }
+				}
+			}
+			event.setCancelled(true);
+		}
+	}
+	
 	@EventHandler(priority = EventPriority.HIGH)
 	public void onPlayerDamage(EntityDamageByEntityEvent e) {
 		try {
@@ -368,8 +409,24 @@ public class EventListener implements Listener {
 			try {damager = e.getDamager();}
 			catch(Exception er) {plugin.getLogger().info("Damager is causing an error.");}
 			try {damageTaker = e.getEntity();}
-			catch(Exception er) {plugin.getLogger().info("Damage taker is casuing an error");}
-
+			catch(Exception er) {plugin.getLogger().info("Damage taker is casuing an error");}								
+			if(e.getDamager() instanceof Arrow) {
+				Arrow arrow = null;				
+				try{arrow = (Arrow) e.getDamager();}
+				catch(Exception err) {plugin.getLogger().info(err.toString() + "ARROW WAS NOT AN ARROW BUT IT WAS AN ARROW, SO ARROW...");}
+				if(arrow.getShooter() instanceof Player && db.selectZonePVP(damageTaker.getLocation().getBlockX(), damageTaker.getLocation().getBlockY(), damageTaker.getLocation().getBlockZ(), damageTaker.getLocation().getWorld().toString()) == false) {
+					e.setCancelled(true);
+				}
+			}			
+			if(e.getDamager() instanceof SplashPotion){
+				SplashPotion spotion = (SplashPotion) e.getDamager();
+				if(spotion.getShooter() instanceof Player && db.selectZonePVP(damageTaker.getLocation().getBlockX(), damageTaker.getLocation().getBlockY(), damageTaker.getLocation().getBlockZ(), damageTaker.getLocation().getWorld().toString()) == false)
+				{
+					e.setCancelled(true);
+					return;
+				}
+			}
+			
 			if (damageTaker instanceof Player) {
 				Player taker = (Player) damageTaker;
 			    if (damager instanceof Player) 
@@ -417,12 +474,12 @@ public class EventListener implements Listener {
 					    		return;
 					    	}
 					    	
-					    	if(taker.hasMetadata("team_members")  && taker.getMetadata("team_members").get(0).toString().length() >= 1) {//If player is part of a team...
-					        	board.makeScoreBoard(taker.getMetadata("team_members").get(0).asString());
-					        	board.setScoreboard(teams.getTeamMembers(taker.getMetadata("team_members").get(0).asString()), taker.getMetadata("team_members").get(0).asString());
+					    	if(taker.hasMetadata("team_name")  && taker.getMetadata("team_name").get(0).toString().length() >= 1) {//If player is part of a team...
+					        	board.makeScoreBoard(taker.getMetadata("team_name").get(0).asString());
+					        	board.setScoreboard(teams.getTeamMembers(taker.getMetadata("team_name").get(0).asString()), taker.getMetadata("team_name").get(0).asString());
 					        }
 					        else {
-					        	if(debugging){plugin.getLogger().info("team_members NOT SET");}
+					        	if(debugging){plugin.getLogger().info("team_name NOT SET");}
 					        }
 				        }
 				        else
@@ -440,10 +497,7 @@ public class EventListener implements Listener {
 			    		return;
 			    	}
 			    }
-			}
-			
-			
-			
+			}			
 			if(damager instanceof Player && !(damageTaker instanceof Player) && !(damager.getMetadata("isdown").get(0).asBoolean())){
 				try {
 				//Player on Mob violence...
@@ -467,11 +521,18 @@ public class EventListener implements Listener {
 		}
 		catch(Exception err) {plugin.getLogger().info("Unhandled Exception: " + err.toString());}
 	}
+
+	
 	@EventHandler(priority = EventPriority.HIGH)
 	public void dmg(EntityDamageEvent event) 
 	{
 		Double realDamage = event.getFinalDamage();
 		
+//		plugin.getLogger().info("ASFASDFASDFASDF WHORE : " + event.getEntityType().toString());
+		
+		
+		//This cancells all damage to players...
+//		if(event.getEntityType().equals(EntityType.PLAYER)) {		event.setCancelled(true);	}
 		try {
 			Entity e = event.getEntity();
 			if(e instanceof Player) 
@@ -508,12 +569,12 @@ public class EventListener implements Listener {
 										try {
 											//May not update with correct value as damage has not been done yet...
 											//Maybe pass health as arg with trueDamage - hp (not just damage-hgp
-											if(player.hasMetadata("team_members") && player.getMetadata("team_members").get(0).toString().length() >= 1) {//If player is part of a team...
-									        	board.makeScoreBoard(player.getMetadata("team_members").get(0).asString());
-									        	board.setScoreboard(teams.getTeamMembers(player.getMetadata("team_members").get(0).asString()), player.getMetadata("team_members").get(0).asString(), player, (int) ((player.getHealth()-realDamage)*-1));
+											if(player.hasMetadata("team_name") && player.getMetadata("team_name").get(0).toString().length() >= 1) {//If player is part of a team...
+									        	board.makeScoreBoard(player.getMetadata("team_name").get(0).asString());
+									        	board.setScoreboard(teams.getTeamMembers(player.getMetadata("team_name").get(0).asString()), player.getMetadata("team_name").get(0).asString(), player, (int) ((player.getHealth()-realDamage)*-1));
 									        }
 									        else {
-									        	if(debugging){plugin.getLogger().info("team_members NOT SET");}
+									        	if(debugging){plugin.getLogger().info("team_name NOT SET");}
 									        }
 										}catch(NullPointerException np) {} catch(Exception err) {plugin.getLogger().info("Other Error");}
 										return;
@@ -522,12 +583,12 @@ public class EventListener implements Listener {
 										try {
 											//May not update with correct value as damage has not been done yet...
 											//Maybe pass health as arg with trueDamage - hp (not just damage-hgp
-											if(player.hasMetadata("team_members") && player.getMetadata("team_members").get(0).toString().length() >= 1) {//If player is part of a team...
-									        	board.makeScoreBoard(player.getMetadata("team_members").get(0).asString());
-									        	board.setScoreboard(teams.getTeamMembers(player.getMetadata("team_members").get(0).asString()), player.getMetadata("team_members").get(0).asString(), player, (int) ((player.getHealth()-realDamage)*-1));
+											if(player.hasMetadata("team_name") && player.getMetadata("team_name").get(0).toString().length() >= 1) {//If player is part of a team...
+									        	board.makeScoreBoard(player.getMetadata("team_name").get(0).asString());
+									        	board.setScoreboard(teams.getTeamMembers(player.getMetadata("team_name").get(0).asString()), player.getMetadata("team_name").get(0).asString(), player, (int) ((player.getHealth()-realDamage)*-1));
 									        }
 									        else {
-									        	if(debugging){plugin.getLogger().info("team_members NOT SET");}
+									        	if(debugging){plugin.getLogger().info("team_name NOT SET");}
 									        }
 										}catch(NullPointerException np) {} catch(Exception err) {plugin.getLogger().info("Other Error");}										
 										return;
@@ -545,19 +606,19 @@ public class EventListener implements Listener {
 						if(player.hasMetadata("hasdied")) {
 							if((player.getHealth() - player.getLastDamage())<= 1.5 && player.getMetadata("hasdied").get(0).asBoolean() == false){
 								try {
-									teams.alertTeamOfDowns(player.getMetadata("team_members").get(0).asString(), player);									
+									teams.alertTeamOfDowns(player.getMetadata("team_name").get(0).asString(), player);									
 								}catch(Exception err) {
 									
 								}
 								try {
 									//May not update with correct value as damage has not been done yet...
 									//Maybe pass health as arg with trueDamage - hp (not just damage-hgp
-									if(player.hasMetadata("team_members") && player.getMetadata("team_members").get(0).toString().length() >= 1) {//If player is part of a team...
-							        	board.makeScoreBoard(player.getMetadata("team_members").get(0).asString());
-							        	board.setScoreboard(teams.getTeamMembers(player.getMetadata("team_members").get(0).asString()), player.getMetadata("team_members").get(0).asString(), player, (int) ((player.getHealth()-realDamage) *-1));
+									if(player.hasMetadata("team_name") && player.getMetadata("team_name").get(0).toString().length() >= 1) {//If player is part of a team...
+							        	board.makeScoreBoard(player.getMetadata("team_name").get(0).asString());
+							        	board.setScoreboard(teams.getTeamMembers(player.getMetadata("team_name").get(0).asString()), player.getMetadata("team_name").get(0).asString(), player, (int) ((player.getHealth()-realDamage) *-1));
 							        }
 							        else {
-							        	if(debugging){plugin.getLogger().info("team_members NOT SET");}
+							        	if(debugging){plugin.getLogger().info("team_name NOT SET");}
 							        }
 								}catch(NullPointerException np) {} catch(Exception err) {plugin.getLogger().info("Other Error");}
 								//Maybe set player to non-targetable, heal player, then use potion of damage to decrease health, then remove all potion effects when healed by medic?
@@ -586,12 +647,12 @@ public class EventListener implements Listener {
 								try {
 									//May not update with correct value as damage has not been done yet...
 									//Maybe pass health as arg with trueDamage - hp (not just damage-hgp
-									if(player.hasMetadata("team_members") && player.getMetadata("team_members").get(0).toString().length() >= 1) {//If player is part of a team...
-							        	board.makeScoreBoard(player.getMetadata("team_members").get(0).asString());
-							        	board.setScoreboard(teams.getTeamMembers(player.getMetadata("team_members").get(0).asString()), player.getMetadata("team_members").get(0).asString(), player, (int) (Math.round(player.getHealth())-realDamage));
+									if(player.hasMetadata("team_name") && player.getMetadata("team_name").get(0).toString().length() >= 1) {//If player is part of a team...
+							        	board.makeScoreBoard(player.getMetadata("team_name").get(0).asString());
+							        	board.setScoreboard(teams.getTeamMembers(player.getMetadata("team_name").get(0).asString()), player.getMetadata("team_name").get(0).asString(), player, (int) (Math.round(player.getHealth())-realDamage));
 							        }
 							        else {
-							        	if(debugging){plugin.getLogger().info("team_members NOT SET");}
+							        	if(debugging){plugin.getLogger().info("team_name NOT SET");}
 							        }
 								}catch(NullPointerException np) {} catch(Exception err) {plugin.getLogger().info("Other Error");}
 							}
@@ -602,12 +663,12 @@ public class EventListener implements Listener {
 							try {
 								//May not update with correct value as damage has not been done yet...
 								//Maybe pass health as arg with trueDamage - hp (not just damage-hgp
-								if(player.hasMetadata("team_members") && player.getMetadata("team_members").get(0).toString().length() >= 1) {//If player is part of a team...
-						        	board.makeScoreBoard(player.getMetadata("team_members").get(0).asString());
-						        	board.setScoreboard(teams.getTeamMembers(player.getMetadata("team_members").get(0).asString()), player.getMetadata("team_members").get(0).asString(), player, (int) (Math.round(player.getHealth())-realDamage));
+								if(player.hasMetadata("team_name") && player.getMetadata("team_name").get(0).toString().length() >= 1) {//If player is part of a team...
+						        	board.makeScoreBoard(player.getMetadata("team_name").get(0).asString());
+						        	board.setScoreboard(teams.getTeamMembers(player.getMetadata("team_name").get(0).asString()), player.getMetadata("team_name").get(0).asString(), player, (int) (Math.round(player.getHealth())-realDamage));
 						        }
 						        else {
-						        	if(debugging){plugin.getLogger().info("team_members NOT SET");}
+						        	if(debugging){plugin.getLogger().info("team_name NOT SET");}
 						        }
 							}catch(NullPointerException np) {} catch(Exception err) {plugin.getLogger().info("Other Error");}
 						}
@@ -627,12 +688,12 @@ public class EventListener implements Listener {
 		if(event.getEntityType().equals(EntityType.PLAYER)) {
 			Player player = (Player) event.getEntity();
 			try {
-				if(player.hasMetadata("team_members") && player.getMetadata("team_members").get(0).toString().length() >= 1) {//If player is part of a team...
-		        	board.makeScoreBoard(player.getMetadata("team_members").get(0).asString());
-		        	board.setScoreboard(teams.getTeamMembers(player.getMetadata("team_members").get(0).asString()), player.getMetadata("team_members").get(0).asString(), player, (int) (Math.ceil(player.getHealth()) + .9));
+				if(player.hasMetadata("team_name") && player.getMetadata("team_name").get(0).toString().length() >= 1) {//If player is part of a team...
+		        	board.makeScoreBoard(player.getMetadata("team_name").get(0).asString());
+		        	board.setScoreboard(teams.getTeamMembers(player.getMetadata("team_name").get(0).asString()), player.getMetadata("team_name").get(0).asString(), player, (int) (Math.ceil(player.getHealth()) + .9));
 		        }
 		        else {
-		        	if(debugging){plugin.getLogger().info("team_members NOT SET");}
+		        	if(debugging){plugin.getLogger().info("team_name NOT SET");}
 		        }
 			}catch(NullPointerException np) {} catch(Exception err) {plugin.getLogger().info("Other Error");}		
 		}

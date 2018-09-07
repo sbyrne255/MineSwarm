@@ -28,6 +28,7 @@ public class Database {
 	private Connection mobConn = null;
 	private Connection chestConn = null;
 	private Connection playerConn = null;
+	private Connection scoreboardConn = null;
 	
 	public Database(Plugin instance) {
 		plugin = instance;
@@ -79,7 +80,18 @@ public class Database {
         	plugin.getLogger().info(e.getMessage());
         }
     }
-   
+	public void connectScores() {
+        try {
+        	// db parameters
+        	File directory = new File(System.getProperty("user.dir") +"/Mineswarm");
+    		if (! directory.exists()){ directory.mkdir(); }
+            String url = "jdbc:sqlite:plugins/Mineswarm/scoreboard.db";
+            // create a connection to the database
+            scoreboardConn = DriverManager.getConnection(url);
+        } catch (SQLException e) {
+        	plugin.getLogger().info(e.getMessage());
+        }
+    }  
 	public void createTable() {
         try{
         	if(conn.isClosed()){
@@ -153,25 +165,6 @@ public class Database {
         try{if(playerConn.isClosed()){ connectPlayers(); }}
         catch(NullPointerException np){connectPlayers();}
         catch(Exception er){plugin.getLogger().info("Conn check failed. " + er.toString());}
-    	String scoresSQL =
-    			"CREATE TABLE IF NOT EXISTS scores("
-        		+ "name,"
-        		+ "total_damage_taken,"
-        		+ "total_damage_delt,"
-        		+ "kit,"
-        		+ "first_joined,"
-        		+ "team_members,"
-        		+ "team_size,"
-        		+ "deaths,"
-        		+ "players_saved,"
-        		+ "downs,"
-        		+ "been_revived,"
-        		+ "start_time,"
-        		+ "end_time,"
-        		+ "mobs_killed"
-        		+ ");";
-    			
-    			
         String sql = "CREATE TABLE IF NOT EXISTS players("
         		+ "name,"
         		+ "total_damage_taken,"
@@ -180,7 +173,7 @@ public class Database {
         		+ "has_died,"
         		+ "isdown,"
         		+ "first_joined,"
-        		+ "team_members,"
+        		+ "team_name,"
         		+ "team_size,"
         		+ "deaths,"
         		+ "players_saved,"
@@ -193,12 +186,172 @@ public class Database {
         try {
         	PreparedStatement pstmt = playerConn.prepareStatement(sql);
             pstmt.execute();
-            pstmt = playerConn.prepareStatement(scoresSQL);
-            pstmt.execute();
         } catch (SQLException e) {plugin.getLogger().info(e.getMessage());}
         finally{ try {playerConn.close();} catch (SQLException e) {} }
     }	
-    
+	public void createScoresTable() {
+        try{if(scoreboardConn.isClosed()){ connectScores(); }}
+        catch(NullPointerException np){connectScores();}
+        catch(Exception er){plugin.getLogger().info("Conn check failed. " + er.toString());}
+    	String scoresSQL =
+    			"CREATE TABLE IF NOT EXISTS solo_scores("
+        		+ "name,"
+        		+ "total_damage_taken,"
+        		+ "total_damage_delt,"
+        		+ "kit,"
+        		+ "first_joined,"
+        		+ "team_name,"
+        		+ "team_size,"
+        		+ "deaths,"
+        		+ "players_saved,"
+        		+ "downs,"
+        		+ "been_revived,"
+        		+ "start_time,"
+        		+ "end_time,"
+        		+ "run_time,"
+        		+ "mobs_killed,"
+        		+ "team_members"
+        		+ ");";//May need to adjust so it can be NAME or TEAM NAME if the team wins...
+    	String scoresSQLTeam =
+    			"CREATE TABLE IF NOT EXISTS team_scores("
+        		+ "total_damage_taken,"//Loop through team mates to get damage?
+        		+ "total_damage_delt,"
+        		+ "team_name,"
+        		+ "team_size,"
+        		+ "deaths,"
+        		+ "players_saved,"
+        		+ "downs,"
+        		+ "been_revived,"
+        		+ "start_time,"//Owner start time?
+        		+ "end_time,"//now
+        		+ "run_time,"//Difference...
+        		+ "mobs_killed,"
+        		+ "team_members"
+        		+ ");";//May need to adjust so it can be NAME or TEAM NAME if the team wins...
+        try {
+        	PreparedStatement pstmt = scoreboardConn.prepareStatement(scoresSQL);
+            pstmt.execute();
+            pstmt = scoreboardConn.prepareStatement(scoresSQLTeam);
+            pstmt.execute();
+        } catch (SQLException e) {plugin.getLogger().info(e.getMessage());}
+        finally{ try {scoreboardConn.close();} catch (SQLException e) {} }
+    }	
+
+	//PROBABLY NEED TO MAKE 2 SCORE BOARD TABELS, ONE FOR TEAMS AND ONE FOR SOLO
+	//TWO DIFFERENT FUNCTIONS, ONE INSERTS SOLO, ONE INSERTS TEAMS
+	//IF PLAYER IS PART OF A TEAM THAT IS GREATER THAN 1 insert into teams, otherwise solo.
+	
+	public boolean getScores(int topScores) {
+        try{if(scoreboardConn.isClosed()){connectScores();}}
+        catch(NullPointerException np){connectScores();}
+        catch(Exception er){plugin.getLogger().info("Conn check failed. " + er.toString());}
+    	String sql = "SELECT * FROM scores ORDER BY run_time DESC LIMIT ?";
+    	try {
+        	PreparedStatement pstmt = conn.prepareStatement(sql);
+            pstmt.setInt(1, topScores);
+            ResultSet rs = pstmt.executeQuery();
+            while (rs.next()) {
+                //Score data, do something with it...                
+            }
+        } catch (SQLException e) {plugin.getLogger().info("ERROR SELECTING: " + e.getMessage());}
+    	finally{ try {scoreboardConn.close();} catch (SQLException e) {} }
+        
+		return true;
+	}
+    public void setSoloScore(Player player) {
+    	try{if(scoreboardConn.isClosed()){connectScores();}}
+        catch(NullPointerException np){connectScores();}
+        catch(Exception er){plugin.getLogger().info("Conn check failed. " + er.toString());}
+    	
+    	String sql = "INSERT INTO solo_scores(name,total_damage_taken,total_damage_delt,kit,first_joined,deaths,players_saved,downs,been_revived,start_time,end_time,run_time,mobs_killed) "
+    			+ "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+        try (
+        	PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        	try { pstmt.setString(1, player.getName()); } catch(Exception iob) {pstmt.setString(1, "ERROR");}
+        	try { pstmt.setInt(2, player.getMetadata("total_damage_taken").get(0).asInt()); } catch(Exception iob) {pstmt.setInt(2, 0);}
+        	try { pstmt.setInt(3, player.getMetadata("total_damage_delt").get(0).asInt()); } catch(Exception iob) {pstmt.setInt(3, 0);}
+        	try { pstmt.setString(4, player.getMetadata("class").get(0).asString()); } catch(Exception iob) {pstmt.setString(4, "");}
+        	try { pstmt.setString(5, player.getMetadata("first_joined").get(0).asString()); } catch(Exception iob) {pstmt.setString(5, "");}
+        	try { pstmt.setInt(8, player.getMetadata("deaths").get(0).asInt()); } catch(Exception iob) {pstmt.setInt(8, 0);}
+        	try { pstmt.setInt(9, player.getMetadata("players_saved").get(0).asInt()); } catch(Exception iob) {pstmt.setInt(9, 0);}
+        	try { pstmt.setInt(10, player.getMetadata("downs").get(0).asInt()); } catch(Exception iob) {pstmt.setInt(10, 0);}
+        	try { pstmt.setInt(11, player.getMetadata("revived").get(0).asInt()); } catch(Exception iob) {pstmt.setInt(11, 0);}
+        	try { pstmt.setString(12, player.getMetadata("start_time").get(0).asString()); } catch(Exception iob) {pstmt.setString(12, "UNKNOWN");}
+        	try { pstmt.setString(13, player.getMetadata("end_time").get(0).asString()); } catch(Exception iob) {pstmt.setString(13, "UNKNOWN");}
+        	try { 
+        		pstmt.setInt(14, Integer.valueOf(player.getMetadata("end_time").get(0).asString()) - Integer.valueOf(player.getMetadata("start_time").get(0).asString())); 
+        	} catch(Exception iob) {
+        		pstmt.setInt(14, Integer.valueOf(new SimpleDateFormat("yyyyMMddHHmmss").format(Calendar.getInstance().getTime())));
+        	}
+        	try { pstmt.setString(15, player.getMetadata("mobs_killed").get(0).asString()); } catch(Exception iob) {pstmt.setString(15, "");}
+        	
+            pstmt.executeUpdate();
+        } catch (SQLException e) {plugin.getLogger().info(e.getMessage());}
+        finally{ try {scoreboardConn.close();} catch (SQLException e) {} }
+    }
+	
+    public void setTeamScore(Player player, MineswarmTeams teamData) {
+    	
+    	try{if(scoreboardConn.isClosed()){connectScores();}}
+        catch(NullPointerException np){connectScores();}
+        catch(Exception er){plugin.getLogger().info("Conn check failed. " + er.toString());}
+    	
+    	//12
+    	String sql = "INSERT INTO team_scores(total_damage_taken,total_damage_delt,deaths,players_saved,downs,been_revived,start_time,end_time,run_time,mobs_killed, team_name,team_size) "
+    			+ "VALUES(?,?,?,?,?,?,?,?,?,?,?,?)";
+        try {
+        	String teamName = player.getMetadata("team_name").get(0).asString();
+        	List<Player> teamMembers = teamData.getTeamMembers(teamName);
+        	int teamDmg = 0;
+        	int teamTakenDmg = 0;
+        	int teamDeaths = 0;
+        	int teamSaves = 0;
+        	int teamDowns = 0;
+        	int teamBeenRevived = 0;
+        	int teamSize = teamMembers.size();
+        	String teamMobsKilled = "";
+        	//Loop for every player in team, get their player data from SQLite (I'll need to make sure to update the DB before I call set score)
+        	for(Player p : teamMembers) {
+        		 String playerSQL = "SELECT * FROM players WHERE name = ?";
+        	        try{if(playerConn.isClosed()){connectPlayers();}}
+        	        catch(NullPointerException np){connectPlayers();}
+        	        catch(Exception er){plugin.getLogger().info("Conn check failed. " + er.toString());}
+        	        try {
+        	            	PreparedStatement pstmt = playerConn.prepareStatement(playerSQL);
+        	                pstmt.setString(1, p.getName());           
+        	                ResultSet rs = pstmt.executeQuery();
+        	                while (rs.next()) {
+        	                	teamDmg += rs.getInt("total_damage_delt");
+        	                	teamTakenDmg += rs.getInt("total_damage_taken");               
+        	                	teamDeaths +=  rs.getInt("deaths");
+        	                    teamSaves += rs.getInt("players_saved");
+        	                    teamBeenRevived += rs.getInt("been_revived");
+        	                    teamDowns += rs.getInt("downs");
+        	                    teamMobsKilled += rs.getString("mobs_killed");
+        	                    playerConn.close();
+        	                }
+        	        }
+        	        catch (Exception e) {plugin.getLogger().info("ERROR SELECTING PLAYER...: " + e.toString());}
+        	        finally{ try {playerConn.close();} catch (SQLException e) {} }        		
+        	}
+        	
+        	PreparedStatement pstmt = conn.prepareStatement(sql);
+        	pstmt.setInt(1, teamTakenDmg);
+        	pstmt.setInt(2, teamDmg);
+        	pstmt.setInt(3, teamDeaths);
+        	pstmt.setInt(4, teamSaves);
+        	pstmt.setInt(5, teamDowns);
+        	pstmt.setInt(6, teamBeenRevived);
+        	pstmt.setString(7, "START TIME");
+        	pstmt.setString(8, "END TIME");
+        	pstmt.setString(9, "RUN TIME");
+        	pstmt.setString(10, teamMobsKilled);
+        	pstmt.setString(11, teamName);
+        	pstmt.setInt(12, teamSize);
+            pstmt.executeUpdate();
+        } catch (SQLException e) {plugin.getLogger().info(e.getMessage());}
+        finally{ try {scoreboardConn.close();} catch (SQLException e) {} }
+    }
     public String selectDoor(String location, int y){
         try{
         	if(conn.isClosed()){
@@ -724,8 +877,8 @@ public class Database {
                     }                    
                     player.setMetadata("hasdied",new FixedMetadataValue(plugin, rs.getBoolean("has_died")));
                 	player.setMetadata("isdown",new FixedMetadataValue(plugin, rs.getBoolean("isdown")));
-                	if(rs.getString("team_members") != null && rs.getString("team_members") !=  "") {
-                		player.setMetadata("team_members",new FixedMetadataValue(plugin, rs.getString("team_members")));
+                	if(rs.getString("team_name") != null && rs.getString("team_name") !=  "") {
+                		player.setMetadata("team_name",new FixedMetadataValue(plugin, rs.getString("team_name")));
                 	}
                     player.setMetadata("team_size",new FixedMetadataValue(plugin, rs.getInt("team_size")));
                     player.setMetadata("deaths",new FixedMetadataValue(plugin, rs.getInt("deaths")));
@@ -743,7 +896,7 @@ public class Database {
         return false;    
     }
     public void newPlayer(Player player) {
-    	String sql = "INSERT INTO players(name,total_damage_taken, total_damage_delt, kit, has_died, isdown, first_joined, team_members, team_size, deaths, players_saved, downs, been_revived, start_time) "
+    	String sql = "INSERT INTO players(name,total_damage_taken, total_damage_delt, kit, has_died, isdown, first_joined, team_name, team_size, deaths, players_saved, downs, been_revived, start_time) "
     								+ "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
     	
     	try{if(playerConn.isClosed()){connectPlayers();}
@@ -760,7 +913,7 @@ public class Database {
         	pstmt.setBoolean(5, false);
         	pstmt.setBoolean(6, false);
         	pstmt.setString(7, timeStamp);
-        	try {pstmt.setString(8, player.getMetadata("team_members").get(0).asString());}catch(Exception err) {pstmt.setString(8,null);}
+        	try {pstmt.setString(8, player.getMetadata("team_name").get(0).asString());}catch(Exception err) {pstmt.setString(8,null);}
         	try {pstmt.setInt(9, player.getMetadata("team_size").get(0).asInt());}catch(Exception err) {pstmt.setInt(9,1);}
         	pstmt.setInt(10, 0);
         	pstmt.setInt(11, 0);
@@ -788,7 +941,7 @@ public class Database {
         finally{ try {playerConn.close();} catch (Exception e) {} }
     }
     public void updatePlayerData(Player player) {
-    	String sql = "UPDATE players SET total_damage_taken = ?, total_damage_delt = ?, kit = ?, has_died = ?, isdown = ?, team_members = ?, team_size = ?, deaths = ?, players_saved = ?, downs = ?, been_revived = ?, start_time = ?, mobs_killed = ? WHERE name = ?";
+    	String sql = "UPDATE players SET total_damage_taken = ?, total_damage_delt = ?, kit = ?, has_died = ?, isdown = ?, team_name = ?, team_size = ?, deaths = ?, players_saved = ?, downs = ?, been_revived = ?, start_time = ?, mobs_killed = ? WHERE name = ?";
     	
     	try{if(playerConn.isClosed()){connectPlayers();}
         }catch(NullPointerException np){connectPlayers();
@@ -800,7 +953,7 @@ public class Database {
         	try { pstmt.setString(3, player.getMetadata("class").get(0).asString()); } catch(Exception iob) {pstmt.setString(3, "");}
         	try { pstmt.setBoolean(4, player.getMetadata("hasdied").get(0).asBoolean()); } catch(Exception iob) {pstmt.setBoolean(4, false);}
         	try { pstmt.setBoolean(5, player.getMetadata("isdown").get(0).asBoolean()); } catch(Exception iob) {pstmt.setBoolean(5, false);}
-        	try { pstmt.setString(6, player.getMetadata("team_members").get(0).asString()); } catch(Exception iob) {pstmt.setString(6, "");}
+        	try { pstmt.setString(6, player.getMetadata("team_name").get(0).asString()); } catch(Exception iob) {pstmt.setString(6, "");}
         	try { pstmt.setInt(7, player.getMetadata("team_size").get(0).asInt()); } catch(Exception iob) {pstmt.setInt(7, 1);}
         	try { pstmt.setInt(8, player.getMetadata("deaths").get(0).asInt()); } catch(Exception iob) {pstmt.setInt(8, 0);}
         	try { pstmt.setInt(9, player.getMetadata("players_saved").get(0).asInt()); } catch(Exception iob) {pstmt.setInt(9, 0);}
