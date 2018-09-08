@@ -132,6 +132,20 @@ guide-author: Cutrats110
 guide-pages:
   - This is page one
   - This is on page two...t
+globally-allowed-potions:
+  - Night Vision Splash
+  - Invisibility Splash
+  - Leaping Splash
+  - Fire Resistance Splash
+  - Speed Splash
+  - Turtle Master Splash
+  - Water Breathing Splash
+  - Regeneration Splash
+  - Strength Splash
+  - Luck Splash
+  - Slow Falling Splash
+medic-allowed-potions:
+  - Healing Splash
 #Class items, one per line
 solo-class:
   - BOOK,1

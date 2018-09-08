@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Rename resource &apos;Mineswarm/src/me/cutrats110/MakePotions.java&apos; to &apos;MakeSplashPotions.java&apos;" description="Rename resource &apos;MakePotions.java&apos;" flags="7" id="org.eclipse.ltk.core.refactoring.rename.resource" input="src/me/cutrats110/MakePotions.java" name="MakeSplashPotions.java" stamp="1536378301197" updateReferences="true"/>
+</session>

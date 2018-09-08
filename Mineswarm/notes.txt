@@ -1,11 +1,10 @@
 //FEATURE:
 	MAYBE CHECK FULL INVENTORY FOR KEY INSTEAD OF JUST HANDS
 //BUGS:
-	Potions like slowness slow friendly players, should this be fixed? [SEE EVENTS]
-	Random hits seem to put you down, for isntance team mate hitting you in the back out of no where [REFACTOR DOWN CODE]
-	Item stacks can't create potions, need to alter to use IDs. (https://bukkit.org/threads/how-to-a-potion-as-an-itemstack.247689/)
-	Mobs are having trouble spawning in zone 8-9 [FUCK THIS]
-	
+	#Potions class does not have real IDs for any items, I should probably set those...	
+	#Check full inventory for keys, not just want's in hand
+	#Perhaps announce to player when they get a door key and for what door. (Pickup Event)
+	Leaving while down cancels down but doesn't reset anything really...
 //TODO:
 	*Load a configfile
 		*Enable a YML

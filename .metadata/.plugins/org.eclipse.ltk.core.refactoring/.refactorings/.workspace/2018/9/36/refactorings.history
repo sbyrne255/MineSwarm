@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Delete resource &apos;Mineswarm/src/me/cutrats110/MakeConsumablePotions.java&apos;" deleteContents="false" description="Delete resource &apos;Mineswarm/src/me/cutrats110/MakeConsumablePotions.java&apos;" element1="/Mineswarm/src/me/cutrats110/MakeConsumablePotions.java" flags="7" id="org.eclipse.ltk.core.refactoring.delete.resources" resources="1" stamp="1536403162033"/>
+</session>

@@ -12,8 +12,12 @@ import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BookMeta;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 
 public class Kits {
 	public Plugin plugin;
@@ -24,7 +28,7 @@ public class Kits {
 		this.db = new Database(plugin);
 		
 	}
-	
+	PotionObjects potions = new PotionObjects();
 	void giveKit(Player player, String kit) {
 		//Read standard items (all players get).
 		//Check kit against config, if more items needed:
@@ -53,7 +57,24 @@ public class Kits {
     	for(String item : items) {
     		try {
     			List<String> stuff = Arrays.asList(item.split("\\s*,\\s*"));
-    			ItemStack toAdd = new ItemStack(Material.getMaterial(stuff.get(0).toString()),Integer.valueOf(stuff.get(1)));
+    			ItemStack toAdd = null;
+    			
+    			
+    			try {
+    				int pID = Integer.valueOf(stuff.get(0).toString());//Should error out here if it's not an ID...
+    				MakePotion potionData = potions.getDrinkableDataById(pID);
+    				toAdd = new ItemStack(Material.POTION, Integer.valueOf(stuff.get(1).toString()));    				
+    				ItemMeta im = toAdd.getItemMeta();
+    				im.setDisplayName(potionData.name);
+    				PotionMeta pm = (PotionMeta) im;
+    				for(PotionEffectType effect : potionData.effectTypes) {
+    					//									Type	time in seconds probably	amplifier(1=2)
+    					pm.addCustomEffect(new PotionEffect(effect, (int)potionData.duration, potionData.amplifier), true);
+    				}
+    				toAdd.setItemMeta(im);
+    			}catch(NumberFormatException  nf) {
+    				toAdd = new ItemStack(Material.getMaterial(stuff.get(0).toString()),Integer.valueOf(stuff.get(1)));
+    			}
     			
     			if(stuff.size() > 2) {//Item has Type, Quantitiy, and some other CS fields...
     				for(int i = 2; i < stuff.size(); i+=2) {

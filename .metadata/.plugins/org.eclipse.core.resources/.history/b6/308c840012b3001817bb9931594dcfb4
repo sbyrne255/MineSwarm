@@ -1,0 +1,24 @@
+package me.cutrats110;
+
+import java.util.List;
+
+import org.bukkit.potion.PotionEffectType;
+
+public class MakePotions {
+	public int id;
+	public String name;
+	public List<PotionEffectType> effectTypes;
+	public double duration;
+	public String description;
+	public int amplifier;
+	
+	
+	public MakePotions(int id, String name, List<PotionEffectType> effectTypes, double duration, int amplifier, String description) {
+		this.id = id;
+		this.name = name;
+		this.effectTypes = effectTypes;
+		this.duration = duration;
+		this.amplifier = amplifier;
+		this.description = description;		
+	}
+}

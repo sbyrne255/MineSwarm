@@ -1,13 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <qualifiedTypeNameHistroy>
-<fullyQualifiedTypeName name="net.minecraft.server.v1_13_R1.Material"/>
-<fullyQualifiedTypeName name="org.bukkit.Material"/>
-<fullyQualifiedTypeName name="org.bukkit.inventory.meta.BookMeta"/>
-<fullyQualifiedTypeName name="java.text.SimpleDateFormat"/>
-<fullyQualifiedTypeName name="java.text.DateFormat"/>
-<fullyQualifiedTypeName name="java.util.Arrays"/>
-<fullyQualifiedTypeName name="org.bukkit.enchantments.Enchantment"/>
-<fullyQualifiedTypeName name="net.minecraft.server.v1_13_R1.Enchantments"/>
 <fullyQualifiedTypeName name="org.bukkit.NamespacedKey"/>
 <fullyQualifiedTypeName name="me.cutrats110.Kits"/>
 <fullyQualifiedTypeName name="java.nio.file.StandardOpenOption"/>
@@ -20,8 +12,6 @@
 <fullyQualifiedTypeName name="org.bukkit.scoreboard.Team"/>
 <fullyQualifiedTypeName name="org.bukkit.entity.Player"/>
 <fullyQualifiedTypeName name="java.util.Set"/>
-<fullyQualifiedTypeName name="java.util.List"/>
-<fullyQualifiedTypeName name="java.util.ArrayList"/>
 <fullyQualifiedTypeName name="java.util.Random"/>
 <fullyQualifiedTypeName name="java.io.FileOutputStream"/>
 <fullyQualifiedTypeName name="java.io.ObjectOutputStream"/>
@@ -36,7 +26,6 @@
 <fullyQualifiedTypeName name="org.bukkit.scheduler.BukkitRunnable"/>
 <fullyQualifiedTypeName name="org.bukkit.event.player.PlayerMoveEvent"/>
 <fullyQualifiedTypeName name="org.bukkit.plugin.Plugin"/>
-<fullyQualifiedTypeName name="java.util.HashMap"/>
 <fullyQualifiedTypeName name="java.util.UUID"/>
 <fullyQualifiedTypeName name="org.bukkit.ChatColor"/>
 <fullyQualifiedTypeName name="org.bukkit.event.entity.EntityRegainHealthEvent"/>
@@ -55,9 +44,20 @@
 <fullyQualifiedTypeName name="org.bukkit.entity.Arrow"/>
 <fullyQualifiedTypeName name="org.bukkit.event.entity.ProjectileHitEvent"/>
 <fullyQualifiedTypeName name="org.bukkit.potion.Potion"/>
+<fullyQualifiedTypeName name="org.bukkit.entity.LivingEntity"/>
+<fullyQualifiedTypeName name="java.util.HashMap"/>
+<fullyQualifiedTypeName name="java.util.List"/>
+<fullyQualifiedTypeName name="org.bukkit.entity.ThrownPotion"/>
+<fullyQualifiedTypeName name="java.util.ArrayList"/>
+<fullyQualifiedTypeName name="java.util.Arrays"/>
+<fullyQualifiedTypeName name="org.bukkit.inventory.meta.PotionMeta"/>
+<fullyQualifiedTypeName name="org.bukkit.potion.PotionData"/>
+<fullyQualifiedTypeName name="org.bukkit.potion.PotionType"/>
+<fullyQualifiedTypeName name="org.bukkit.potion.PotionEffectType"/>
+<fullyQualifiedTypeName name="org.bukkit.potion.PotionEffect"/>
+<fullyQualifiedTypeName name="org.bukkit.inventory.meta.ItemMeta"/>
+<fullyQualifiedTypeName name="org.bukkit.entity.Trident"/>
+<fullyQualifiedTypeName name="org.bukkit.event.entity.ProjectileLaunchEvent"/>
 <fullyQualifiedTypeName name="org.bukkit.entity.SplashPotion"/>
 <fullyQualifiedTypeName name="org.bukkit.entity.Projectile"/>
-<fullyQualifiedTypeName name="org.bukkit.entity.ThrownPotion"/>
-<fullyQualifiedTypeName name="org.bukkit.entity.LivingEntity"/>
-<fullyQualifiedTypeName name="org.bukkit.potion.PotionEffectType"/>
 </qualifiedTypeNameHistroy>

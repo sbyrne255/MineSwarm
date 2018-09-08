@@ -7,18 +7,17 @@ import java.util.Random;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
-import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
-import org.bukkit.entity.SplashPotion;
+import org.bukkit.entity.Projectile;
+import org.bukkit.entity.Trident;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntityRegainHealthEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
@@ -39,6 +38,9 @@ import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.bukkit.scheduler.BukkitTask;
+import java.util.HashMap;
+import java.util.UUID;
 
 public class EventListener implements Listener {
 	public Plugin plugin;
@@ -127,8 +129,17 @@ public class EventListener implements Listener {
 	public void onPlayerRespawn(PlayerRespawnEvent event) {
 		Player player = event.getPlayer();
 		try {
-			//May not update with correct value as damage has not been done yet...
-			//Maybe pass health as arg with trueDamage - hp (not just damage-hgp
+	        try {
+	        	downedPlayers.get(player.getUniqueId()).cancel();
+				downedPlayers.remove(player.getUniqueId());
+	        }catch(Exception err) {}
+	        
+	        player.setMetadata("isdown",new FixedMetadataValue(plugin, false));
+	        player.setMetadata("hasdied",new FixedMetadataValue(plugin, false));
+	        player.removeMetadata("class", plugin);
+	        player.setWalkSpeed((float) .2);//0 to prevent walking...
+	        player.setGlowing(false);
+	        
 			if(player.hasMetadata("team_name") && player.getMetadata("team_name").get(0).toString().length() >= 1) {//If player is part of a team...
 	        	board.makeScoreBoard(player.getMetadata("team_name").get(0).asString());
 	        	board.setScoreboard(teams.getTeamMembers(player.getMetadata("team_name").get(0).asString()), player.getMetadata("team_name").get(0).asString(), player, 20);
@@ -159,8 +170,12 @@ public class EventListener implements Listener {
         }
     	
     	event.getDrops().clear();
-    	
         Player player = event.getEntity();
+        try {
+        	downedPlayers.get(player.getUniqueId()).cancel();
+			downedPlayers.remove(player.getUniqueId());
+        }catch(Exception err) {}
+        
         player.setMetadata("isdown",new FixedMetadataValue(plugin, false));
         player.setMetadata("hasdied",new FixedMetadataValue(plugin, false));
         player.removeMetadata("class", plugin);
@@ -173,6 +188,15 @@ public class EventListener implements Listener {
 		else {
 			player.setMetadata("deaths",new FixedMetadataValue(plugin, 1));
 		}
+        
+        try {
+	    	//Update scoreboard now that player has been revived.		    	
+	    	if(player.hasMetadata("team_name") && player.getMetadata("team_name").get(0).toString().length() >= 1) {//If player is part of a team...
+	        	board.makeScoreBoard(player.getMetadata("team_name").get(0).asString());
+	        	board.setScoreboard(teams.getTeamMembers(player.getMetadata("team_name").get(0).asString()), player.getMetadata("team_name").get(0).asString(), player, 0);
+	        }
+        }catch(Exception err) {}
+        
     }
 	@EventHandler
 	public void onEDeath(EntityDeathEvent event) {
@@ -363,326 +387,306 @@ public class EventListener implements Listener {
     }
 	
 	
-	
+	private PotionObjects potions = new PotionObjects();
 	@EventHandler(priority = EventPriority.HIGH)
-	public void PotionSplashEvent(org.bukkit.event.entity.PotionSplashEvent event){
-		if(event.getPotion().getShooter() instanceof Player) {
-			//Loop through all effect entities.
-			for(Entity ent : event.getAffectedEntities()) {
-				//If entity is a player...
-				if(ent instanceof Player) {
-					for (PotionEffect effect : event.getPotion().getEffects()) {
-						if(effect.getType().equals(PotionEffectType.FIRE_RESISTANCE)) {
-							
-						}
-						if(effect.getType().equals(PotionEffectType.REGENERATION)) {
-							
-						}
-					}//if we want all splash health to not heal just stick this at the top and break (cancel false) if it's an "accepted" potion (from config?)
-					//If we want medic and such to be able to use all potions loop through like this checking criteria.
-				}else {
-					//ALTERNATIVE, CANCEL THE EVENT BUT SCHEDULE TO ADD THE EFFECT TO EVERY MOB 1TICK AFTER...
-					//THIS WORKS, IT CANCELS ALL POTIONS ON PLAYERS SENT BY PLAYERS...
-					//PROBABLY NEED TO ADD SOME EXECEPTIONS SUCH AS MEDICS BEING ALLOWED TO USE HEALING POTIONS?
-					if(ent instanceof LivingEntity) {
-				    	plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() 
-				    	{
-					    	public void run() 
-					    	{
-					    		LivingEntity mob = (LivingEntity) ent;
-								mob.addPotionEffects(event.getPotion().getEffects());
-					    	}
-				    	}, 1L);
-				    }
+	public void PotionSplashEvent(org.bukkit.event.entity.PotionSplashEvent event){		
+		//Shooter is player.
+		try {
+			if(event.getPotion().getShooter() instanceof Player) {
+				Player shooter = (Player) event.getPotion().getShooter();
+				if(shooter.hasMetadata("isdown") && shooter.getMetadata("isdown").get(0).asBoolean()) {
+					event.setCancelled(true);
+					return;
 				}
+				
+				List<PotionEffectType> effectTypes = new ArrayList<>();
+				for (PotionEffect effect : event.getPotion().getEffects()) {effectTypes.add(effect.getType());}
+				String potionName = potions.getNameByEffects(effectTypes);
+				if(!(plugin.getConfig().getList("globally-allowed-potions").contains(potionName))) {
+				
+					//Loop through all effect entities.
+					for(Entity ent : event.getAffectedEntities()) {
+						//If entity is a player get the effects and find out if the potion should effect the player or not (based on config)
+						if(ent instanceof Player) {
+							if(ent.hasMetadata("class") && plugin.getConfig().getList(ent.getMetadata("class").get(0).asString()+"-allowed-potions").contains(potionName)){
+								//Item was in the allowed list for this class!
+								plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() 
+						    	{
+							    	public void run() 
+							    	{
+										((Player) ent).addPotionEffects(event.getPotion().getEffects());
+							    	}
+						    	}, 1L);
+							}
+							else {
+								//Potion is blocked from effecting players so continue with loop (event will be cancelled, mobs will be hurt in 1 tick)
+								continue;						
+							}
+						}else {
+							//ALTERNATIVE, CANCEL THE EVENT BUT SCHEDULE TO ADD THE EFFECT TO EVERY MOB 1TICK AFTER...
+							//THIS WORKS, IT CANCELS ALL POTIONS ON PLAYERS SENT BY PLAYERS...
+							//PROBABLY NEED TO ADD SOME EXECEPTIONS SUCH AS MEDICS BEING ALLOWED TO USE HEALING POTIONS?
+							if(ent instanceof LivingEntity) {
+						    	plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() 
+						    	{
+							    	public void run() 
+							    	{
+							    		LivingEntity mob = (LivingEntity) ent;
+										mob.addPotionEffects(event.getPotion().getEffects());
+							    	}
+						    	}, 1L);
+						    }
+						}
+					}
+					event.setCancelled(true);
+				}
+				
 			}
-			event.setCancelled(true);
-		}
+		}catch(Exception er) {}
 	}
 	
+	//This section handles:
+	//player revives...
+	//Prevents arrows/tridents from hurting players
+	//Prevents PVP from player to player in none PVP zones.
+	//Prevents downed players from harming mobs
+	//Scores damage done to mobs
+	
+	HashMap<UUID,BukkitTask> downedPlayers = new HashMap<>();
 	@EventHandler(priority = EventPriority.HIGH)
 	public void onPlayerDamage(EntityDamageByEntityEvent e) {
 		try {
-			Entity damageTaker = null;
-			Entity damager = null;
+			  if(e.getDamager() instanceof Trident) {
+				  Projectile projetile = (Projectile) e.getDamager();
+				  if(projetile.getShooter() instanceof Player) {
+					  Player shooter = (Player) projetile.getShooter();
+					  if(shooter.hasMetadata("isdown") && shooter.getMetadata("isdown").get(0).asBoolean()) {
+						  e.setCancelled(true);
+						  return;
+					  }
+				  }	  
+			  }
+			  if(e.getDamager() instanceof Arrow) {
+				  Projectile projetile = (Projectile) e.getDamager();
+				  if(projetile.getShooter() instanceof Player) {
+					  Player shooter = (Player) projetile.getShooter();
+					  if(shooter.hasMetadata("isdown") && shooter.getMetadata("isdown").get(0).asBoolean()) {
+						  e.setCancelled(true);
+						  return;
+					  }
+				  }	  
+			  }
+			  //I override this with on splashPotion event, meaning I can cancel this, but that's already been scheduled one tick later...
+			  /*
+			  if(e.getDamager() instanceof SplashPotion) {
+				  Projectile projetile = (Projectile) e.getDamager();
+				  if(projetile.getShooter() instanceof Player) {
+					  Player shooter = (Player) projetile.getShooter();
+					  if(shooter.hasMetadata("isdown") && shooter.getMetadata("isdown").get(0).asBoolean()) {
+						  e.setCancelled(true);
+						  return;
+					  }
+				  }	  
+			  }*/			
 			
-			try {damager = e.getDamager();}
-			catch(Exception er) {plugin.getLogger().info("Damager is causing an error.");}
-			try {damageTaker = e.getEntity();}
-			catch(Exception er) {plugin.getLogger().info("Damage taker is casuing an error");}								
-			if(e.getDamager() instanceof Arrow) {
-				Arrow arrow = null;				
-				try{arrow = (Arrow) e.getDamager();}
-				catch(Exception err) {plugin.getLogger().info(err.toString() + "ARROW WAS NOT AN ARROW BUT IT WAS AN ARROW, SO ARROW...");}
-				if(arrow.getShooter() instanceof Player && db.selectZonePVP(damageTaker.getLocation().getBlockX(), damageTaker.getLocation().getBlockY(), damageTaker.getLocation().getBlockZ(), damageTaker.getLocation().getWorld().toString()) == false) {
-					e.setCancelled(true);
+			//Player hit player...
+			if(e.getEntity() instanceof Player && e.getDamager() instanceof Player) {
+				Player damagee = (Player) e.getEntity();
+				Player damager = (Player) e.getDamager();
+				
+				//If damagee is down, check damager's hand and return after
+				if(damagee.hasMetadata("isdown") && damagee.getMetadata("isdown").get(0).asBoolean() == true) {
+					//Player is down...
+					if(damager.getInventory().getItemInMainHand().getType().equals(Material.PLAYER_HEAD) || damager.getInventory().getItemInOffHand().getType().equals(Material.PLAYER_HEAD) ) {
+						//Player has item in hand (is trying to revive)
+					  	damagee.sendMessage("A medic has revived you!");
+					  	damagee.setMetadata("isdown",new FixedMetadataValue(plugin, false));
+					  	damagee.setMetadata("hasdied",new FixedMetadataValue(plugin, true));
+					  	
+					  	//Remove all debuffs we placed on downed player...
+			        	for (PotionEffect effect : damagee.getActivePotionEffects()){damagee.removePotionEffect(effect.getType());}
+			        	damagee.setHealth(10);//Reset health to half.
+			        	damagee.setWalkSpeed((float) .2);//Set walkspeed to default
+			        	damagee.setGlowing(false);//Remove glow.
+			        	
+			        	//CANCEL SCHEDULED DEATH!
+			        	downedPlayers.get(damagee.getUniqueId()).cancel();
+						downedPlayers.remove(damagee.getUniqueId());
+			        	
+			        	
+			        	//Increment times revived.
+			        	if(damagee.hasMetadata("revived")) {damagee.setMetadata("revived",new FixedMetadataValue(plugin, damagee.getMetadata("revived").get(0).asInt() + 1));}
+			    		else {damagee.setMetadata("revived",new FixedMetadataValue(plugin, 1));}
+			        	
+			        	//Increment times player saved another player
+			        	if(damager.hasMetadata("players_saved")) {damager.setMetadata("players_saved",new FixedMetadataValue(plugin, damager.getMetadata("players_saved").get(0).asInt() + 1));}
+			    		else {damager.setMetadata("players_saved",new FixedMetadataValue(plugin, 1));}
+						
+			        				    
+			        	//Remove head from player. [check what happens when they only have 1 head.]
+				    	if(damager.getInventory().getItemInMainHand().getType().equals(Material.PLAYER_HEAD)) {
+				    		ItemStack heads = new ItemStack(Material.PLAYER_HEAD, damager.getInventory().getItemInMainHand().getAmount() -1);
+				    		damager.getInventory().setItemInMainHand(heads);
+				    	}
+				    	if(damager.getInventory().getItemInOffHand().getType().equals(Material.PLAYER_HEAD)) {
+				    		ItemStack heads = new ItemStack(Material.PLAYER_HEAD, damager.getInventory().getItemInOffHand().getAmount() -1);
+				    		damager.getInventory().setItemInOffHand(heads);
+				    	}
+				    	e.setCancelled(true);
+				    	return;
+					}
+					
 				}
-			}			
-			if(e.getDamager() instanceof SplashPotion){
-				SplashPotion spotion = (SplashPotion) e.getDamager();
-				if(spotion.getShooter() instanceof Player && db.selectZonePVP(damageTaker.getLocation().getBlockX(), damageTaker.getLocation().getBlockY(), damageTaker.getLocation().getBlockZ(), damageTaker.getLocation().getWorld().toString()) == false)
-				{
+				if(db.selectZonePVP(damagee.getLocation().getBlockX(), damagee.getLocation().getBlockY(), damagee.getLocation().getBlockZ(), damagee.getLocation().getWorld().toString()) == false) {
+					//PVP is off where the damagee is standing
+					e.setCancelled(true);
+					return;
+				}				
+			}
+			//If we reach here, at least one entity was not a player.
+			//If one entity is Arrow and other is player, prevent damage to player in none PVP zones
+			if(e.getDamager() instanceof Arrow && e.getEntity() instanceof Player) {
+				Player damagee = (Player) e.getEntity();
+				Arrow arrow = null;				
+				arrow = (Arrow) e.getDamager();
+				if(arrow.getShooter() instanceof Player && damagee instanceof Player && db.selectZonePVP(damagee.getLocation().getBlockX(), damagee.getLocation().getBlockY(), damagee.getLocation().getBlockZ(), damagee.getLocation().getWorld().toString()) == false) {
+					e.setCancelled(true);
+					return;
+				}
+			}
+			//If one entity is Trident and other is player, prevent damage to player in none PVP zones
+			if(e.getDamager() instanceof Trident && e.getEntity() instanceof Player) {
+				Player damagee = (Player) e.getEntity();
+				Trident trident = null;				
+				trident = (Trident) e.getDamager();					
+				if(trident.getShooter() instanceof Player && damagee instanceof Player && db.selectZonePVP(damagee.getLocation().getBlockX(), damagee.getLocation().getBlockY(), damagee.getLocation().getBlockZ(), damagee.getLocation().getWorld().toString()) == false) {
 					e.setCancelled(true);
 					return;
 				}
 			}
 			
-			if (damageTaker instanceof Player) {
-				Player taker = (Player) damageTaker;
-			    if (damager instanceof Player) 
-			    { 
-			    	Player damagerPlayer = (Player) damager;
-				    if(debugging) {plugin.getLogger().info("Player is holding: " + damagerPlayer.getInventory().getItemInMainHand().getType().toString());}
-				    if(taker.hasMetadata("isdown")) 
-				    {
-				        if( (damagerPlayer.getInventory().getItemInMainHand().getType().toString() == Material.PLAYER_HEAD.toString() || damagerPlayer.getInventory().getItemInOffHand().getType().equals(Material.PLAYER_HEAD)) && taker.getMetadata("isdown").get(0).asBoolean()){//Check if player is medic, and or on team.
-				        	taker.sendMessage("A medic has revived you!");
-				        	taker.setMetadata("isdown",new FixedMetadataValue(plugin, false));
-				        	taker.setMetadata("hasdied",new FixedMetadataValue(plugin, true));
-				        	for (PotionEffect effect : taker.getActivePotionEffects()){
-				        		taker.removePotionEffect(effect.getType());
-				        	}
-				        	taker.setHealth(10);
-				        	taker.setWalkSpeed((float) .2);
-				        	taker.setGlowing(false);
-				        	
-				        	if(taker.hasMetadata("revived")) {
-				        		taker.setMetadata("revived",new FixedMetadataValue(plugin, taker.getMetadata("revived").get(0).asInt() + 1));
-				    		}
-				    		else {
-				    			taker.setMetadata("revived",new FixedMetadataValue(plugin, 1));
-				    		}
-				        	
-				        	if(damagerPlayer.hasMetadata("players_saved")) {
-				        		damagerPlayer.setMetadata("players_saved",new FixedMetadataValue(plugin, damagerPlayer.getMetadata("players_saved").get(0).asInt() + 1));
-				    		}
-				    		else {
-				    			damagerPlayer.setMetadata("players_saved",new FixedMetadataValue(plugin, 1));
-				    		}
-							
-				        	
-				        	
-				        	e.setCancelled(true);
-					    	if(damagerPlayer.getInventory().getItemInMainHand().getType().equals(Material.PLAYER_HEAD)) {
-					    		ItemStack heads = new ItemStack(Material.PLAYER_HEAD, damagerPlayer.getInventory().getItemInMainHand().getAmount() -1);
-					    		damagerPlayer.getInventory().setItemInMainHand(heads);
-					    		return;
-					    	}
-					    	if(damagerPlayer.getInventory().getItemInOffHand().getType().equals(Material.PLAYER_HEAD)) {
-					    		ItemStack heads = new ItemStack(Material.PLAYER_HEAD, damagerPlayer.getInventory().getItemInOffHand().getAmount() -1);
-					    		damagerPlayer.getInventory().setItemInOffHand(heads);
-					    		return;
-					    	}
-					    	
-					    	if(taker.hasMetadata("team_name")  && taker.getMetadata("team_name").get(0).toString().length() >= 1) {//If player is part of a team...
-					        	board.makeScoreBoard(taker.getMetadata("team_name").get(0).asString());
-					        	board.setScoreboard(teams.getTeamMembers(taker.getMetadata("team_name").get(0).asString()), taker.getMetadata("team_name").get(0).asString());
+			//Attacker is player, if he is down cancel, if he is not calculate damage done and score it.
+			if(e.getDamager() instanceof Player && !(e.getEntity() instanceof Player)){
+				//Damager is a player, damagee is not.
+				Player damager = (Player)e.getDamager();
+				LivingEntity damagee = (LivingEntity) e.getEntity();
+				
+				//Damager is NOT down [increments damage delt
+				if (damager.hasMetadata("isdown") && damager.getMetadata("isdown").get(0).asBoolean() == false) {
+					//Increment damager's score.
+					if(damager.hasMetadata("total_damage_delt")) {damager.setMetadata("total_damage_delt",new FixedMetadataValue(plugin, damager.getMetadata("total_damage_delt").get(0).asInt() + damagee.getLastDamageCause().getDamage()));}
+			    	else {damager.setMetadata("total_damage_delt",new FixedMetadataValue(plugin, damagee.getLastDamageCause().getDamage()));}
+				}
+				else {
+					e.setCancelled(true);
+					return;
+				}				
+			}
+			//Mob on Player violence, prevents downed player from taking damage
+			if(!(e.getDamager() instanceof Player) && e.getEntity() instanceof Player){
+				//Damager is NOT a player, but damagee is
+				Player damagee = (Player) e.getEntity();
+				
+				if(damagee.hasMetadata("isdown") && damagee.getMetadata("isdown").get(0).asBoolean()) {
+					e.setCancelled(true);
+					return;
+				}else {
+			    	//Update scoreboard now that player has been revived.		    	
+			    	if(damagee.hasMetadata("team_name") && damagee.getMetadata("team_name").get(0).toString().length() >= 1) {//If player is part of a team...
+			        	board.makeScoreBoard(damagee.getMetadata("team_name").get(0).asString());
+			        	board.setScoreboard(teams.getTeamMembers(damagee.getMetadata("team_name").get(0).asString()), damagee.getMetadata("team_name").get(0).asString(), damagee, (int) ((damagee.getHealth()-e.getFinalDamage())));
+			        }
+				}
+			}
+			
+			
+			if(e.getEntity() instanceof Player) {
+				//Player has been damaged, I want to 
+				//Check if HP is going to kill him, if so, run last stand logic
+					//If
+				//If it wont, score damage taken, return.
+				Player damagee = (Player) e.getEntity();
+				
+				//Update total damage taken...
+				if(damagee.hasMetadata("total_damage_taken")) {damagee.setMetadata("total_damage_taken",new FixedMetadataValue(plugin, damagee.getMetadata("total_damage_taken").get(0).asInt() + damagee.getLastDamage()));}
+	    		else {damagee.setMetadata("total_damage_taken",new FixedMetadataValue(plugin, damagee.getLastDamage()));}
+				
+				
+				if(damagee.hasMetadata("isdown") && damagee.getMetadata("isdown").get(0).asBoolean()) {
+					//Champ is down; continue to apply damage
+					
+					//OFF THE WALL; use scheduled task instead of poison, then just get and cancel task using player UUID in a hashmap... this would take all guess work out. right?
+					
+					//Update scoreboard.
+					if(damagee.hasMetadata("team_name") && damagee.getMetadata("team_name").get(0).toString().length() >= 1) {//If player is part of a team...
+			        	board.makeScoreBoard(damagee.getMetadata("team_name").get(0).asString());
+			        	board.setScoreboard(teams.getTeamMembers(damagee.getMetadata("team_name").get(0).asString()), damagee.getMetadata("team_name").get(0).asString(), damagee, (int) ((damagee.getHealth()-e.getFinalDamage())*-1));
+			        }
+					
+				}
+				else {
+					//Champ is not down, should we put him there?
+					if((damagee.getHealth() - e.getFinalDamage()) <= .5) {
+						if(damagee.hasMetadata("hasdied") && damagee.getMetadata("hasdied").get(0).asBoolean()) {
+							//Player has already been in last stand, time to kill him/her
+							damagee.setHealth(0);
+							if(damagee.hasMetadata("team_name") && damagee.getMetadata("team_name").get(0).toString().length() >= 1) {//If player is part of a team...
+					        	board.makeScoreBoard(damagee.getMetadata("team_name").get(0).asString());
+					        	board.setScoreboard(teams.getTeamMembers(damagee.getMetadata("team_name").get(0).asString()), damagee.getMetadata("team_name").get(0).asString(), damagee, (int) ((damagee.getHealth()-e.getFinalDamage())*-1));
 					        }
-					        else {
-					        	if(debugging){plugin.getLogger().info("team_name NOT SET");}
-					        }
-				        }
-				        else
-				        {
-				        	//IF region PVP ON
-				        	if(db.selectZonePVP(taker.getLocation().getBlockX(), taker.getLocation().getBlockY(), taker.getLocation().getBlockZ(), taker.getLocation().getWorld().toString()) && db.selectZonePVP(damagerPlayer.getLocation().getBlockX(), damagerPlayer.getLocation().getBlockY(), damagerPlayer.getLocation().getBlockZ(), damagerPlayer.getLocation().getWorld().toString()))
-							{e.setCancelled(false);}
-				        	else{e.setCancelled(true);}
-				        }
-				    }
-			    }
-			    else{
-			    	if(taker.getMetadata("isdown").get(0).asBoolean()){
-			    		e.setCancelled(true);
-			    		return;
-			    	}
-			    }
-			}			
-			if(damager instanceof Player && !(damageTaker instanceof Player) && !(damager.getMetadata("isdown").get(0).asBoolean())){
-				try {
-				//Player on Mob violence...
-					if(damager.hasMetadata("total_damage_delt")) {
-						damager.setMetadata("total_damage_delt",new FixedMetadataValue(plugin, damager.getMetadata("total_damage_delt").get(0).asInt() + damageTaker.getLastDamageCause().getDamage()));
-		    		}
-		    		else {
-		    			damager.setMetadata("total_damage_delt",new FixedMetadataValue(plugin, damageTaker.getLastDamageCause().getDamage()));
-		    		}
-					e.setCancelled(false);
-				}catch(NullPointerException np) {}
-			}
-			if(damager instanceof Player && !(damageTaker instanceof Player) && damager.getMetadata("isdown").get(0).asBoolean()){
-				//Downed player on Mob violence...
-				e.setCancelled(true);
-			}
-			if(!(damager instanceof Player) && damageTaker instanceof Player && damageTaker.getMetadata("isdown").get(0).asBoolean()){
-				//Mob on Downed Player violence...
-				e.setCancelled(true);
-			}
-		}
-		catch(Exception err) {plugin.getLogger().info("Unhandled Exception: " + err.toString());}
-	}
-
-	
-	@EventHandler(priority = EventPriority.HIGH)
-	public void dmg(EntityDamageEvent event) 
-	{
-		Double realDamage = event.getFinalDamage();
-		
-//		plugin.getLogger().info("ASFASDFASDFASDF WHORE : " + event.getEntityType().toString());
-		
-		
-		//This cancells all damage to players...
-//		if(event.getEntityType().equals(EntityType.PLAYER)) {		event.setCancelled(true);	}
-		try {
-			Entity e = event.getEntity();
-			if(e instanceof Player) 
-			{
-				Player player = (Player)e;
-				try {
-					if(player.hasMetadata("total_damage_taken")) {
-		    			player.setMetadata("total_damage_taken",new FixedMetadataValue(plugin, player.getMetadata("total_damage_taken").get(0).asInt() + player.getLastDamage()));
-		    		}
-		    		else {
-		    			player.setMetadata("total_damage_taken",new FixedMetadataValue(plugin, player.getLastDamage()));
-		    		}
-				}catch(NullPointerException np) {}
-				
-				
-				
-				if(player.hasMetadata("isdown"))
-				{
-					if(player.getMetadata("isdown").get(0).asBoolean())
-					{
-						if(player.getLastDamageCause().getEntity().equals(player))
-						{
-							if(Double.valueOf(player.getHealth()) <= 1){
-								player.setHealth(0);
-								event.setCancelled(true);//Cancel so damage doesn't kill me twice...
-								return;
-							}
-							else
-							{
-								try{
-									if(player.getHealth() <= 20)
-									{
-										player.setHealth(player.getHealth());
-										try {
-											//May not update with correct value as damage has not been done yet...
-											//Maybe pass health as arg with trueDamage - hp (not just damage-hgp
-											if(player.hasMetadata("team_name") && player.getMetadata("team_name").get(0).toString().length() >= 1) {//If player is part of a team...
-									        	board.makeScoreBoard(player.getMetadata("team_name").get(0).asString());
-									        	board.setScoreboard(teams.getTeamMembers(player.getMetadata("team_name").get(0).asString()), player.getMetadata("team_name").get(0).asString(), player, (int) ((player.getHealth()-realDamage)*-1));
-									        }
-									        else {
-									        	if(debugging){plugin.getLogger().info("team_name NOT SET");}
-									        }
-										}catch(NullPointerException np) {} catch(Exception err) {plugin.getLogger().info("Other Error");}
-										return;
-									} else {
-										player.setHealth(player.getHealth()+1);
-										try {
-											//May not update with correct value as damage has not been done yet...
-											//Maybe pass health as arg with trueDamage - hp (not just damage-hgp
-											if(player.hasMetadata("team_name") && player.getMetadata("team_name").get(0).toString().length() >= 1) {//If player is part of a team...
-									        	board.makeScoreBoard(player.getMetadata("team_name").get(0).asString());
-									        	board.setScoreboard(teams.getTeamMembers(player.getMetadata("team_name").get(0).asString()), player.getMetadata("team_name").get(0).asString(), player, (int) ((player.getHealth()-realDamage)*-1));
-									        }
-									        else {
-									        	if(debugging){plugin.getLogger().info("team_name NOT SET");}
-									        }
-										}catch(NullPointerException np) {} catch(Exception err) {plugin.getLogger().info("Other Error");}										
-										return;
-									}
-								}catch(Exception errr){}
-							}
+							e.setCancelled(true);
+							return;
 						}
-						else{
-							event.setCancelled(true);
+						else {//Put player in last stand.
+							//Alert team player is down.
+							try {teams.alertTeamOfDowns(damagee.getMetadata("team_name").get(0).asString(), damagee);									
+							}catch(Exception err) {}
+							
+							//Reset health, set meta data, set walk speed, add potions, set glow, set sneaking,
+							damagee.setHealth(20);//Full health for last stand...
+							damagee.setMetadata("hasdied", new FixedMetadataValue(plugin, true));//Set has died before applying damage...
+							damagee.setMetadata("isdown",new FixedMetadataValue(plugin, true));
+							damagee.setWalkSpeed(0);//0 to prevent walking...
+							damagee.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 10000, 1));
+							damagee.addPotionEffect(new PotionEffect(PotionEffectType.JUMP, 10000, 250));
+							damagee.setGlowing(true);
+							damagee.setSneaking(true);
+							
+							//Increment downs score.
+							if(damagee.hasMetadata("downs")) {damagee.setMetadata("downs",new FixedMetadataValue(plugin, damagee.getMetadata("downs").get(0).asInt() + 1));}
+				    		else {damagee.setMetadata("downs",new FixedMetadataValue(plugin, 1));}
+							if(damagee.hasMetadata("team_name") && damagee.getMetadata("team_name").get(0).toString().length() >= 1) {//If player is part of a team...
+					        	board.makeScoreBoard(damagee.getMetadata("team_name").get(0).asString());
+					        	board.setScoreboard(teams.getTeamMembers(damagee.getMetadata("team_name").get(0).asString()), damagee.getMetadata("team_name").get(0).asString(), damagee, (int) ((damagee.getHealth()-e.getFinalDamage())*-1));
+					        }
+							
+							downedPlayers.put(damagee.getUniqueId(), Bukkit.getScheduler().runTaskTimer(plugin, () -> {
+								try {
+								damagee.setHealth(damagee.getHealth() - 1);
+								if(damagee.hasMetadata("team_name") && damagee.getMetadata("team_name").get(0).toString().length() >= 1) {//If player is part of a team...
+						        	board.makeScoreBoard(damagee.getMetadata("team_name").get(0).asString());
+						        	board.setScoreboard(teams.getTeamMembers(damagee.getMetadata("team_name").get(0).asString()), damagee.getMetadata("team_name").get(0).asString(), damagee, (int) ((damagee.getHealth()-1)*-1));
+						        }
+								}catch(Exception err) {
+									damagee.setHealth(0);
+								}
+							}, 10, 35));//delay before first run, sequential runs after...
+							
+							
+							e.setCancelled(true);
+							return;
 						}
 						
 					}
-					else
-					{
-						if(player.hasMetadata("hasdied")) {
-							if((player.getHealth() - player.getLastDamage())<= 1.5 && player.getMetadata("hasdied").get(0).asBoolean() == false){
-								try {
-									teams.alertTeamOfDowns(player.getMetadata("team_name").get(0).asString(), player);									
-								}catch(Exception err) {
-									
-								}
-								try {
-									//May not update with correct value as damage has not been done yet...
-									//Maybe pass health as arg with trueDamage - hp (not just damage-hgp
-									if(player.hasMetadata("team_name") && player.getMetadata("team_name").get(0).toString().length() >= 1) {//If player is part of a team...
-							        	board.makeScoreBoard(player.getMetadata("team_name").get(0).asString());
-							        	board.setScoreboard(teams.getTeamMembers(player.getMetadata("team_name").get(0).asString()), player.getMetadata("team_name").get(0).asString(), player, (int) ((player.getHealth()-realDamage) *-1));
-							        }
-							        else {
-							        	if(debugging){plugin.getLogger().info("team_name NOT SET");}
-							        }
-								}catch(NullPointerException np) {} catch(Exception err) {plugin.getLogger().info("Other Error");}
-								//Maybe set player to non-targetable, heal player, then use potion of damage to decrease health, then remove all potion effects when healed by medic?
-								player.setMetadata("isdown",new FixedMetadataValue(plugin, true));
-								player.setHealth(player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getDefaultValue());
-								player.setWalkSpeed(0);//0 to prevent walking...
-								player.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 1000, 1));
-								player.addPotionEffect(new PotionEffect(PotionEffectType.JUMP, 1000, 250));
-								player.addPotionEffect(new PotionEffect(PotionEffectType.POISON, 1000, 1));//Start damaging player...
-								player.setGlowing(true);
-								player.setSneaking(true);
-		
-								if(player.hasMetadata("downs")) {
-									player.setMetadata("downs",new FixedMetadataValue(plugin, player.getMetadata("downs").get(0).asInt() + 1));
-					    		}
-					    		else {
-					    			player.setMetadata("downs",new FixedMetadataValue(plugin, 1));
-					    		}
-								
-								
-								event.setCancelled(true);
-								return;
-							}
-							//Update scoreboard:
-							else {
-								try {
-									//May not update with correct value as damage has not been done yet...
-									//Maybe pass health as arg with trueDamage - hp (not just damage-hgp
-									if(player.hasMetadata("team_name") && player.getMetadata("team_name").get(0).toString().length() >= 1) {//If player is part of a team...
-							        	board.makeScoreBoard(player.getMetadata("team_name").get(0).asString());
-							        	board.setScoreboard(teams.getTeamMembers(player.getMetadata("team_name").get(0).asString()), player.getMetadata("team_name").get(0).asString(), player, (int) (Math.round(player.getHealth())-realDamage));
-							        }
-							        else {
-							        	if(debugging){plugin.getLogger().info("team_name NOT SET");}
-							        }
-								}catch(NullPointerException np) {} catch(Exception err) {plugin.getLogger().info("Other Error");}
-							}
-						}
-						else
-						{
-							event.setCancelled(false);
-							try {
-								//May not update with correct value as damage has not been done yet...
-								//Maybe pass health as arg with trueDamage - hp (not just damage-hgp
-								if(player.hasMetadata("team_name") && player.getMetadata("team_name").get(0).toString().length() >= 1) {//If player is part of a team...
-						        	board.makeScoreBoard(player.getMetadata("team_name").get(0).asString());
-						        	board.setScoreboard(teams.getTeamMembers(player.getMetadata("team_name").get(0).asString()), player.getMetadata("team_name").get(0).asString(), player, (int) (Math.round(player.getHealth())-realDamage));
-						        }
-						        else {
-						        	if(debugging){plugin.getLogger().info("team_name NOT SET");}
-						        }
-							}catch(NullPointerException np) {} catch(Exception err) {plugin.getLogger().info("Other Error");}
-						}
-					}
 				}
+				
 			}
-			//IF it's not a player...
+			
 		}
 		catch(Exception err) {
-			plugin.getLogger().info("Unahndled Exception in DMG: " + err.toString());
+			if(debugging) {plugin.getLogger().info("Not sure why, but we got an error: " + err.toString());}
 		}
-
 	}
-
 	@EventHandler(priority = EventPriority.LOW)
 	public void onHealthRegen(EntityRegainHealthEvent event) {
 		if(event.getEntityType().equals(EntityType.PLAYER)) {
@@ -690,10 +694,7 @@ public class EventListener implements Listener {
 			try {
 				if(player.hasMetadata("team_name") && player.getMetadata("team_name").get(0).toString().length() >= 1) {//If player is part of a team...
 		        	board.makeScoreBoard(player.getMetadata("team_name").get(0).asString());
-		        	board.setScoreboard(teams.getTeamMembers(player.getMetadata("team_name").get(0).asString()), player.getMetadata("team_name").get(0).asString(), player, (int) (Math.ceil(player.getHealth()) + .9));
-		        }
-		        else {
-		        	if(debugging){plugin.getLogger().info("team_name NOT SET");}
+		        	board.setScoreboard(teams.getTeamMembers(player.getMetadata("team_name").get(0).asString()), player.getMetadata("team_name").get(0).asString(), player, (int) (player.getHealth() + event.getAmount()));
 		        }
 			}catch(NullPointerException np) {} catch(Exception err) {plugin.getLogger().info("Other Error");}		
 		}
