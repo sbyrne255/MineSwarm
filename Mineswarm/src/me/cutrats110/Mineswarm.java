@@ -493,6 +493,21 @@ public class Mineswarm extends JavaPlugin implements Listener{
 			}
 		}
 		if (cmd.getName().equalsIgnoreCase("makespawner") && sender instanceof Player){			
+			
+			
+			try {
+				Block block = player.getTargetBlock(null, 10);
+				
+				//						Block location									World			       Mob type (0)	        Max Mobs (1)       Item chance (2)  weapon (3), durability(4)
+				db.makeSpawner(block.getX() + ","+block.getY()+ ","+block.getZ(), player.getWorld().getName(), args[0], Integer.valueOf(args[1]),  Integer.valueOf(args[2]), args[3], Integer.valueOf(args[4]));
+			}
+			catch(Exception err) {
+				getLogger().info(err.toString() + " IN COMMAND MAKESPAWNER");
+			}
+			return true;
+			
+			
+			/*
 			try{
 				int min_x, min_z, min_y;
 				int max_x, max_z, max_y;
@@ -512,6 +527,7 @@ public class Mineswarm extends JavaPlugin implements Listener{
 			catch(Exception er){
 				player.sendMessage("Error ON INSERT: " + er.toString());
 			}
+			*/
 		}
 		if (cmd.getName().equalsIgnoreCase("save") && sender instanceof Player){			
 			try{

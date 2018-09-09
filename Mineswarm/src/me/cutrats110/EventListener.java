@@ -70,24 +70,36 @@ public class EventListener implements Listener {
 	public void onPlayerQuit(PlayerQuitEvent event) {
 		//Cancel any pending TPs
 		Player player = event.getPlayer();
+		if(player.hasMetadata("isdown") && player.getMetadata("isdown").get(0).asBoolean()) {
+			player.setHealth(0);
+		}
+		if(downedPlayers.containsKey(player.getUniqueId())) {
+			plugin.getLogger().info("HAS EVENT I NDOWNS" );
+			downedPlayers.get(player.getUniqueId()).cancel();
+			plugin.getLogger().info("CANNED" );
+			downedPlayers.remove(player.getUniqueId());
+			plugin.getLogger().info("REMOVED");
+		}
+		
 		try {
 			if(teams.tpQueue.containsKey(player.getUniqueId())) {
 				teams.tpQueue.get(player.getUniqueId()).cancel();
 				teams.tpQueue.remove(player.getUniqueId());
 			}				
-		}catch(NullPointerException np) {}
+		}catch(Exception np) {plugin.getLogger().info("FUCK OFF IN TP");}
 		try {
-		//Remove from owner position..
-		if(teams.getTeamOwner(player.getMetadata("team_name").get(0).asString()).equals(player)) {
-			if(debugging) {plugin.getLogger().info("Exiting player is team owner");}
-			//Player is owner of team...
-			teams.setNewTeamOwner(player.getMetadata("team_name").get(0).asString());
-		}
+			//Remove from owner position..
+			if(teams.getTeamOwner(player.getMetadata("team_name").get(0).asString()).equals(player)) {
+				if(debugging) {plugin.getLogger().info("Exiting player is team owner");}
+				//Player is owner of team...
+				teams.setNewTeamOwner(player.getMetadata("team_name").get(0).asString());
+			}
 		}catch(Exception err) {
-			plugin.getLogger().info(err.toString());
 		}
-		
-		db.updatePlayerData(event.getPlayer());
+		try {
+			db.updatePlayerData(event.getPlayer());
+		}
+		catch(Exception err) {plugin.getLogger().info("ERROR WITH DB... " + err.toString());}
 		try {
 			if(player.hasMetadata("team_name") && player.getMetadata("team_name").get(0).toString().length() >= 1) {
 		    	board.makeScoreBoard(player.getMetadata("team_name").get(0).asString());
@@ -102,17 +114,20 @@ public class EventListener implements Listener {
 			plugin.getLogger().info("Problem leaving game" + err.toString());
 		}
 		
+		
+		
+		
     }
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event)
-    {   	
+    {  
         Player player = event.getPlayer();
-        teams.addUUID(player);        
+        teams.addUUID(player);      
+        //narrowed it down so there is no doubt, something in this DB code prevents players from going into last stand after leaving and rejoining....
         if(db.setPlayerData(player) == false) {
         	//Player did not exist, create them...
         	db.newPlayer(player);
         }    
-        
         
         try {
 	        if(player.hasMetadata("team_name") && player.getMetadata("team_name").get(0).toString().length() >= 1) {//If player is part of a team...
@@ -627,56 +642,44 @@ public class EventListener implements Listener {
 				else {
 					//Champ is not down, should we put him there?
 					if((damagee.getHealth() - e.getFinalDamage()) <= .5) {
-						if(damagee.hasMetadata("hasdied") && damagee.getMetadata("hasdied").get(0).asBoolean()) {
-							//Player has already been in last stand, time to kill him/her
-							damagee.setHealth(0);
-							if(damagee.hasMetadata("team_name") && damagee.getMetadata("team_name").get(0).toString().length() >= 1) {//If player is part of a team...
-					        	board.makeScoreBoard(damagee.getMetadata("team_name").get(0).asString());
-					        	board.setScoreboard(teams.getTeamMembers(damagee.getMetadata("team_name").get(0).asString()), damagee.getMetadata("team_name").get(0).asString(), damagee, (int) ((damagee.getHealth()-e.getFinalDamage())*-1));
-					        }
-							e.setCancelled(true);
-							return;
-						}
-						else {//Put player in last stand.
-							//Alert team player is down.
-							try {teams.alertTeamOfDowns(damagee.getMetadata("team_name").get(0).asString(), damagee);									
-							}catch(Exception err) {}
-							
-							//Reset health, set meta data, set walk speed, add potions, set glow, set sneaking,
-							damagee.setHealth(20);//Full health for last stand...
-							damagee.setMetadata("hasdied", new FixedMetadataValue(plugin, true));//Set has died before applying damage...
-							damagee.setMetadata("isdown",new FixedMetadataValue(plugin, true));
-							damagee.setWalkSpeed(0);//0 to prevent walking...
-							damagee.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 10000, 1));
-							damagee.addPotionEffect(new PotionEffect(PotionEffectType.JUMP, 10000, 250));
-							damagee.setGlowing(true);
-							damagee.setSneaking(true);
-							
-							//Increment downs score.
-							if(damagee.hasMetadata("downs")) {damagee.setMetadata("downs",new FixedMetadataValue(plugin, damagee.getMetadata("downs").get(0).asInt() + 1));}
-				    		else {damagee.setMetadata("downs",new FixedMetadataValue(plugin, 1));}
-							if(damagee.hasMetadata("team_name") && damagee.getMetadata("team_name").get(0).toString().length() >= 1) {//If player is part of a team...
-					        	board.makeScoreBoard(damagee.getMetadata("team_name").get(0).asString());
-					        	board.setScoreboard(teams.getTeamMembers(damagee.getMetadata("team_name").get(0).asString()), damagee.getMetadata("team_name").get(0).asString(), damagee, (int) ((damagee.getHealth()-e.getFinalDamage())*-1));
-					        }
-							
-							downedPlayers.put(damagee.getUniqueId(), Bukkit.getScheduler().runTaskTimer(plugin, () -> {
-								try {
-								damagee.setHealth(damagee.getHealth() - 1);
-								if(damagee.hasMetadata("team_name") && damagee.getMetadata("team_name").get(0).toString().length() >= 1) {//If player is part of a team...
-						        	board.makeScoreBoard(damagee.getMetadata("team_name").get(0).asString());
-						        	board.setScoreboard(teams.getTeamMembers(damagee.getMetadata("team_name").get(0).asString()), damagee.getMetadata("team_name").get(0).asString(), damagee, (int) ((damagee.getHealth()-1)*-1));
-						        }
-								}catch(Exception err) {
-									damagee.setHealth(0);
-								}
-							}, 10, 35));//delay before first run, sequential runs after...
-							
-							
-							e.setCancelled(true);
-							return;
-						}
+						//Put player in last stand.
+						//Alert team player is down.
+						try {teams.alertTeamOfDowns(damagee.getMetadata("team_name").get(0).asString(), damagee);									
+						}catch(Exception err) {}
 						
+						//Reset health, set meta data, set walk speed, add potions, set glow, set sneaking,
+						damagee.setHealth(20);//Full health for last stand...
+						damagee.setMetadata("hasdied", new FixedMetadataValue(plugin, true));//Set has died before applying damage...
+						damagee.setMetadata("isdown",new FixedMetadataValue(plugin, true));
+						damagee.setWalkSpeed(0);//0 to prevent walking...
+						damagee.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 10000, 1));
+						damagee.addPotionEffect(new PotionEffect(PotionEffectType.JUMP, 10000, 250));
+						damagee.setGlowing(true);
+						damagee.setSneaking(true);
+						
+						//Increment downs score.
+						if(damagee.hasMetadata("downs")) {damagee.setMetadata("downs",new FixedMetadataValue(plugin, damagee.getMetadata("downs").get(0).asInt() + 1));}
+			    		else {damagee.setMetadata("downs",new FixedMetadataValue(plugin, 1));}
+						if(damagee.hasMetadata("team_name") && damagee.getMetadata("team_name").get(0).toString().length() >= 1) {//If player is part of a team...
+				        	board.makeScoreBoard(damagee.getMetadata("team_name").get(0).asString());
+				        	board.setScoreboard(teams.getTeamMembers(damagee.getMetadata("team_name").get(0).asString()), damagee.getMetadata("team_name").get(0).asString(), damagee, (int) ((damagee.getHealth()-e.getFinalDamage())*-1));
+				        }
+						
+						downedPlayers.put(damagee.getUniqueId(), Bukkit.getScheduler().runTaskTimer(plugin, () -> {
+							try {
+							damagee.setHealth(damagee.getHealth() - 1);
+							if(damagee.hasMetadata("team_name") && damagee.getMetadata("team_name").get(0).toString().length() >= 1) {//If player is part of a team...
+					        	board.makeScoreBoard(damagee.getMetadata("team_name").get(0).asString());
+					        	board.setScoreboard(teams.getTeamMembers(damagee.getMetadata("team_name").get(0).asString()), damagee.getMetadata("team_name").get(0).asString(), damagee, (int) ((damagee.getHealth()-1)*-1));
+					        }
+							}catch(Exception err) {
+								damagee.setHealth(0);
+							}
+						}, 10, 35));//delay before first run, sequential runs after...
+						
+						
+						e.setCancelled(true);
+						return;
 					}
 				}
 				

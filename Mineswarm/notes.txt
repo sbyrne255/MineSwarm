@@ -4,7 +4,7 @@
 	#Potions class does not have real IDs for any items, I should probably set those...	
 	#Check full inventory for keys, not just want's in hand
 	#Perhaps announce to player when they get a door key and for what door. (Pickup Event)
-	Leaving while down cancels down but doesn't reset anything really...
+	Leaving while down cancels down but doesn't reset anything really... [LEAVING WHILE DOWN HAS NOTHING TO DO WITH IT, LEAVING AT ALL PREVENTS LAST STAND...]
 //TODO:
 	*Load a configfile
 		*Enable a YML

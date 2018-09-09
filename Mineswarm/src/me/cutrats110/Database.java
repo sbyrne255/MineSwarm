@@ -133,7 +133,7 @@ public class Database {
         	plugin.getLogger().info("Conn check failed. " + er.toString());
         }
     	
-        String sql = "CREATE TABLE IF NOT EXISTS spawners(min_x,min_y,min_z,max_x,max_y,max_z,world,radius,etype,max_mobs,x_offset,y_offset,z_offset,chance,weapons,durability)";
+        String sql = "CREATE TABLE IF NOT EXISTS spawners(location,world,etype,max_mobs,chance,weapons,durability)";
         try (
         	PreparedStatement pstmt = mobConn.prepareStatement(sql)) {
             pstmt.execute();
@@ -650,59 +650,23 @@ public class Database {
         finally{ try {conn.close();} catch (SQLException e) {} }
         return null;
     }
-    public List<String> getMobSpawners(int x, int y, int z, String world) {
-        String sql = "SELECT * FROM spawners WHERE min_x < ? AND min_z < ? AND min_y < ? AND max_y > ? AND max_x > ? AND max_z > ? AND world = ?";
-        try{
-        	if(conn.isClosed()){
-        		connectMobs();
-        	}
-        }
-        catch(NullPointerException np){
-        	connectMobs();
-        }
-        catch(Exception er){
-        	plugin.getLogger().info("Conn check failed. " + er.toString());
-        }
-        
+
+    public List<String> getMobSpawners() {
+        String sql = "SELECT * FROM spawners";
+        try{if(conn.isClosed()){connectMobs();}}
+        catch(NullPointerException np){connectMobs();}
+        catch(Exception er){plugin.getLogger().info("Conn check failed. " + er.toString());}
         List<String> data = new ArrayList<String>();
         try {
-            	PreparedStatement pstmt = mobConn.prepareStatement(sql);
-                pstmt.setInt(1, x);
-                pstmt.setInt(2, z);
-                pstmt.setInt(3, y);
-                pstmt.setInt(4, y);
-                pstmt.setInt(5, x);
-                pstmt.setInt(6, z);
-                pstmt.setString(7, world);                
+            	PreparedStatement pstmt = mobConn.prepareStatement(sql);             
                 ResultSet rs = pstmt.executeQuery();
                 
                 while (rs.next()) {
                 	try{
-                	//Player is near a spanwer...
-                	//Add radius to min location to get block's true location (t...)
-	                	int tx = rs.getInt("min_x") + rs.getInt("radius");
-	                	int ty = rs.getInt("min_y") + rs.getInt("radius");
-	                	int tz = rs.getInt("min_z") + rs.getInt("radius");
-	                	//Location of mobspawner block.
-	                	//0-4
+                		data.add(rs.getString("location"));
 	                	data.add(rs.getString("world"));
-	                	data.add(String.valueOf(tx));
-	                	data.add(String.valueOf(ty));
-	                	data.add(String.valueOf(tz));
-	                	data.add(rs.getString("radius"));
-	                	
-	                	//Entity type
-	                	//5-6
 	                	data.add(rs.getString("etype"));
 	                	data.add(rs.getString("max_mobs")); 
-	                	//Spawn location...
-	                	//7-9
-	                	data.add(String.valueOf(tx+rs.getInt("x_offset")));
-	                	data.add(String.valueOf(ty+rs.getInt("y_offset")));
-	                	data.add(String.valueOf(tz+rs.getInt("z_offset")));
-	                	
-	                	//Weapon related.
-	                	//10-12
 	                	data.add(rs.getString("chance"));
 	                	data.add(rs.getString("weapons"));
 	                	data.add(rs.getString("durability"));
@@ -718,6 +682,7 @@ public class Database {
         finally{ try {mobConn.close();} catch (SQLException e) {} }
         return null;
     }
+    
     public void makeSpawner(int min_x, int min_y, int min_z, int max_x, int max_y, int max_z, String world, int radius, String etype, int max_mobs, int xoff, int yoff, int zoff, int chance, String weapon, int durability) {
         try{
         	if(mobConn.isClosed()){
@@ -766,6 +731,32 @@ public class Database {
         }
         finally{ try {mobConn.close();} catch (Exception e) {} }
     }
+    public void makeSpawner(String location, String world, String mobType, int maxMobs, int chance, String weapon, int durability) {
+        try{
+        	if(mobConn.isClosed()){plugin.getLogger().info("OPENING CONNECTION...");connectMobs();}}
+        catch(NullPointerException np){plugin.getLogger().info("NULL, OPENING CONNECTION...");connectMobs();}
+        catch(Exception er){plugin.getLogger().info("Conn check failed. " + er.toString());}
+    	
+    	String sql = "INSERT INTO spawners(location,world,etype,max_mobs,chance,weapons,durability)"
+    			+ " VALUES(?,?,?,?,?,?,?)";
+        try {
+        	PreparedStatement pstmt = mobConn.prepareStatement(sql);
+        	pstmt.setString(1, location.toString());
+        	pstmt.setString(2, world);
+        	pstmt.setString(3, mobType);
+        	pstmt.setInt(4, maxMobs);        	
+        	pstmt.setInt(5, chance);
+        	pstmt.setString(6, weapon);
+        	pstmt.setInt(7, durability);
+            
+            pstmt.executeUpdate();
+        } catch (SQLException e) {plugin.getLogger().info("PROBLEM ADDING MOB SPAWNER TO DB: " + e.toString());}
+        catch(Exception err){
+        	plugin.getLogger().info("BAD IN INSERT, NOT SQL PROBLEM: " + err.toString());
+        }
+        finally{ try {mobConn.close();} catch (Exception e) {} }
+    }
+       
     public void createChest(int x, int y, int z, String world, String creator, String items) {
         try{
         	if(chestConn.isClosed()){
@@ -875,8 +866,11 @@ public class Database {
                     	plugin.getLogger().info("Setting class");
                     	player.setMetadata("class",new FixedMetadataValue(plugin, rs.getString("kit")));
                     }                    
-                    player.setMetadata("hasdied",new FixedMetadataValue(plugin, rs.getBoolean("has_died")));
-                	player.setMetadata("isdown",new FixedMetadataValue(plugin, rs.getBoolean("isdown")));
+                    //player.setMetadata("hasdied",new FixedMetadataValue(plugin, rs.getBoolean("has_died")));
+                	//player.setMetadata("isdown",new FixedMetadataValue(plugin, rs.getBoolean("isdown")));
+                    player.setMetadata("isdown",new FixedMetadataValue(plugin, false));
+        	        player.setMetadata("hasdied",new FixedMetadataValue(plugin, false));
+        	        
                 	if(rs.getString("team_name") != null && rs.getString("team_name") !=  "") {
                 		player.setMetadata("team_name",new FixedMetadataValue(plugin, rs.getString("team_name")));
                 	}

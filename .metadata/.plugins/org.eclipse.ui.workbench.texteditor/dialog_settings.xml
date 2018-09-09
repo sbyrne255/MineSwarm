@@ -2,29 +2,30 @@
 <section name="Workbench">
 	<section name="org.eclipse.ui.texteditor.FindReplaceDialog">
 		<item value="false" key="isRegEx"/>
-		<item value="new MakePotion(" key="selection"/>
+		<item value="tMetadata(&quot;isdown&quot;" key="selection"/>
 		<item value="false" key="casesensitive"/>
 		<item value="false" key="incremental"/>
 		<item value="true" key="wrap"/>
 		<item value="false" key="wholeword"/>
 		<list key="findhistory">
-			<item value="new MakeSplashPotion("/>
-			<item value="-0"/>
-			<item value=" Splash"/>
-			<item value="Projectile"/>
-			<item value="Arrow"/>
-			<item value="3"/>
-			<item value="SplashPotions"/>
-			<item value="MakePotions"/>
-			<item value="potions"/>
-			<item value="PotionEffectType"/>
-			<item value="Potion"/>
-			<item value="I AM ALIVE AND SUCH"/>
-			<item value="I AM ALIVE"/>
-			<item value="Splash"/>
-			<item value="arrow"/>
+			<item value="tMetadata(&quot;isdown&quot;"/>
+			<item value="hasdied"/>
+			<item value="downedPlayers.remove"/>
+			<item value="downedPlayers"/>
+			<item value="WUAT"/>
+			<item value="wutd"/>
+			<item value="ASDFASDFSDF"/>
+			<item value="-1"/>
+			<item value="get"/>
+			<item value="getsp"/>
+			<item value="gets"/>
+			<item value="getSpaw"/>
+			<item value=","/>
+			<item value="\\"/>
+			<item value="\*"/>
 		</list>
 		<list key="replacehistory">
+			<item value=" downedPlayers.remove"/>
 			<item value="new MakePotion("/>
 			<item value=""/>
 			<item value="180"/>
@@ -39,7 +40,6 @@
 			<item value="if(debugging){plugin.getLogger().info(&quot;team_members NOT SET&quot;);}"/>
 			<item value="plugin.getConfig"/>
 			<item value="plugin.getLogger"/>
-			<item value="this.getConfig"/>
 		</list>
 	</section>
 	<section name="org.eclipse.ui.texteditor.FindReplaceDialog_dialogBounds">

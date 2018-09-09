@@ -1,19 +1,20 @@
 package me.cutrats110;
 
-import java.util.Collection;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
+
 
 public class ScheduledMobs implements Listener {
 	public Plugin plugin;
@@ -29,87 +30,139 @@ public class ScheduledMobs implements Listener {
 		
 	}
 	
-	//Point XYZ from marking tool...
-	//RadiusX = Math.abs(x_max * x_min);
-	//RadiusY = Math.abs(y_max * y_min);
-	//Radiusz = Math.abs(z_max * z_min);
+	
+	//Save and reload sooner or later...
+	private transient HashMap<Location, List<LivingEntity>> spawners = new HashMap<>();
 	
 	public void mobSpawns(){
 		Bukkit.getScheduler().scheduleSyncRepeatingTask(plugin, new Runnable() {
 			public void run() {
-		    	if(debugging){plugin.getLogger().info("I am a scheduled task, running at a scheduled time!");}	    	
+		    	if(debugging){plugin.getLogger().info("I am a scheduled task, running at a scheduled time!");}	
 		    	
+		    	//IF LIST SIZE IS SMALLER THAN MAX MOBS (ADJUST LATER) LOOP THROUGH DIFFERENCES SPAWNING MORE UNTIL IT IS THE SAME...
+		    	//IF LIST SIZE IS BIGGER THAN MAX MOBS, REMOVE ENTRIES UNTIL IT FITS.
 		    	
-		    	playerLoop://Problem, right now loop is checking ONCE per player, needs to check all players VS all spanwers... 
-		    	for(Player player : Bukkit.getOnlinePlayers()){//Loop through all online players
-		    		if(debugging){plugin.getLogger().info("Players are online...");}
-		    		List<String> results = db.getMobSpawners(player.getLocation().getBlockX(), player.getLocation().getBlockY(), player.getLocation().getBlockZ(), player.getLocation().getWorld().toString().replace("CraftWorld{name=", "").replace("}", ""));
-		    		//IF PLAYER in XYZ Radius...
-		    		//Loop for X in results...
-		    		for(int a = 0; a < results.size(); a+=13) {
-			    		if(results != null){
-			    			if(debugging){plugin.getLogger().info(String.valueOf((results.size()/13)) + " Types of mobs spawning");}
-			    			//Loop each entity near the spawner
-			    			int mobcount = 0;
-			    			for(Entity e : getEntitiesAroundPoint(results.get(a).replace("CraftWorld{name=", "").replace("}", ""), Integer.valueOf(results.get(a+1)), Integer.valueOf(results.get(a+2)), Integer.valueOf(results.get(a+3)), Integer.valueOf(results.get(a+4))))
-			    			{
-			    				if(e.getType().toString().equals(results.get(a+5))){
-			    					mobcount++;
-			    					if(mobcount > Integer.valueOf(results.get(a+6))){
-			    						if(debugging){plugin.getLogger().info("To many mobs, checking next player...");}
-			    						continue playerLoop;//Mobs already more than allowed...
-			    					}
-			    				}
-			    			}
-			    			//IF entities less than DB max mobs
-			    			for(int i = mobcount; i < Integer.valueOf(results.get(a+6)); i++){
-			    				if(debugging){plugin.getLogger().info("While we have less mobs in the area than our max spawn some mobs!.");}
-			    		    	Location location = new Location (Bukkit.getWorld(results.get(a).replace("CraftWorld{name=", "").replace("}", "")), Integer.valueOf(results.get(a+1)), Integer.valueOf(results.get(a+2)), Integer.valueOf(results.get(a+3)));//Needs to be location from DB...
-	
-			    		    	//Check % of weapon, if 0 ignore
-			    		    	if(Integer.valueOf(results.get(a+10)) != 0){
-			    		    		if(debugging){plugin.getLogger().info("Probability is set, trying it");}
-			    		    		//Random chance check...
-			    		    		Random rand = new Random();				
-									if( (rand.nextInt(Integer.valueOf(results.get(a+10))+1) == 1) || debugging)
-									{
-										if(debugging){plugin.getLogger().info("Either debugging or got our random number!");}
-										ItemStack item = new ItemStack( Material.matchMaterial(results.get(a+11)), 1);
-										item.setDurability(Short.valueOf(results.get(a+12)));
-										
-										LivingEntity zombie1 = (LivingEntity) Bukkit.getWorld(results.get(a)).spawnEntity(location, EntityType.valueOf(results.get(a+5)));
-					    		    	zombie1.getEquipment().setItemInMainHand(item);
-					    		    	if(debugging){plugin.getLogger().info("Just spawned a mob with a weapon!");}
-					    		    	if(debugging){plugin.getLogger().info(zombie1.getLocation().toString());}
-					    		    	
-									}
-									else{
-										LivingEntity zombie1 = (LivingEntity) Bukkit.getWorld(results.get(a)).spawnEntity(location, EntityType.valueOf(results.get(a+5)));
-						    		    if(debugging){plugin.getLogger().info("Just spawned a mob without a weapon!");}
-						    		    if(debugging){plugin.getLogger().info(zombie1.getLocation().toString());}
-									}
-			    		    	}
-			    		    	else{
-									LivingEntity zombie1 = (LivingEntity) Bukkit.getWorld(results.get(a)).spawnEntity(location, EntityType.valueOf(results.get(a+5)));
-					    		    if(debugging){plugin.getLogger().info("Just spawned a mob without a weapon!");}
-					    		    if(debugging){plugin.getLogger().info(zombie1.getLocation().toString());}
-								}
-			    			}
-			    		}
-		    		}
+		    	//					KEY/SPAWN  % CHANCE			FOR WEAPONS		 FOR MOB 	MOBTYPE 	Max number
+		    	//DB should return, Location, weapon Chance, Weapon Durability, Weapon, Entity Type, Max Entities
+		    	
+		    	//Instead of advanced for loop, just normal loop, then set the value of this position instead of deleting it.
+		    	List<String> data = db.getMobSpawners();
+		    	if(data == null) {
+		    		plugin.getLogger().info("No data found");
+		    		return;
 		    	}
+		    	//Loop each DB entrie...
+		    	for(int d = 0; d < data.size()-6; d+=6) {
+		    		//Prep all global variables...
+		    		List<String> loc = null;
+		    		String world = "";
+		    		Location location = null;
+		    		String entityType = "";
+		    		int maxEntities = 0;
+		    		int chance = 0;
+		    		String weapon = "";
+		    		short dura = 0;
+		    		List<LivingEntity> entities = null;
+		    		//Set variables here...
+		    		try {
+			    		loc = Arrays.asList(data.get(d).split("\\s*,\\s*"));
+			    		world = data.get(d+1);
+			    		location = new Location(Bukkit.getWorld(world), Integer.valueOf(loc.get(0)), Integer.valueOf(loc.get(1)), Integer.valueOf(loc.get(2)));
+			    		entityType = data.get(d+2);
+			    		maxEntities = Integer.valueOf(data.get(d+3));
+			    		chance = Integer.valueOf(data.get(d+4));
+			    		weapon = data.get(d+5);
+			    		dura = Short.valueOf(data.get(d+6));
+		    		}catch(NullPointerException np) {
+		    			plugin.getLogger().info("ASDFSADFSDF");
+		    		}
+		    		try {
+		    			entities = spawners.get(location);
+		    			if(entities == null) {
+		    				plugin.getLogger().info("No entires in spanwers.");
+		    				entities = new ArrayList<>();
+							//LivingEntity mob = (LivingEntity) Bukkit.getWorld(world).spawnEntity(location, EntityType.valueOf(entityType));
+		    				//entities.add(mob);
+		    			}
+		    		}catch(NullPointerException np) {}
+		    		
+		    		//If there are more entities we are ready to spawn than our DB's max size (normally from altering the DB directly), remove the last ones...
+		    		while(entities.size() > maxEntities) {
+		    			entities.remove(entities.size()-1);		
+		    			plugin.getLogger().info("Entities are too many, removing...");
+		    		}
+		    		
+		    		//Loop through all known entities and check if we need to spawn more...
+		    		for(int i = 0; i< entities.size(); i++) {
+		    			LivingEntity entity = entities.get(i);
+		    			if(entity.isDead()) {//Spawn new guy
+		    				if(chance != 0){
+		    		    		Random rand = new Random();				
+								if( (rand.nextInt(chance+1) == 1) || debugging)
+								{
+									ItemStack item = new ItemStack( Material.matchMaterial(weapon), 1);
+									item.setDurability(dura);
+									
+									LivingEntity mob = (LivingEntity) Bukkit.getWorld(world).spawnEntity(location, EntityType.valueOf(entityType));
+				    		    	mob.getEquipment().setItemInMainHand(item);
+				    		    	entities.set(i, mob);
+								}
+								else{
+									LivingEntity mob = (LivingEntity) Bukkit.getWorld(world).spawnEntity(location, EntityType.valueOf(entityType));
+									entities.set(i, mob);
+								}
+		    		    	}
+		    		    	else{
+								LivingEntity mob = (LivingEntity) Bukkit.getWorld(world).spawnEntity(location, EntityType.valueOf(entityType));
+								entities.set(i, mob);
+							}
+		    			}
+		    		}
+		    		
+		    		//If we spanwed all the entities, but we're short (normally if DB is altered directly) spawn more until list matches max size.
+		    		while(entities.size() < maxEntities) {
+		    			plugin.getLogger().info(String.valueOf(entities.size()) + "Not enough entities, looping to add more...");
+		    			LivingEntity mob = null;
+		    			if(chance != 0){
+	    		    		Random rand = new Random();		
+							if( (rand.nextInt(chance+1) == 1) || debugging)
+							{
+								ItemStack item = new ItemStack( Material.matchMaterial(weapon), 1);
+								item.setDurability(dura);
+								
+								mob = (LivingEntity) Bukkit.getWorld(world).spawnEntity(location, EntityType.valueOf(entityType));
+			    		    	mob.getEquipment().setItemInMainHand(item);
+			    		    	entities.add(mob);
+							}
+							else{
+								mob = (LivingEntity) Bukkit.getWorld(world).spawnEntity(location, EntityType.valueOf(entityType));
+								entities.add(mob);
+							}
+	    		    	}
+	    		    	else{
+							mob = (LivingEntity) Bukkit.getWorld(world).spawnEntity(location, EntityType.valueOf(entityType));
+							entities.add(mob);
+						}
+		    		}
+		    		
+		    		//Update Spanwers data.
+		    		spawners.put(location, entities);
+		    	}
+		    	
+		    	//Get everything from DB (Locations all I need...)
+		    	//Loop throuw locations (key) selecting all the List<Entities>
+		    	//Loop through each entity
+		    	//IF ENTITY.IsDead is true, response a new one at LOCATION, else continue...
 		    }
 		}, (20*10), (20*10));//Delay, length allowed to run...
 		//20t = 1s
 		//20*10 = 10 seconds...
 	}
-	public Collection<Entity> getEntitiesAroundPoint(String world, int x, int y, int z, int radius) {
-		Location location = new Location (Bukkit.getWorld(world), x, y, z);
-	    return location.getWorld().getNearbyEntities(location, radius, radius, radius);
-	}
-//	public Collection<Entity> getEntitiesAroundPoint(String world, int x, int y, int z, int radiusx, int radiusy, int radiusz) {
-		//Location location = new Location (Bukkit.getWorld(world), x, y, z);
-	    //return location.getWorld().getNearbyEntities(location, radiusx, radiusy, radiusz);
-	//}
-
+	
+	
+	
+	
+	
+	
+	
 }

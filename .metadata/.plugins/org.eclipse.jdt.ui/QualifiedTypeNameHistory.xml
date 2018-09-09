@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <qualifiedTypeNameHistroy>
-<fullyQualifiedTypeName name="org.bukkit.NamespacedKey"/>
 <fullyQualifiedTypeName name="me.cutrats110.Kits"/>
 <fullyQualifiedTypeName name="java.nio.file.StandardOpenOption"/>
 <fullyQualifiedTypeName name="java.nio.file.Files"/>
@@ -38,18 +37,14 @@
 <fullyQualifiedTypeName name="org.json.simple.JSONValue"/>
 <fullyQualifiedTypeName name="org.json.simple.JSONObject"/>
 <fullyQualifiedTypeName name="org.json.simple.parser.ParseException"/>
-<fullyQualifiedTypeName name="org.bukkit.Bukkit"/>
 <fullyQualifiedTypeName name="java.util.concurrent.ThreadLocalRandom"/>
 <fullyQualifiedTypeName name="org.bukkit.event.entity.EntityDamageEvent.DamageCause"/>
 <fullyQualifiedTypeName name="org.bukkit.entity.Arrow"/>
 <fullyQualifiedTypeName name="org.bukkit.event.entity.ProjectileHitEvent"/>
 <fullyQualifiedTypeName name="org.bukkit.potion.Potion"/>
 <fullyQualifiedTypeName name="org.bukkit.entity.LivingEntity"/>
-<fullyQualifiedTypeName name="java.util.HashMap"/>
 <fullyQualifiedTypeName name="java.util.List"/>
 <fullyQualifiedTypeName name="org.bukkit.entity.ThrownPotion"/>
-<fullyQualifiedTypeName name="java.util.ArrayList"/>
-<fullyQualifiedTypeName name="java.util.Arrays"/>
 <fullyQualifiedTypeName name="org.bukkit.inventory.meta.PotionMeta"/>
 <fullyQualifiedTypeName name="org.bukkit.potion.PotionData"/>
 <fullyQualifiedTypeName name="org.bukkit.potion.PotionType"/>
@@ -60,4 +55,9 @@
 <fullyQualifiedTypeName name="org.bukkit.event.entity.ProjectileLaunchEvent"/>
 <fullyQualifiedTypeName name="org.bukkit.entity.SplashPotion"/>
 <fullyQualifiedTypeName name="org.bukkit.entity.Projectile"/>
+<fullyQualifiedTypeName name="java.util.HashMap"/>
+<fullyQualifiedTypeName name="java.util.Arrays"/>
+<fullyQualifiedTypeName name="java.util.ArrayList"/>
+<fullyQualifiedTypeName name="net.minecraft.server.v1_13_R1.EntitySheep"/>
+<fullyQualifiedTypeName name="org.bukkit.Bukkit"/>
 </qualifiedTypeNameHistroy>
