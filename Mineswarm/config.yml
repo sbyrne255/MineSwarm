@@ -27,6 +27,8 @@ key-dropping-mobs:
   - 12
   - CAVE_SPIDER
   - 13
+  - WITHER_SKELETON
+  - 4
 #items the above mobs will drop,
 #Item name, 1/X chance of a drop (1 to 100%), quantity of items dropped
 mob-drops:
@@ -138,15 +140,35 @@ globally-allowed-potions:
   - Leaping Splash
   - Fire Resistance Splash
   - Speed Splash
+  - Slowness Splash
   - Turtle Master Splash
   - Water Breathing Splash
+  - Harming Splash
+  - Poison Splash
   - Regeneration Splash
   - Strength Splash
+  - Weakness Splash
   - Luck Splash
   - Slow Falling Splash
-medic-allowed-potions:
+tank-allowed-potions:
   - Healing Splash
 #Class items, one per line
+aquadic-class:
+  - TURTLE_HELMET,1
+  - LEATHER_LEGGINGS,1
+  - CHAINMAIL_CHESTPLATE,1
+  - LEATHER_BOOTS,1,DEPTH_STRIDER,3
+  - 3,2
+  - 4,2
+  - TRIDENT,1,RIPTIDE,3
+  - TRIDENT,1,LOYALTY,1
+adc-class:
+  - IRON_CHESTPLATE,1
+  - CHAINMAIL_HELMET,1
+  - CHAINMAIL_LEGGINGS,1
+  - CHAINMAIL_BOOTS,1
+  - IRON_SWORD,1,SHARPNESS,1,UNBREAKING,1
+  - 3,2
 solo-class:
   - BOOK,1
   - ARROW,20

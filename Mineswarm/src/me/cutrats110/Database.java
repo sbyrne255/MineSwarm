@@ -18,8 +18,12 @@ import org.bukkit.Material;
 import org.bukkit.block.Chest;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 
 public class Database {
 	
@@ -663,13 +667,13 @@ public class Database {
                 
                 while (rs.next()) {
                 	try{
-                		data.add(rs.getString("location"));
-	                	data.add(rs.getString("world"));
-	                	data.add(rs.getString("etype"));
-	                	data.add(rs.getString("max_mobs")); 
-	                	data.add(rs.getString("chance"));
-	                	data.add(rs.getString("weapons"));
-	                	data.add(rs.getString("durability"));
+                		data.add(rs.getString("location"));//0
+	                	data.add(rs.getString("world"));//1
+	                	data.add(rs.getString("etype"));//2
+	                	data.add(rs.getString("max_mobs"));//3 
+	                	data.add(rs.getString("chance"));//4
+	                	data.add(rs.getString("weapons"));//5
+	                	data.add(rs.getString("durability"));//6
                 	}
                 	catch(Exception er){
                 		plugin.getLogger().info("Error " + er.toString());
@@ -792,7 +796,7 @@ public class Database {
         }
         finally{ try {chestConn.close();} catch (Exception e) {} }
     }
-    public ResultSet getChests() {
+    public ResultSet getChests(PotionObjects potions) {
         String sql = "SELECT * FROM chests";
         try{
         	if(conn.isClosed()){
@@ -819,7 +823,23 @@ public class Database {
 						ItemStack[] contents = new ItemStack[(items.size()/2)];
 						int j = 0;
 						for(int i = 0; i < items.size(); i+=2) {//This builds my itemStack array...
-							contents[j] = new ItemStack(Material.getMaterial(items.get(i).toString()), Integer.valueOf(items.get(i+1)));
+							try {
+			    				int pID = Integer.valueOf(items.get(i).toString());//Should error out here if it's not an ID...
+			    				MakePotion potionData = potions.getDrinkableDataById(pID);
+			    				ItemStack toAdd = new ItemStack(Material.POTION, Integer.valueOf(items.get(i+1).toString()));    				
+			    				ItemMeta im = toAdd.getItemMeta();
+			    				im.setDisplayName(potionData.name);
+			    				PotionMeta pm = (PotionMeta) im;
+			    				for(PotionEffectType effect : potionData.effectTypes) {
+			    					//									Type	time in seconds probably	amplifier(1=2)
+			    					pm.addCustomEffect(new PotionEffect(effect, (int)potionData.duration, potionData.amplifier), true);
+			    				}
+			    				toAdd.setItemMeta(im);
+			    				contents[j] = toAdd;
+								
+							}catch(NumberFormatException nfe) {
+								contents[j] = new ItemStack(Material.getMaterial(items.get(i).toString()), Integer.valueOf(items.get(i+1)));	
+							}
 							j++;
 						}
 						chest.getBlockInventory().setContents(contents);
@@ -860,27 +880,24 @@ public class Database {
                 ResultSet rs = pstmt.executeQuery();
                 
                 while (rs.next()) {
-                	player.setMetadata("total_damage_taken",new FixedMetadataValue(plugin, rs.getInt("total_damage_taken")));
-                    player.setMetadata("total_damage_delt",new FixedMetadataValue(plugin, rs.getInt("total_damage_delt")));
-                    if(rs.getString("kit") != null && rs.getString("kit").length() > 0) {
-                    	plugin.getLogger().info("Setting class");
-                    	player.setMetadata("class",new FixedMetadataValue(plugin, rs.getString("kit")));
-                    }                    
-                    //player.setMetadata("hasdied",new FixedMetadataValue(plugin, rs.getBoolean("has_died")));
-                	//player.setMetadata("isdown",new FixedMetadataValue(plugin, rs.getBoolean("isdown")));
-                    player.setMetadata("isdown",new FixedMetadataValue(plugin, false));
-        	        player.setMetadata("hasdied",new FixedMetadataValue(plugin, false));
-        	        
-                	if(rs.getString("team_name") != null && rs.getString("team_name") !=  "") {
-                		player.setMetadata("team_name",new FixedMetadataValue(plugin, rs.getString("team_name")));
-                	}
-                    player.setMetadata("team_size",new FixedMetadataValue(plugin, rs.getInt("team_size")));
-                    player.setMetadata("deaths",new FixedMetadataValue(plugin, rs.getInt("deaths")));
-                    player.setMetadata("players_saved",new FixedMetadataValue(plugin, rs.getInt("players_saved")));
-                    player.setMetadata("revived",new FixedMetadataValue(plugin, rs.getInt("been_revived")));
-                    player.setMetadata("downs",new FixedMetadataValue(plugin, rs.getInt("downs")));
-                    player.setMetadata("start_time",new FixedMetadataValue(plugin, rs.getString("start_time")));
-                    player.setMetadata("mobs_killed",new FixedMetadataValue(plugin, rs.getString("mobs_killed")));
+                	
+                	//what acutally matters? isdown won't anymore sense you die on exit...
+                	//What if server still holds meta data after player levaes, then this set might be going to index 1 not 0...
+                	if(!(player.hasMetadata("total_damage_taken"))) {player.setMetadata("total_damage_taken",new FixedMetadataValue(plugin, rs.getInt("total_damage_taken")));}
+                	if(!(player.hasMetadata("total_damage_delt"))) {player.setMetadata("total_damage_taken",new FixedMetadataValue(plugin, rs.getInt("total_damage_delt")));}
+                	if(rs.getString("kit") != null && rs.getString("kit").length() > 0) {
+                		if(!(player.hasMetadata("class"))) {player.setMetadata("class",new FixedMetadataValue(plugin, rs.getString("kit")));}
+                	}                    
+                    if(rs.getString("team_name") != null && rs.getString("team_name") !=  "") {
+                    	if(!(player.hasMetadata("team_name"))) {player.setMetadata("team_name",new FixedMetadataValue(plugin, rs.getString("team_name")));}
+                    }          	
+                    if(!(player.hasMetadata("deaths"))) {player.setMetadata("deaths",new FixedMetadataValue(plugin, rs.getInt("deaths")));}
+                    if(!(player.hasMetadata("players_saved"))) {player.setMetadata("players_saved",new FixedMetadataValue(plugin, rs.getInt("players_saved")));}
+                    if(!(player.hasMetadata("revived"))) {player.setMetadata("revived",new FixedMetadataValue(plugin, rs.getInt("been_revived")));}
+                    if(!(player.hasMetadata("downs"))) {player.setMetadata("downs",new FixedMetadataValue(plugin, rs.getInt("downs")));}                    
+                    if(!(player.hasMetadata("start_time"))) {player.setMetadata("start_time",new FixedMetadataValue(plugin, rs.getString("start_time")));}
+                    if(!(player.hasMetadata("mobs_killed"))) {player.setMetadata("mobs_killed",new FixedMetadataValue(plugin, rs.getString("mobs_killed")));}
+
                     playerConn.close();
                 	return true;
                 }
@@ -917,7 +934,7 @@ public class Database {
         	
             
             pstmt.executeUpdate();
-            
+            /*
         	player.setMetadata("isdown",new FixedMetadataValue(plugin, false));
             player.setMetadata("hasdied",new FixedMetadataValue(plugin, false));
             player.setMetadata("total_damage_taken",new FixedMetadataValue(plugin, 0));
@@ -926,7 +943,7 @@ public class Database {
             player.setMetadata("players_saved",new FixedMetadataValue(plugin, 0));
             player.setMetadata("downs",new FixedMetadataValue(plugin, 0));
             player.setMetadata("been_revived",new FixedMetadataValue(plugin, 0));
-            
+            */
             
         } catch (SQLException e) {plugin.getLogger().info("PROBLEM INSERTING NEW PLAYER: " + e.toString());}
         catch(Exception err){

@@ -2,12 +2,18 @@
 <section name="Workbench">
 	<section name="org.eclipse.ui.texteditor.FindReplaceDialog">
 		<item value="false" key="isRegEx"/>
-		<item value="tMetadata(&quot;isdown&quot;" key="selection"/>
+		<item value="getChest" key="selection"/>
 		<item value="false" key="casesensitive"/>
 		<item value="false" key="incremental"/>
 		<item value="true" key="wrap"/>
 		<item value="false" key="wholeword"/>
 		<list key="findhistory">
+			<item value="getChest"/>
+			<item value="isdown"/>
+			<item value="HEAD"/>
+			<item value="makesp"/>
+			<item value="ERROR SELECTING PLAYER...:"/>
+			<item value="ERROR SELECTING PLAYER...&quot;"/>
 			<item value="tMetadata(&quot;isdown&quot;"/>
 			<item value="hasdied"/>
 			<item value="downedPlayers.remove"/>
@@ -17,12 +23,6 @@
 			<item value="ASDFASDFSDF"/>
 			<item value="-1"/>
 			<item value="get"/>
-			<item value="getsp"/>
-			<item value="gets"/>
-			<item value="getSpaw"/>
-			<item value=","/>
-			<item value="\\"/>
-			<item value="\*"/>
 		</list>
 		<list key="replacehistory">
 			<item value=" downedPlayers.remove"/>

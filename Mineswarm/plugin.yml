@@ -6,6 +6,7 @@ load: POSTWORLD
 author: Steven Byrne
 website: robertsroom.com
 prefix: Mineswarm
+softdepend: [Essentials]
 commands:
   doorlevel:
    description: Foo command

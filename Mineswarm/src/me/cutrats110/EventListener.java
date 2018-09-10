@@ -124,10 +124,13 @@ public class EventListener implements Listener {
         Player player = event.getPlayer();
         teams.addUUID(player);      
         //narrowed it down so there is no doubt, something in this DB code prevents players from going into last stand after leaving and rejoining....
+        db.newPlayer(player);
+        /*
         if(db.setPlayerData(player) == false) {
         	//Player did not exist, create them...
         	db.newPlayer(player);
-        }    
+        } 
+        */   
         
         try {
 	        if(player.hasMetadata("team_name") && player.getMetadata("team_name").get(0).toString().length() >= 1) {//If player is part of a team...
@@ -491,18 +494,6 @@ public class EventListener implements Listener {
 					  }
 				  }	  
 			  }
-			  //I override this with on splashPotion event, meaning I can cancel this, but that's already been scheduled one tick later...
-			  /*
-			  if(e.getDamager() instanceof SplashPotion) {
-				  Projectile projetile = (Projectile) e.getDamager();
-				  if(projetile.getShooter() instanceof Player) {
-					  Player shooter = (Player) projetile.getShooter();
-					  if(shooter.hasMetadata("isdown") && shooter.getMetadata("isdown").get(0).asBoolean()) {
-						  e.setCancelled(true);
-						  return;
-					  }
-				  }	  
-			  }*/			
 			
 			//Player hit player...
 			if(e.getEntity() instanceof Player && e.getDamager() instanceof Player) {
@@ -511,8 +502,10 @@ public class EventListener implements Listener {
 				
 				//If damagee is down, check damager's hand and return after
 				if(damagee.hasMetadata("isdown") && damagee.getMetadata("isdown").get(0).asBoolean() == true) {
+					plugin.getLogger().info("Player is down...");
 					//Player is down...
 					if(damager.getInventory().getItemInMainHand().getType().equals(Material.PLAYER_HEAD) || damager.getInventory().getItemInOffHand().getType().equals(Material.PLAYER_HEAD) ) {
+						plugin.getLogger().info("Hitter has head in hand...");
 						//Player has item in hand (is trying to revive)
 					  	damagee.sendMessage("A medic has revived you!");
 					  	damagee.setMetadata("isdown",new FixedMetadataValue(plugin, false));

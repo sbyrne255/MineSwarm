@@ -1,5 +1,4 @@
 package me.cutrats110;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -9,6 +8,7 @@ import java.util.Random;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.Listener;
@@ -20,19 +20,22 @@ public class ScheduledMobs implements Listener {
 	public Plugin plugin;
 	public Database db = null;
 	private boolean debugging = true;
+	public transient HashMap<Location, List<LivingEntity>> spawners = new HashMap<>();
+	
+	
+	//Can't serialize entityes, but can I get Entity ID and serialize that, then deserialize and set spanwers to Location (from XYZ) and loop IDs getting entity
 	
 	public ScheduledMobs(Plugin instance) {
 		plugin = instance;
-		Bukkit.getServer().getPluginManager().registerEvents(this, plugin);
 		debugging = plugin.getConfig().getBoolean("debugging");
 		this.db = new Database(plugin);
-		mobSpawns();
-		
 	}
-	
-	
-	//Save and reload sooner or later...
-	private transient HashMap<Location, List<LivingEntity>> spawners = new HashMap<>();
+	public void startMobs() {
+		for(World world : plugin.getServer().getWorlds()) {
+			plugin.getServer().dispatchCommand(plugin.getServer().getConsoleSender(), "killall mobs "+world.getName());
+		}
+		mobSpawns();		
+	}
 	
 	public void mobSpawns(){
 		Bukkit.getScheduler().scheduleSyncRepeatingTask(plugin, new Runnable() {
@@ -52,7 +55,7 @@ public class ScheduledMobs implements Listener {
 		    		return;
 		    	}
 		    	//Loop each DB entrie...
-		    	for(int d = 0; d < data.size()-6; d+=6) {
+		    	for(int d = 0; d < data.size()-6; d+=7) {
 		    		//Prep all global variables...
 		    		List<String> loc = null;
 		    		String world = "";
@@ -62,7 +65,7 @@ public class ScheduledMobs implements Listener {
 		    		int chance = 0;
 		    		String weapon = "";
 		    		short dura = 0;
-		    		List<LivingEntity> entities = null;
+		    		List<LivingEntity> entities = new ArrayList<>();
 		    		//Set variables here...
 		    		try {
 			    		loc = Arrays.asList(data.get(d).split("\\s*,\\s*"));
@@ -74,22 +77,19 @@ public class ScheduledMobs implements Listener {
 			    		weapon = data.get(d+5);
 			    		dura = Short.valueOf(data.get(d+6));
 		    		}catch(NullPointerException np) {
-		    			plugin.getLogger().info("ASDFSADFSDF");
+		    			plugin.getLogger().info("NP IN  DB INFO FOR MOB SPAWNERS " + np.toString());
 		    		}
 		    		try {
 		    			entities = spawners.get(location);
 		    			if(entities == null) {
-		    				plugin.getLogger().info("No entires in spanwers.");
 		    				entities = new ArrayList<>();
-							//LivingEntity mob = (LivingEntity) Bukkit.getWorld(world).spawnEntity(location, EntityType.valueOf(entityType));
-		    				//entities.add(mob);
 		    			}
 		    		}catch(NullPointerException np) {}
 		    		
 		    		//If there are more entities we are ready to spawn than our DB's max size (normally from altering the DB directly), remove the last ones...
 		    		while(entities.size() > maxEntities) {
 		    			entities.remove(entities.size()-1);		
-		    			plugin.getLogger().info("Entities are too many, removing...");
+		    			if(debugging) {plugin.getLogger().info("Entities are too many, removing...");}
 		    		}
 		    		
 		    		//Loop through all known entities and check if we need to spawn more...
@@ -106,6 +106,7 @@ public class ScheduledMobs implements Listener {
 									LivingEntity mob = (LivingEntity) Bukkit.getWorld(world).spawnEntity(location, EntityType.valueOf(entityType));
 				    		    	mob.getEquipment().setItemInMainHand(item);
 				    		    	entities.set(i, mob);
+				    		    	Bukkit.getEntity(mob.getUniqueId());
 								}
 								else{
 									LivingEntity mob = (LivingEntity) Bukkit.getWorld(world).spawnEntity(location, EntityType.valueOf(entityType));
@@ -121,7 +122,7 @@ public class ScheduledMobs implements Listener {
 		    		
 		    		//If we spanwed all the entities, but we're short (normally if DB is altered directly) spawn more until list matches max size.
 		    		while(entities.size() < maxEntities) {
-		    			plugin.getLogger().info(String.valueOf(entities.size()) + "Not enough entities, looping to add more...");
+		    			if(debugging) {plugin.getLogger().info(String.valueOf(entities.size()) + "Not enough entities, looping to add more...");}
 		    			LivingEntity mob = null;
 		    			if(chance != 0){
 	    		    		Random rand = new Random();		
@@ -154,7 +155,7 @@ public class ScheduledMobs implements Listener {
 		    	//Loop through each entity
 		    	//IF ENTITY.IsDead is true, response a new one at LOCATION, else continue...
 		    }
-		}, (20*10), (20*10));//Delay, length allowed to run...
+		}, 20, (20*20));//Delay from first start, repeats every X
 		//20t = 1s
 		//20*10 = 10 seconds...
 	}

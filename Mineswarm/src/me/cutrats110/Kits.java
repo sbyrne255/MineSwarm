@@ -22,13 +22,14 @@ import org.bukkit.potion.PotionEffectType;
 public class Kits {
 	public Plugin plugin;
 	public Database db = null;
-	
-	public Kits(Plugin instance) {
+	private PotionObjects potions = null;
+	public Kits(Plugin instance, PotionObjects potions) {
 		plugin = instance;
 		this.db = new Database(plugin);
+		this.potions = potions;
 		
 	}
-	PotionObjects potions = new PotionObjects();
+
 	void giveKit(Player player, String kit) {
 		//Read standard items (all players get).
 		//Check kit against config, if more items needed:

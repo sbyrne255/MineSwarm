@@ -13,7 +13,7 @@ public class PotionObjects {
 		splashPotions.add(new MakePotion(0, "Turtle Master", 	Arrays.asList(PotionEffectType.SLOW,PotionEffectType.DAMAGE_RESISTANCE), 20, Arrays.asList(4,3), "Makes player move slower and grants damage resistance"));
 		splashPotions.add(new MakePotion(0, "Turtle Master", 	Arrays.asList(PotionEffectType.SLOW,PotionEffectType.DAMAGE_RESISTANCE), 40, Arrays.asList(4,3), "Makes player move slower and grants damage resistance"));
 		splashPotions.add(new MakePotion(0, "Turtle Master", 	Arrays.asList(PotionEffectType.SLOW,PotionEffectType.DAMAGE_RESISTANCE), 20, Arrays.asList(6,4), "Makes player move slower and grants damage resistance"));
-		splashPotions.add(new MakePotion(0, "Night Vision", 	Arrays.asList(PotionEffectType.NIGHT_VISION), 	180, 	0, "Grants player night vision"));
+		splashPotions.add(new MakePotion(5, "Night Vision", 	Arrays.asList(PotionEffectType.NIGHT_VISION), 	(180*10*2), 	0, "Grants player night vision"));
 		splashPotions.add(new MakePotion(0, "Night Vision", 	Arrays.asList(PotionEffectType.NIGHT_VISION), 	480, 	0, "Grants player night vision"));
 		splashPotions.add(new MakePotion(0, "Invisibility", 	Arrays.asList(PotionEffectType.INVISIBILITY), 	180, 	0, "Makes player invisible"));
 		splashPotions.add(new MakePotion(0, "Invisibility", 	Arrays.asList(PotionEffectType.INVISIBILITY), 	480, 	0, "Makes player invisible"));

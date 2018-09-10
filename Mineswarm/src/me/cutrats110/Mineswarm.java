@@ -35,12 +35,14 @@ import org.bukkit.plugin.java.JavaPlugin;
 public class Mineswarm extends JavaPlugin implements Listener{
 
 	public final String version = "1.13.a";
-	//private boolean debugging = this.getConfig().getBoolean("debugging");
 	private boolean preventDouble = true;
 	private Database db = null;
-	private Kits kits = new Kits(this);
+	private PotionObjects potions = new PotionObjects();
+	private Kits kits = new Kits(this, potions);
 	private TeamBoards board = new TeamBoards(this);
 	private MineswarmTeams teams = new MineswarmTeams(this, board);
+	private ScheduledMobs smobs = new ScheduledMobs(this);
+	
 	//Util & logging
 	@Override
 	public void onEnable(){
@@ -48,8 +50,7 @@ public class Mineswarm extends JavaPlugin implements Listener{
 	    getServer().getPluginManager().registerEvents(this, this);
 		getLogger().info("Mineswarm has been enabled");	
 		new EventListener(this, teams, board);		
-		new ScheduledMobs(this);
-		new ScheduledChests(this);
+		new ScheduledChests(this, potions);
 		new ScheduledBackupDB(this, teams);
         this.saveDefaultConfig();
         db = new Database(this);
@@ -59,6 +60,7 @@ public class Mineswarm extends JavaPlugin implements Listener{
 		db.createChestsTable();
 		db.createPlayersTable();		
 		db.createScoresTable();
+		smobs.startMobs();
 	}
 	@Override
 	public void onDisable(){
