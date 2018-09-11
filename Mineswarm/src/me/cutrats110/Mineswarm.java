@@ -27,10 +27,13 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.material.Door;
 import org.bukkit.material.Openable;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 
 public class Mineswarm extends JavaPlugin implements Listener{
 
@@ -64,7 +67,7 @@ public class Mineswarm extends JavaPlugin implements Listener{
 	}
 	@Override
 	public void onDisable(){
-		teams.saveTeamData();
+		//teams.saveTeamData();
 		getLogger().info("Mineswarm has been disabled");
 	}
 	//Player interaction and events.
@@ -75,18 +78,18 @@ public class Mineswarm extends JavaPlugin implements Listener{
 			boolean opendoor = false;
 			if(preventDouble){
 				try{
-					if (event.getAction() == Action.RIGHT_CLICK_BLOCK && event.getClickedBlock().getType().toString().toLowerCase().replace("_", "").contains("irondoor")) 
+					if (event.getAction() == Action.RIGHT_CLICK_BLOCK && event.getClickedBlock().getType().equals(Material.IRON_DOOR)) 
 					{
 						Block block = event.getClickedBlock();
+						
 						String blockID = "X:" + String.valueOf(block.getX()) + "Z:"+String.valueOf(block.getZ()) + "W:"+String.valueOf(block.getWorld());
 						int blockY = block.getY();
 						String level = db.selectDoor(blockID, blockY);
 						level = "[" + level + "]";
 						
 						BlockState state = block.getState();
-						
-						if(player.getInventory().getItemInMainHand().hasItemMeta()){
-							if(player.getInventory().getItemInMainHand().getItemMeta().getLore().toString().equals(level) || player.getInventory().getItemInMainHand().getItemMeta().getLore().toString().equals("Key HERE"))
+						for(ItemStack item : player.getInventory()) {
+							if(item != null && item.getType().equals(Material.BOOK) && item.hasItemMeta() && item.getItemMeta().hasLore() && item.getItemMeta().getLore().toString().equals(level))
 							{
 								try{
 									state = block.getRelative(BlockFace.DOWN).getState();
@@ -96,7 +99,9 @@ public class Mineswarm extends JavaPlugin implements Listener{
 						            }
 						            else{
 						            	opendoor = true;
-						            	player.getInventory().getItemInMainHand().setAmount(player.getInventory().getItemInMainHand().getAmount()-1);//Remove 1 from inventory
+						            	//Remove Key
+										item.setAmount(item.getAmount() -1);
+										break;
 						            }
 								}catch(Exception doorer){
 									state = event.getClickedBlock().getState();
@@ -106,44 +111,11 @@ public class Mineswarm extends JavaPlugin implements Listener{
 						            }
 						            else{
 						            	opendoor = true;
-						            	player.getInventory().getItemInMainHand().setAmount(player.getInventory().getItemInMainHand().getAmount()-1);//Remove 1 from inventory	
+						            	//Remove Key
+										item.setAmount(item.getAmount() -1);	
+										break;
 						            }
 								}	
-															
-							}
-							else {
-								player.sendMessage("You need a " + level + " key to open this door");
-							}
-						}
-						else{
-							if(player.getInventory().getItemInOffHand().hasItemMeta()){
-								if(player.getInventory().getItemInOffHand().getItemMeta().getLore().toString().equals(level) || player.getInventory().getItemInOffHand().getItemMeta().getLore().toString().equals("Master Key")){
-									//Key matches door, and it is a key...
-									try{
-										state = block.getRelative(BlockFace.DOWN).getState();
-							            Openable door = (Openable)state.getData();
-							            if(door.isOpen()){
-							            	return;
-							            }
-							            else{
-							            	opendoor = true;
-							            	player.getInventory().getItemInOffHand().setAmount(player.getInventory().getItemInOffHand().getAmount()-1);//Remove 1 from inventory
-							            }
-									}catch(Exception doorer){
-										state = event.getClickedBlock().getState();
-							            Openable door = (Openable)state.getData();
-							            if(door.isOpen()){
-							            	return;
-							            }
-							            else{
-							            	opendoor = true;
-							            	player.getInventory().getItemInOffHand().setAmount(player.getInventory().getItemInOffHand().getAmount()-1);//Remove 1 from inventory
-							            }
-									}							
-								}
-							}
-							else {
-								player.sendMessage("You need a " + level + " key to open this door");
 							}
 						}
 						if(opendoor){
@@ -186,6 +158,8 @@ public class Mineswarm extends JavaPlugin implements Listener{
 						    	}, 55L);
 						    event.setCancelled(true);//Probably want to cancel but shouldn't matter in adventure mode
 						    return;
+						}else {
+							player.sendMessage("You need a " + level + " key to open this door");
 						}
 				}
 			}
@@ -564,14 +538,34 @@ public class Mineswarm extends JavaPlugin implements Listener{
 			try{
 				String items = "";
 				for(int i = 0; i < args.length;i+=2) {
-					try {
-						new ItemStack(Material.getMaterial(args[i].toString()), Integer.valueOf(args[i+1]));
-					}catch(Exception problem) {
-						player.sendMessage("Could not convert one of more of the args to an item stack.");
-						return false;
-					}
-				}
-				
+						try {
+		    				int pID = Integer.valueOf(args[i]);//Should error out here if it's not an ID...
+		    				MakePotion potionData = potions.getDrinkableDataById(pID);
+		    				ItemStack toAdd = new ItemStack(Material.POTION, Integer.valueOf(args[i+1]));    				
+		    				ItemMeta im = toAdd.getItemMeta();
+		    				im.setDisplayName(potionData.name);
+		    				PotionMeta pm = (PotionMeta) im;
+		    				for(PotionEffectType effect : potionData.effectTypes) {
+		    					//									Type	time in seconds probably	amplifier(1=2)
+		    					pm.addCustomEffect(new PotionEffect(effect, (int)potionData.duration, potionData.amplifier), true);
+		    				}
+		    				toAdd.setItemMeta(im);
+							
+						}catch(NumberFormatException nfe) {
+							try {
+								new ItemStack(Material.getMaterial(args[i].toString()), Integer.valueOf(args[i+1]));
+							}
+							catch(Exception problem) {
+								player.sendMessage("Could not convert one of more of the args to an item stack.");
+								return false;
+							}
+							
+						}
+						catch(Exception err) {
+							player.sendMessage("Could not convert one of more of the args to an item stack.");
+							return false;
+						}
+					}				
 				for(String item : args) {
 					items += item +",";
 				}items = items.replaceAll(",$", "");

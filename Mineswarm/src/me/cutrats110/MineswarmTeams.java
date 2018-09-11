@@ -47,24 +47,109 @@ import org.bukkit.scheduler.BukkitTask;
 public class MineswarmTeams {
 	public Plugin plugin;
 
-	public transient HashMap<UUID, BukkitTask> tpQueue = new HashMap<>();
-
+	public HashMap<UUID, BukkitTask> tpQueue = new HashMap<>();;
 	// Team name as string, List of players, 0 being team owner.
-	private transient HashMap<String, List<UUID>> teams = new HashMap<>();
+	private HashMap<String, List<UUID>> teams = new HashMap<>();;
 	// Player object, team they are a member of
-	private transient HashMap<UUID, String> players = new HashMap<>();
+	private HashMap<UUID, String> players = new HashMap<>();;
 	// Players name, UUID of player
-	private transient HashMap<String, UUID> UUIDLookup = new HashMap<>();
+	private HashMap<String, UUID> UUIDLookup = new HashMap<>();;
 	// Player name, team name (assumes all requests are to join)
-	private transient HashMap<String, String> joinRequests = new HashMap<>();
-	// Player, team name (assumes all requests are to tp)
-	// private HashMap<Player, String> tpRequests = new HashMap<>();//Broadcast
-	// request to all team members...//Waiting on thsi because of bukkit
-	// requirements to check if they have moved, damaged ect..
+	private HashMap<String, String> joinRequests = new HashMap<>();;
+	//Server based teams.
 	private List<UUID> servers = new ArrayList<>();
+	
 	public TeamBoards board;
 	private boolean debugging = false;
 	
+	@SuppressWarnings("unchecked")
+	public boolean loadTeamData() {
+		try {
+			FileInputStream fileIn = new FileInputStream(System.getProperty("user.dir") + "/plugins/Mineswarm/teams.ser");
+			ObjectInputStream in = new ObjectInputStream(fileIn);
+			this.teams = (HashMap<String, List<UUID>>) in.readObject();
+			in.close();
+			fileIn.close();
+			plugin.getLogger().info("MAAAAAAAAAAAM " + String.valueOf(teams.size()));
+
+			fileIn = new FileInputStream(System.getProperty("user.dir") + "/plugins/Mineswarm/players.ser");
+			in = new ObjectInputStream(fileIn);
+			this.players = (HashMap<UUID, String>) in.readObject();
+			in.close();
+			fileIn.close();
+
+			fileIn = new FileInputStream(System.getProperty("user.dir") + "/plugins/Mineswarm/joinRequests.ser");
+			in = new ObjectInputStream(fileIn);
+			this.joinRequests = (HashMap<String, String>) in.readObject();
+			in.close();
+			fileIn.close();
+
+			fileIn = new FileInputStream(System.getProperty("user.dir") + "/plugins/Mineswarm/UUIDs.ser");
+			in = new ObjectInputStream(fileIn);
+			this.UUIDLookup = (HashMap<String, UUID>) in.readObject();
+			in.close();
+			fileIn.close();
+
+			fileIn = new FileInputStream(System.getProperty("user.dir") + "/plugins/Mineswarm/servers.ser");
+			in = new ObjectInputStream(fileIn);
+			this.servers = (List<UUID>) in.readObject();
+			in.close();
+			fileIn.close();
+			
+			
+			plugin.getLogger().info("LOADED TEAMS");
+		} catch (IOException | ClassNotFoundException i) {
+			plugin.getLogger().info(i.toString() + " WHILE DESER");
+
+			return false;
+		}
+		if (teams == null) {plugin.getLogger().info("TEAMS ARE NULL");this.teams = new HashMap<>();}
+		if (players == null) {plugin.getLogger().info("PLAYERS ARE NULL");this.players = new HashMap<>();}
+		if (UUIDLookup == null) {this.UUIDLookup = new HashMap<>();}
+		if (joinRequests == null) {this.joinRequests = new HashMap<>();}
+		if (servers == null) {this.servers = new ArrayList<>(); }
+		return true;
+	}
+
+	public boolean saveTeamData() {
+		try {
+			FileOutputStream fileOut = new FileOutputStream(System.getProperty("user.dir") + "/plugins/Mineswarm/teams.ser");
+			ObjectOutputStream out = new ObjectOutputStream(fileOut);
+			out.writeObject(teams);
+			out.close();
+			fileOut.close();
+
+			fileOut = new FileOutputStream(System.getProperty("user.dir") + "/plugins/Mineswarm/players.ser");
+			out = new ObjectOutputStream(fileOut);
+			out.writeObject(players);
+			out.close();
+			fileOut.close();
+
+			fileOut = new FileOutputStream(System.getProperty("user.dir") + "/plugins/Mineswarm/joinRequests.ser");
+			out = new ObjectOutputStream(fileOut);
+			out.writeObject(joinRequests);
+			out.close();
+			fileOut.close();
+
+			fileOut = new FileOutputStream(System.getProperty("user.dir") + "/plugins/Mineswarm/UUIDs.ser");
+			out = new ObjectOutputStream(fileOut);
+			out.writeObject(UUIDLookup);
+			out.close();
+			fileOut.close();
+			
+			fileOut = new FileOutputStream(System.getProperty("user.dir") + "/plugins/Mineswarm/servers.ser");
+			out = new ObjectOutputStream(fileOut);
+			out.writeObject(servers);
+			out.close();
+			fileOut.close();
+			
+		} catch (IOException i) {
+			plugin.getLogger().info(i.toString());
+			return false;
+		}
+
+		return true;
+	}
 
 	public MineswarmTeams(Plugin instance) {
 		this.plugin = instance;
@@ -294,6 +379,30 @@ public class MineswarmTeams {
 			try {
 				if (player.isOnline() && player != downedPlayer) {
 					player.sendMessage(ChatColor.RED + downedPlayer.getName() + " IS DOWN");
+				}
+			} catch (NullPointerException err) {
+				continue;
+			}
+		}
+	}
+	public void sendTeamMessage(String teamName, String message) {
+		List<Player> teamMates = getTeamMembers(teamName);
+		for (Player player : teamMates) {
+			try {
+				if (player.isOnline()) {
+					player.sendMessage(message);
+				}
+			} catch (NullPointerException err) {
+				continue;
+			}
+		}
+	}
+	public void sendTeamMessage(String teamName, String message, Player exclude) {
+		List<Player> teamMates = getTeamMembers(teamName);
+		for (Player player : teamMates) {
+			try {
+				if (player.isOnline() && player != exclude) {
+					player.sendMessage(message);
 				}
 			} catch (NullPointerException err) {
 				continue;
@@ -623,92 +732,5 @@ public class MineswarmTeams {
 			kicker.sendMessage("You are not listed as the team owner");
 		}
 		return false;
-	}
-
-	@SuppressWarnings("unchecked")
-	public boolean loadTeamData() {
-		try {
-			FileInputStream fileIn = new FileInputStream(
-					System.getProperty("user.dir") + "/plugins/Mineswarm/teams.ser");
-			ObjectInputStream in = new ObjectInputStream(fileIn);
-			this.teams = (HashMap<String, List<UUID>>) in.readObject();
-			in.close();
-			fileIn.close();
-
-			fileIn = new FileInputStream(System.getProperty("user.dir") + "/plugins/Mineswarm/players.ser");
-			in = new ObjectInputStream(fileIn);
-			this.players = (HashMap<UUID, String>) in.readObject();
-			in.close();
-			fileIn.close();
-
-			fileIn = new FileInputStream(System.getProperty("user.dir") + "/plugins/Mineswarm/joinRequests.ser");
-			in = new ObjectInputStream(fileIn);
-			this.joinRequests = (HashMap<String, String>) in.readObject();
-			in.close();
-			fileIn.close();
-
-			fileIn = new FileInputStream(System.getProperty("user.dir") + "/plugins/Mineswarm/UUIDs.ser");
-			in = new ObjectInputStream(fileIn);
-			this.UUIDLookup = (HashMap<String, UUID>) in.readObject();
-			in.close();
-			fileIn.close();
-
-			plugin.getLogger().info("LOADED TEAMS");
-		} catch (IOException | ClassNotFoundException i) {
-			plugin.getLogger().info(i.toString() + " WHILE DESER");
-
-			return false;
-		}
-		if (teams == null) {
-			this.teams = new HashMap<>();
-			;
-		}
-		if (players == null) {
-			this.players = new HashMap<>();
-			;
-		}
-		if (UUIDLookup == null) {
-			this.UUIDLookup = new HashMap<>();
-			;
-		}
-		if (joinRequests == null) {
-			this.joinRequests = new HashMap<>();
-			;
-		}
-		return true;
-	}
-
-	public boolean saveTeamData() {
-		try {
-			FileOutputStream fileOut = new FileOutputStream(
-					System.getProperty("user.dir") + "/plugins/Mineswarm/teams.ser");
-			ObjectOutputStream out = new ObjectOutputStream(fileOut);
-			out.writeObject(teams);
-			out.close();
-			fileOut.close();
-
-			fileOut = new FileOutputStream(System.getProperty("user.dir") + "/plugins/Mineswarm/players.ser");
-			out = new ObjectOutputStream(fileOut);
-			out.writeObject(players);
-			out.close();
-			fileOut.close();
-
-			fileOut = new FileOutputStream(System.getProperty("user.dir") + "/plugins/Mineswarm/joinRequests.ser");
-			out = new ObjectOutputStream(fileOut);
-			out.writeObject(joinRequests);
-			out.close();
-			fileOut.close();
-
-			fileOut = new FileOutputStream(System.getProperty("user.dir") + "/plugins/Mineswarm/UUIDs.ser");
-			out = new ObjectOutputStream(fileOut);
-			out.writeObject(UUIDLookup);
-			out.close();
-			fileOut.close();
-		} catch (IOException i) {
-			plugin.getLogger().info(i.toString());
-			return false;
-		}
-
-		return true;
 	}
 }

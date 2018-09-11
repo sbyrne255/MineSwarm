@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Random;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.entity.Arrow;
@@ -19,6 +20,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.entity.EntityRegainHealthEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.InventoryAction;
@@ -229,10 +231,11 @@ public class EventListener implements Listener {
 	    			player.setMetadata("mobs_killed",new FixedMetadataValue(plugin, event.getEntity().getType().toString()));
 	    		}
 			}catch(NullPointerException np) {}
+			catch(IndexOutOfBoundsException ibe) {}
 		}
 		
 		
-		if (event.getEntity().getKiller() != null) 
+		if (event.getEntity().getKiller() != null && event.getEntity().getKiller() instanceof Player) 
 		{
 			Player player = event.getEntity().getKiller();
 			if(debugging){player.sendMessage(event.getEntity().getType().toString());}
@@ -315,7 +318,19 @@ public class EventListener implements Listener {
 		}
 	}
 
-    
+  
+	@EventHandler(priority = EventPriority.LOWEST)
+    public void PickupItem(EntityPickupItemEvent  e) {
+        ItemStack pickedUp = e.getItem().getItemStack();
+        if (pickedUp.getType().equals(Material.BOOK) && pickedUp.hasItemMeta() && pickedUp.getItemMeta().getDisplayName().equals("Key")){
+        	if(e.getEntity() instanceof Player) {
+        		Player player = (Player)e.getEntity();
+        		player.sendMessage(ChatColor.GOLD + "" + ChatColor.BOLD + "You picked up a " + pickedUp.getItemMeta().getLore().get(0) + " Key");
+        		try {teams.sendTeamMessage(player.getMetadata("team_name").get(0).asString(), ChatColor.GOLD + "" + ChatColor.BOLD + player.getName() + " picked up a " + pickedUp.getItemMeta().getLore().get(0) + " Key", player);									
+				}catch(Exception err) {}
+        	}
+        } 
+    }
     public Inventory getClickedInventory(InventoryView view, int slot) {
     	try {
 	        Inventory clickedInventory;
