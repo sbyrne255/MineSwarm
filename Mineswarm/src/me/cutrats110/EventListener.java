@@ -70,7 +70,9 @@ public class EventListener implements Listener {
 	
 	@EventHandler
 	public void onPlayerQuit(PlayerQuitEvent event) {
-		//Cancel any pending TPs
+		//I need to save any meta data right now.
+		
+		
 		Player player = event.getPlayer();
 		if(player.hasMetadata("isdown") && player.getMetadata("isdown").get(0).asBoolean()) {
 			player.setHealth(0);
@@ -88,7 +90,7 @@ public class EventListener implements Listener {
 				teams.tpQueue.get(player.getUniqueId()).cancel();
 				teams.tpQueue.remove(player.getUniqueId());
 			}				
-		}catch(Exception np) {plugin.getLogger().info("FUCK OFF IN TP");}
+		}catch(Exception np) {}
 		try {
 			//Remove from owner position..
 			if(teams.getTeamOwner(player.getMetadata("team_name").get(0).asString()).equals(player)) {
@@ -96,11 +98,8 @@ public class EventListener implements Listener {
 				//Player is owner of team...
 				teams.setNewTeamOwner(player.getMetadata("team_name").get(0).asString());
 			}
-		}catch(Exception err) {
-		}
-		try {
-			db.updatePlayerData(event.getPlayer());
-		}
+		}catch(Exception err) {}
+		try {db.updatePlayerData(event.getPlayer());}
 		catch(Exception err) {plugin.getLogger().info("ERROR WITH DB... " + err.toString());}
 		try {
 			if(player.hasMetadata("team_name") && player.getMetadata("team_name").get(0).toString().length() >= 1) {
@@ -124,15 +123,14 @@ public class EventListener implements Listener {
     public void onPlayerJoin(PlayerJoinEvent event)
     {  
         Player player = event.getPlayer();
-        teams.addUUID(player);      
+        teams.addUUID(player);
         //narrowed it down so there is no doubt, something in this DB code prevents players from going into last stand after leaving and rejoining....
         db.newPlayer(player);
-        /*
         if(db.setPlayerData(player) == false) {
         	//Player did not exist, create them...
+        	plugin.getLogger().info("MAKING NEW PLAYER....");
         	db.newPlayer(player);
-        } 
-        */   
+        }
         
         try {
 	        if(player.hasMetadata("team_name") && player.getMetadata("team_name").get(0).toString().length() >= 1) {//If player is part of a team...

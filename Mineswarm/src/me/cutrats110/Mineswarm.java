@@ -63,11 +63,14 @@ public class Mineswarm extends JavaPlugin implements Listener{
 		db.createChestsTable();
 		db.createPlayersTable();		
 		db.createScoresTable();
+		db.createTeamsTable();
 		smobs.startMobs();
 	}
 	@Override
 	public void onDisable(){
-		//teams.saveTeamData();
+		teams.saveTeamData();
+		//Loop through online players updating players in the DB...
+		
 		getLogger().info("Mineswarm has been disabled");
 	}
 	//Player interaction and events.
