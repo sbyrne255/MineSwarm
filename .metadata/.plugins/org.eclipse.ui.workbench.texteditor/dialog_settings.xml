@@ -2,12 +2,13 @@
 <section name="Workbench">
 	<section name="org.eclipse.ui.texteditor.FindReplaceDialog">
 		<item value="false" key="isRegEx"/>
-		<item value="updatePlayerData" key="selection"/>
+		<item value="setPlayerData" key="selection"/>
 		<item value="false" key="casesensitive"/>
 		<item value="false" key="incremental"/>
 		<item value="true" key="wrap"/>
 		<item value="false" key="wholeword"/>
 		<list key="findhistory">
+			<item value="setPlayerData"/>
 			<item value="updatePlayerData"/>
 			<item value="remove"/>
 			<item value="saveTeamData"/>
@@ -22,7 +23,6 @@
 			<item value="hasdied"/>
 			<item value="downedPlayers.remove"/>
 			<item value="downedPlayers"/>
-			<item value="WUAT"/>
 		</list>
 		<list key="replacehistory">
 			<item value=" downedPlayers.remove"/>

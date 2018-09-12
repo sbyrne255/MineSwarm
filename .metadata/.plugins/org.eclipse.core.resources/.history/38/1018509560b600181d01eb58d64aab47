@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Random;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.entity.Arrow;
@@ -19,6 +20,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.entity.EntityRegainHealthEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.InventoryAction;
@@ -28,7 +30,6 @@ import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
-import org.bukkit.event.player.PlayerPickupItemEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.Inventory;
@@ -69,7 +70,9 @@ public class EventListener implements Listener {
 	
 	@EventHandler
 	public void onPlayerQuit(PlayerQuitEvent event) {
-		//Cancel any pending TPs
+		//I need to save any meta data right now.
+		
+		
 		Player player = event.getPlayer();
 		if(player.hasMetadata("isdown") && player.getMetadata("isdown").get(0).asBoolean()) {
 			player.setHealth(0);
@@ -87,7 +90,7 @@ public class EventListener implements Listener {
 				teams.tpQueue.get(player.getUniqueId()).cancel();
 				teams.tpQueue.remove(player.getUniqueId());
 			}				
-		}catch(Exception np) {plugin.getLogger().info("FUCK OFF IN TP");}
+		}catch(Exception np) {}
 		try {
 			//Remove from owner position..
 			if(teams.getTeamOwner(player.getMetadata("team_name").get(0).asString()).equals(player)) {
@@ -95,11 +98,8 @@ public class EventListener implements Listener {
 				//Player is owner of team...
 				teams.setNewTeamOwner(player.getMetadata("team_name").get(0).asString());
 			}
-		}catch(Exception err) {
-		}
-		try {
-			db.updatePlayerData(event.getPlayer());
-		}
+		}catch(Exception err) {}
+		try {db.updatePlayerData(event.getPlayer());}
 		catch(Exception err) {plugin.getLogger().info("ERROR WITH DB... " + err.toString());}
 		try {
 			if(player.hasMetadata("team_name") && player.getMetadata("team_name").get(0).toString().length() >= 1) {
@@ -123,15 +123,17 @@ public class EventListener implements Listener {
     public void onPlayerJoin(PlayerJoinEvent event)
     {  
         Player player = event.getPlayer();
-        teams.addUUID(player);      
+        teams.addUUID(player);
         //narrowed it down so there is no doubt, something in this DB code prevents players from going into last stand after leaving and rejoining....
         db.newPlayer(player);
-        /*
-        if(db.setPlayerData(player) == false) {
+        if(db.playerExists(player.getName()) == false) {
         	//Player did not exist, create them...
+        	plugin.getLogger().info("MAKING NEW PLAYER....");
         	db.newPlayer(player);
-        } 
-        */   
+        }
+        else {
+        	db.setPlayerData(player);
+        }
         
         try {
 	        if(player.hasMetadata("team_name") && player.getMetadata("team_name").get(0).toString().length() >= 1) {//If player is part of a team...
@@ -230,10 +232,11 @@ public class EventListener implements Listener {
 	    			player.setMetadata("mobs_killed",new FixedMetadataValue(plugin, event.getEntity().getType().toString()));
 	    		}
 			}catch(NullPointerException np) {}
+			catch(IndexOutOfBoundsException ibe) {}
 		}
 		
 		
-		if (event.getEntity().getKiller() != null) 
+		if (event.getEntity().getKiller() != null && event.getEntity().getKiller() instanceof Player) 
 		{
 			Player player = event.getEntity().getKiller();
 			if(debugging){player.sendMessage(event.getEntity().getType().toString());}
@@ -317,13 +320,16 @@ public class EventListener implements Listener {
 	}
 
   
-	@EventHandler
-    public void PickupItem(PlayerPickupItemEvent  e) {
-        ItemStack item = new ItemStack(7);
-        if (e.getItem().getItemStack().equals(item)){
- 
-            e.getPlayer().sendMessage(ChatColor.DARK_RED + "" + ChatColor.BOLD + "Put that down now you shouldn't have it!");
- 
+	@EventHandler(priority = EventPriority.LOWEST)
+    public void PickupItem(EntityPickupItemEvent  e) {
+        ItemStack pickedUp = e.getItem().getItemStack();
+        if (pickedUp.getType().equals(Material.BOOK) && pickedUp.hasItemMeta() && pickedUp.getItemMeta().getDisplayName().equals("Key")){
+        	if(e.getEntity() instanceof Player) {
+        		Player player = (Player)e.getEntity();
+        		player.sendMessage(ChatColor.GOLD + "" + ChatColor.BOLD + "You picked up a " + pickedUp.getItemMeta().getLore().get(0) + " Key");
+        		try {teams.sendTeamMessage(player.getMetadata("team_name").get(0).asString(), ChatColor.GOLD + "" + ChatColor.BOLD + player.getName() + " picked up a " + pickedUp.getItemMeta().getLore().get(0) + " Key", player);									
+				}catch(Exception err) {}
+        	}
         } 
     }
     public Inventory getClickedInventory(InventoryView view, int slot) {

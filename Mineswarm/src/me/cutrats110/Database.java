@@ -1127,6 +1127,33 @@ public class Database {
         return null;
     }
 
+    public boolean playerExists(String name) {
+        String sql = "SELECT * FROM players WHERE name = ?";
+        try{
+        	if(playerConn.isClosed()){
+        		connectPlayers();
+        	}
+        }
+        catch(NullPointerException np){
+        	connectPlayers();
+        }
+        catch(Exception er){
+        	plugin.getLogger().info("Conn check failed. " + er.toString());
+        }
+        try {
+            	PreparedStatement pstmt = playerConn.prepareStatement(sql);
+                pstmt.setString(1, name);           
+                ResultSet rs = pstmt.executeQuery();
+                
+                while (rs.next()) {
+                	playerConn.close();
+                	return true;
+                }
+        }
+        catch (Exception e) {plugin.getLogger().info("ERROR SELECTING PLAYER...: " + e.toString());}
+        finally{ try {playerConn.close();} catch (SQLException e) {} }
+        return false;   
+    }
     
     //Rebuild 3 functions, setPlayerData, newPlayerData, updatePlayerData
     public boolean setPlayerData(Player player){  	
@@ -1165,10 +1192,10 @@ public class Database {
                     player.setMetadata("downs",new FixedMetadataValue(plugin, rs.getInt("downs")));
                     player.setMetadata("start_time",new FixedMetadataValue(plugin, rs.getString("start_time")));
                     player.setMetadata("mobs_killed",new FixedMetadataValue(plugin, rs.getString("mobs_killed")));
+                    playerConn.close();
+                	return true;
 
                 }
-                playerConn.close();
-            	return true;
         }
         catch (Exception e) {plugin.getLogger().info("ERROR SELECTING PLAYER...: " + e.toString());}
         finally{ try {playerConn.close();} catch (SQLException e) {} }
