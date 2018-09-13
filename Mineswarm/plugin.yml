@@ -46,7 +46,7 @@ commands:
   makespawner:
    description: Creates a mobspawner.
    permission-message: No perms yo
-   usage: /makespawner [radius] [Entity] [max Entity] [offset X] [offset Y] [offset Z] [weapon drop rate] [weapon] [durability]
+   usage: /makespawner [*Entity] [*Number of Entity] [weapon:type] [weapon drop rate] [durability] [enchantment:NAME] [enchantment level] [potion:potionID]
   chest:
    description: TPs you to the middle of the zone
    permission-message: No perms yo
