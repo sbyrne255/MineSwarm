@@ -19,14 +19,14 @@ public class PotionObjects {
 		splashPotions.add(new MakePotion(0, "Invisibility", 	Arrays.asList(PotionEffectType.INVISIBILITY), 	480, 	0, "Makes player invisible"));
 		splashPotions.add(new MakePotion(0, "Leaping", 		Arrays.asList(PotionEffectType.JUMP), 			180, 	0, "Makes player jump higher"));
 		splashPotions.add(new MakePotion(0, "Leaping", 		Arrays.asList(PotionEffectType.JUMP), 			480, 	0, "Makes player jump higher"));
-		splashPotions.add(new MakePotion(0, "Leaping", 		Arrays.asList(PotionEffectType.JUMP), 			90, 	1, "Makes player jump higher 2"));
+		splashPotions.add(new MakePotion(8, "Leaping", 		Arrays.asList(PotionEffectType.JUMP), 			90, 	1, "Makes player jump higher 2"));
 		splashPotions.add(new MakePotion(0, "Fire Resistance", Arrays.asList(PotionEffectType.FIRE_RESISTANCE),180,	0, "Makes player not be harmed by fire"));
 		splashPotions.add(new MakePotion(0, "Fire Resistance", Arrays.asList(PotionEffectType.FIRE_RESISTANCE),480, 	0, "Makes player not be harmed by fire"));
 		splashPotions.add(new MakePotion(0, "Speed", 			Arrays.asList(PotionEffectType.SPEED), 			180, 	0, "Makes player move faster"));
 		splashPotions.add(new MakePotion(0, "Speed", 			Arrays.asList(PotionEffectType.SPEED), 			480, 	0, "Makes player move faster"));
 		splashPotions.add(new MakePotion(0, "Speed", 			Arrays.asList(PotionEffectType.SPEED), 			90, 	1, "Makes player move faster"));
 		splashPotions.add(new MakePotion(0, "Slowness", 		Arrays.asList(PotionEffectType.SLOW), 			90, 	0, "Makes player move slower"));
-		splashPotions.add(new MakePotion(0, "Slowness", 		Arrays.asList(PotionEffectType.SLOW), 			240, 	0, "Makes player move slower"));
+		splashPotions.add(new MakePotion(7, "Slowness", 		Arrays.asList(PotionEffectType.SLOW), 			240, 	0, "Makes player move slower"));
 		splashPotions.add(new MakePotion(0, "Slowness", 		Arrays.asList(PotionEffectType.SLOW), 			20, 	3, "Makes player move slower"));
 		splashPotions.add(new MakePotion(0, "Water Breathing", Arrays.asList(PotionEffectType.WATER_BREATHING),180, 	0, "Makes player breath under water"));
 		splashPotions.add(new MakePotion(4, "Water Breathing", Arrays.asList(PotionEffectType.WATER_BREATHING),(480*10*2), 	0, "Makes player breath under water"));
@@ -36,7 +36,7 @@ public class PotionObjects {
 		splashPotions.add(new MakePotion(0, "Harming", 		Arrays.asList(PotionEffectType.HARM), 			0, 		1, "Instantly causes Damage (2)"));
 		splashPotions.add(new MakePotion(0, "Poison", 			Arrays.asList(PotionEffectType.POISON), 		45, 	0, "Poison player or heals undead"));
 		splashPotions.add(new MakePotion(0, "Poison", 			Arrays.asList(PotionEffectType.POISON), 		90, 	0, "Poison player or heals undead"));
-		splashPotions.add(new MakePotion(0, "Poison 2", 		Arrays.asList(PotionEffectType.POISON), 		21, 	1, "Poison player or heals undead (2)"));
+		splashPotions.add(new MakePotion(9, "Poison 2", 		Arrays.asList(PotionEffectType.POISON), 		21, 	1, "Poison player or heals undead (2)"));
 		splashPotions.add(new MakePotion(0, "Regeneration", 	Arrays.asList(PotionEffectType.REGENERATION), 	45, 	0, "Regenerates someting?"));
 		splashPotions.add(new MakePotion(3, "Regeneration", 	Arrays.asList(PotionEffectType.REGENERATION), 	(90*10*2), 	0, "Regeneration"));
 		splashPotions.add(new MakePotion(0, "Regeneration 2", 	Arrays.asList(PotionEffectType.REGENERATION), 	22, 	1, "Regeneration"));

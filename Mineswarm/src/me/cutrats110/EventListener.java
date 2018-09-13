@@ -19,6 +19,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.entity.EntityRegainHealthEvent;
@@ -482,9 +483,16 @@ public class EventListener implements Listener {
 	//Prevents downed players from harming mobs
 	//Scores damage done to mobs
 	
+	
+	
+	
+	
+	
+	
+	
 	HashMap<UUID,BukkitTask> downedPlayers = new HashMap<>();
 	@EventHandler(priority = EventPriority.HIGH)
-	public void onPlayerDamage(EntityDamageByEntityEvent e) {
+	public void onEntityDamage(EntityDamageByEntityEvent e) {
 		try {
 			  if(e.getDamager() instanceof Trident) {
 				  Projectile projetile = (Projectile) e.getDamager();
@@ -516,7 +524,7 @@ public class EventListener implements Listener {
 				if(damagee.hasMetadata("isdown") && damagee.getMetadata("isdown").get(0).asBoolean() == true) {
 					plugin.getLogger().info("Player is down...");
 					//Player is down...
-					if(damager.getInventory().getItemInMainHand().getType().equals(Material.PLAYER_HEAD) || damager.getInventory().getItemInOffHand().getType().equals(Material.PLAYER_HEAD) ) {
+					if(damager.getInventory().getItemInMainHand().getType().equals(Material.PLAYER_HEAD) || damager.getInventory().getItemInOffHand().getType().equals(Material.PLAYER_HEAD) || damager.getInventory().getItemInMainHand().getType().equals(Material.WITHER_SKELETON_SKULL) || damager.getInventory().getItemInOffHand().getType().equals(Material.WITHER_SKELETON_SKULL)) {
 						plugin.getLogger().info("Hitter has head in hand...");
 						//Player has item in hand (is trying to revive)
 					  	damagee.sendMessage("A medic has revived you!");
@@ -619,82 +627,76 @@ public class EventListener implements Listener {
 				}
 			}
 			
-			
-			if(e.getEntity() instanceof Player) {
-				//Player has been damaged, I want to 
-				//Check if HP is going to kill him, if so, run last stand logic
-					//If
-				//If it wont, score damage taken, return.
-				Player damagee = (Player) e.getEntity();
-				
-				//Update total damage taken...
-				if(damagee.hasMetadata("total_damage_taken")) {damagee.setMetadata("total_damage_taken",new FixedMetadataValue(plugin, damagee.getMetadata("total_damage_taken").get(0).asInt() + damagee.getLastDamage()));}
-	    		else {damagee.setMetadata("total_damage_taken",new FixedMetadataValue(plugin, damagee.getLastDamage()));}
-				
-				
-				if(damagee.hasMetadata("isdown") && damagee.getMetadata("isdown").get(0).asBoolean()) {
-					//Champ is down; continue to apply damage
-					
-					//OFF THE WALL; use scheduled task instead of poison, then just get and cancel task using player UUID in a hashmap... this would take all guess work out. right?
-					
-					//Update scoreboard.
-					if(damagee.hasMetadata("team_name") && damagee.getMetadata("team_name").get(0).toString().length() >= 1) {//If player is part of a team...
-			        	board.makeScoreBoard(damagee.getMetadata("team_name").get(0).asString());
-			        	board.setScoreboard(teams.getTeamMembers(damagee.getMetadata("team_name").get(0).asString()), damagee.getMetadata("team_name").get(0).asString(), damagee, (int) ((damagee.getHealth()-e.getFinalDamage())*-1));
-			        }
-					
-				}
-				else {
-					//Champ is not down, should we put him there?
-					if((damagee.getHealth() - e.getFinalDamage()) <= .5) {
-						//Put player in last stand.
-						//Alert team player is down.
-						try {teams.alertTeamOfDowns(damagee.getMetadata("team_name").get(0).asString(), damagee);									
-						}catch(Exception err) {}
-						
-						//Reset health, set meta data, set walk speed, add potions, set glow, set sneaking,
-						damagee.setHealth(20);//Full health for last stand...
-						damagee.setMetadata("hasdied", new FixedMetadataValue(plugin, true));//Set has died before applying damage...
-						damagee.setMetadata("isdown",new FixedMetadataValue(plugin, true));
-						damagee.setWalkSpeed(0);//0 to prevent walking...
-						damagee.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 10000, 1));
-						damagee.addPotionEffect(new PotionEffect(PotionEffectType.JUMP, 10000, 250));
-						damagee.setGlowing(true);
-						damagee.setSneaking(true);
-						
-						//Increment downs score.
-						if(damagee.hasMetadata("downs")) {damagee.setMetadata("downs",new FixedMetadataValue(plugin, damagee.getMetadata("downs").get(0).asInt() + 1));}
-			    		else {damagee.setMetadata("downs",new FixedMetadataValue(plugin, 1));}
-						if(damagee.hasMetadata("team_name") && damagee.getMetadata("team_name").get(0).toString().length() >= 1) {//If player is part of a team...
-				        	board.makeScoreBoard(damagee.getMetadata("team_name").get(0).asString());
-				        	board.setScoreboard(teams.getTeamMembers(damagee.getMetadata("team_name").get(0).asString()), damagee.getMetadata("team_name").get(0).asString(), damagee, (int) ((damagee.getHealth()-e.getFinalDamage())*-1));
-				        }
-						
-						downedPlayers.put(damagee.getUniqueId(), Bukkit.getScheduler().runTaskTimer(plugin, () -> {
-							try {
-							damagee.setHealth(damagee.getHealth() - 1);
-							if(damagee.hasMetadata("team_name") && damagee.getMetadata("team_name").get(0).toString().length() >= 1) {//If player is part of a team...
-					        	board.makeScoreBoard(damagee.getMetadata("team_name").get(0).asString());
-					        	board.setScoreboard(teams.getTeamMembers(damagee.getMetadata("team_name").get(0).asString()), damagee.getMetadata("team_name").get(0).asString(), damagee, (int) ((damagee.getHealth()-1)*-1));
-					        }
-							}catch(Exception err) {
-								damagee.setHealth(0);
-							}
-						}, 10, 35));//delay before first run, sequential runs after...
-						
-						
-						e.setCancelled(true);
-						return;
-					}
-				}
-				
-			}
-			
 		}
 		catch(Exception err) {
 			if(debugging) {plugin.getLogger().info("Not sure why, but we got an error: " + err.toString());}
 		}
 	}
+	@EventHandler
+	public void onEDamage(EntityDamageEvent e) {
+		//Player is being damaged...
+		if(e.getEntity() instanceof Player) {
+			Player damagee = (Player) e.getEntity();
+			
+			//Update total damage taken...
+			if(damagee.hasMetadata("total_damage_taken")) {damagee.setMetadata("total_damage_taken",new FixedMetadataValue(plugin, damagee.getMetadata("total_damage_taken").get(0).asInt() + damagee.getLastDamage()));}
+    		else {damagee.setMetadata("total_damage_taken",new FixedMetadataValue(plugin, damagee.getLastDamage()));}
+			
+		if(e.getEntity() instanceof Player) {
+			if(damagee.hasMetadata("isdown") && damagee.getMetadata("isdown").get(0).asBoolean()) {
+				//Champ is down; continue to apply damage
+				e.setCancelled(true);
+				//Update scoreboard.
+				if(damagee.hasMetadata("team_name") && damagee.getMetadata("team_name").get(0).toString().length() >= 1) {//If player is part of a team...
+		        	board.makeScoreBoard(damagee.getMetadata("team_name").get(0).asString());
+		        	board.setScoreboard(teams.getTeamMembers(damagee.getMetadata("team_name").get(0).asString()), damagee.getMetadata("team_name").get(0).asString(), damagee, (int) ((damagee.getHealth()-e.getFinalDamage())*-1));
+		        }
+				
+			}
+			else {
+				if((damagee.getHealth() - e.getFinalDamage()) <= .5) {
+					try {teams.alertTeamOfDowns(damagee.getMetadata("team_name").get(0).asString(), damagee);									
+					}catch(Exception err) {}
+					
+					//Reset health, set meta data, set walk speed, add potions, set glow, set sneaking,
+					damagee.setHealth(20);//Full health for last stand...
+					damagee.setMetadata("hasdied", new FixedMetadataValue(plugin, true));//Set has died before applying damage...
+					damagee.setMetadata("isdown",new FixedMetadataValue(plugin, true));
+					damagee.setWalkSpeed(0);//0 to prevent walking...
+					damagee.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 10000, 1));
+					damagee.addPotionEffect(new PotionEffect(PotionEffectType.JUMP, 10000, 250));
+					damagee.setGlowing(true);
+					damagee.setSneaking(true);
+					
+					//Increment downs score.
+					if(damagee.hasMetadata("downs")) {damagee.setMetadata("downs",new FixedMetadataValue(plugin, damagee.getMetadata("downs").get(0).asInt() + 1));}
+		    		else {damagee.setMetadata("downs",new FixedMetadataValue(plugin, 1));}
+					if(damagee.hasMetadata("team_name") && damagee.getMetadata("team_name").get(0).toString().length() >= 1) {//If player is part of a team...
+			        	board.makeScoreBoard(damagee.getMetadata("team_name").get(0).asString());
+			        	board.setScoreboard(teams.getTeamMembers(damagee.getMetadata("team_name").get(0).asString()), damagee.getMetadata("team_name").get(0).asString(), damagee, (int) ((damagee.getHealth()-e.getFinalDamage())*-1));
+			        }
+					
+					downedPlayers.put(damagee.getUniqueId(), Bukkit.getScheduler().runTaskTimer(plugin, () -> {
+						try {
+						damagee.setHealth(damagee.getHealth() - 1);
+						if(damagee.hasMetadata("team_name") && damagee.getMetadata("team_name").get(0).toString().length() >= 1) {//If player is part of a team...
+				        	board.makeScoreBoard(damagee.getMetadata("team_name").get(0).asString());
+				        	board.setScoreboard(teams.getTeamMembers(damagee.getMetadata("team_name").get(0).asString()), damagee.getMetadata("team_name").get(0).asString(), damagee, (int) ((damagee.getHealth()-1)*-1));
+				        }
+						}catch(Exception err) {
+							damagee.setHealth(0);
+						}
+					}, 10, 35));//delay before first run, sequential runs after...
+					
+					
+					e.setCancelled(true);
+					return;
+				}
+			}
+		}
+		}
+	}
+	
 	@EventHandler(priority = EventPriority.LOW)
 	public void onHealthRegen(EntityRegainHealthEvent event) {
 		if(event.getEntityType().equals(EntityType.PLAYER)) {

@@ -1,8 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <qualifiedTypeNameHistroy>
-<fullyQualifiedTypeName name="java.nio.file.Files"/>
-<fullyQualifiedTypeName name="java.nio.file.Paths"/>
-<fullyQualifiedTypeName name="org.apache.commons.io.FileUtils"/>
 <fullyQualifiedTypeName name="org.bukkit.metadata.FixedMetadataValue"/>
 <fullyQualifiedTypeName name="java.util.Calendar"/>
 <fullyQualifiedTypeName name="java.util.Collection"/>
@@ -45,8 +42,6 @@
 <fullyQualifiedTypeName name="org.bukkit.inventory.meta.PotionMeta"/>
 <fullyQualifiedTypeName name="org.bukkit.potion.PotionData"/>
 <fullyQualifiedTypeName name="org.bukkit.potion.PotionType"/>
-<fullyQualifiedTypeName name="org.bukkit.potion.PotionEffectType"/>
-<fullyQualifiedTypeName name="org.bukkit.potion.PotionEffect"/>
 <fullyQualifiedTypeName name="org.bukkit.inventory.meta.ItemMeta"/>
 <fullyQualifiedTypeName name="org.bukkit.entity.Trident"/>
 <fullyQualifiedTypeName name="org.bukkit.event.entity.ProjectileLaunchEvent"/>
@@ -58,6 +53,11 @@
 <fullyQualifiedTypeName name="net.minecraft.server.v1_13_R1.EntitySheep"/>
 <fullyQualifiedTypeName name="org.bukkit.Bukkit"/>
 <fullyQualifiedTypeName name="org.bukkit.World"/>
-<fullyQualifiedTypeName name="org.apache.commons.lang.StringUtils"/>
 <fullyQualifiedTypeName name="java.util.Map"/>
+<fullyQualifiedTypeName name="com.google.common.base.CharMatcher"/>
+<fullyQualifiedTypeName name="org.apache.commons.lang.StringUtils"/>
+<fullyQualifiedTypeName name="org.bukkit.enchantments.Enchantment"/>
+<fullyQualifiedTypeName name="org.bukkit.potion.PotionEffect"/>
+<fullyQualifiedTypeName name="org.bukkit.potion.PotionEffectType"/>
+<fullyQualifiedTypeName name="org.bukkit.event.entity.EntityDamageEvent"/>
 </qualifiedTypeNameHistroy>

@@ -8,27 +8,33 @@ import java.util.Random;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.World;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.Listener;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 
 
 public class ScheduledMobs implements Listener {
 	public Plugin plugin;
 	public Database db = null;
 	private boolean debugging = true;
+	private PotionObjects po = null;
 	public transient HashMap<Location, List<LivingEntity>> spawners = new HashMap<>();
 	
 	
 	//Can't serialize entityes, but can I get Entity ID and serialize that, then deserialize and set spanwers to Location (from XYZ) and loop IDs getting entity
 	
-	public ScheduledMobs(Plugin instance) {
+	public ScheduledMobs(Plugin instance, PotionObjects po) {
 		plugin = instance;
 		debugging = plugin.getConfig().getBoolean("debugging");
 		this.db = new Database(plugin);
+		this.po = po;
 	}
 	public void startMobs() {
 		for(World world : plugin.getServer().getWorlds()) {
@@ -55,7 +61,7 @@ public class ScheduledMobs implements Listener {
 		    		return;
 		    	}
 		    	//Loop each DB entrie...
-		    	for(int d = 0; d < data.size()-6; d+=7) {
+		    	for(int d = 0; d < data.size()-8; d+=9) {
 		    		//Prep all global variables...
 		    		List<String> loc = null;
 		    		String world = "";
@@ -65,6 +71,8 @@ public class ScheduledMobs implements Listener {
 		    		int chance = 0;
 		    		String weapon = "";
 		    		short dura = 0;
+		    		List<String> enchantments = new ArrayList<>();
+		    		List<Integer> effects = new ArrayList<>();
 		    		List<LivingEntity> entities = new ArrayList<>();
 		    		//Set variables here...
 		    		try {
@@ -76,6 +84,16 @@ public class ScheduledMobs implements Listener {
 			    		chance = Integer.valueOf(data.get(d+4));
 			    		weapon = data.get(d+5);
 			    		dura = Short.valueOf(data.get(d+6));
+			    		if(data.get(d+7) != "NONE" && data.get(d+7) != null) {
+			    			enchantments = Arrays.asList(data.get(d+7).split("\\s*,\\s*"));	
+			    		}
+			    		if(data.get(d+8) != "NONE" && data.get(d+8) != null) {
+			    			try {
+			    				for (String field : data.get(d+8).split("\\s*,\\s*")) {if(field != "NONE") {effects.add(Integer.parseInt(field));}}
+			    			}catch(NumberFormatException nfe) {}
+			    		}
+			    		
+			    		
 		    		}catch(NullPointerException np) {
 		    			plugin.getLogger().info("NP IN  DB INFO FOR MOB SPAWNERS " + np.toString());
 		    		}
@@ -98,23 +116,60 @@ public class ScheduledMobs implements Listener {
 		    			if(entity.isDead()) {//Spawn new guy
 		    				if(chance != 0){
 		    		    		Random rand = new Random();				
-								if( (rand.nextInt(chance+1) == 1) || debugging)
+								if( (rand.nextInt(chance)+1 == 1) || debugging)
 								{
 									ItemStack item = new ItemStack( Material.matchMaterial(weapon), 1);
 									item.setDurability(dura);
 									
+									if(!enchantments.isEmpty()) {
+										//Enchantments are not empty...
+										for(String enchantment : enchantments) {
+											String[] en = enchantment.split(":");
+											item.addEnchantment(Enchantment.getByKey(NamespacedKey.minecraft(en[0].toLowerCase())), Integer.valueOf(en[1]));
+										}
+									}
+									
 									LivingEntity mob = (LivingEntity) Bukkit.getWorld(world).spawnEntity(location, EntityType.valueOf(entityType));
 				    		    	mob.getEquipment().setItemInMainHand(item);
+				    		    	if(!effects.isEmpty()) {
+				    		    		for(int pid : effects) {			
+				    		    			MakePotion poData = po.getDrinkableDataById(pid);
+				    		    			for(PotionEffectType effect : poData.effectTypes) {
+				    		    				//mob.setCustomName("PuffyCloud");
+				    		    		        //mob.setCustomNameVisible(true);
+				    	    					mob.addPotionEffect((new PotionEffect(effect, Integer.MAX_VALUE, poData.amplifier, true)));
+				    	    				}
+				    		    		}
+				    		    	}
 				    		    	entities.set(i, mob);
-				    		    	Bukkit.getEntity(mob.getUniqueId());
 								}
 								else{
 									LivingEntity mob = (LivingEntity) Bukkit.getWorld(world).spawnEntity(location, EntityType.valueOf(entityType));
+									if(!effects.isEmpty()) {
+				    		    		for(int pid : effects) {			
+				    		    			MakePotion poData = po.getDrinkableDataById(pid);
+				    		    			for(PotionEffectType effect : poData.effectTypes) {
+				    		    				//mob.setCustomName("PuffyCloud");
+				    		    		        //mob.setCustomNameVisible(true);
+				    	    					mob.addPotionEffect((new PotionEffect(effect, Integer.MAX_VALUE, poData.amplifier, true)));
+				    	    				}
+				    		    		}
+				    		    	}
 									entities.set(i, mob);
 								}
 		    		    	}
 		    		    	else{
 								LivingEntity mob = (LivingEntity) Bukkit.getWorld(world).spawnEntity(location, EntityType.valueOf(entityType));
+								if(!effects.isEmpty()) {
+			    		    		for(int pid : effects) {			
+			    		    			MakePotion poData = po.getDrinkableDataById(pid);
+			    		    			for(PotionEffectType effect : poData.effectTypes) {
+			    		    				//mob.setCustomName("PuffyCloud");
+			    		    		        //mob.setCustomNameVisible(true);
+			    	    					mob.addPotionEffect((new PotionEffect(effect, Integer.MAX_VALUE, poData.amplifier, true)));
+			    	    				}
+			    		    		}
+			    		    	}
 								entities.set(i, mob);
 							}
 		    			}

@@ -1,10 +1,7 @@
 //FEATURE:
-	MAYBE CHECK FULL INVENTORY FOR KEY INSTEAD OF JUST HANDS
 //BUGS:
 	#Potions class does not have real IDs for any items, I should probably set those...	
 //TODO:
-	#Add enchantable weapons for mobs
-	#Add mob potion effects (so mobs can have potion effects when spawned)
 	*Load a configfile
 		*Enable a YML
 		*Also, create multiple SQL-DBs and provide a scheduled backup (once ever 10 minutes, hold 3 versions?)//Have not implemented multiple DBs, want to see how this scales.

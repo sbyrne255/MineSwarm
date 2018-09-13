@@ -220,7 +220,7 @@ public class Database {
         	plugin.getLogger().info("Conn check failed. " + er.toString());
         }
     	
-        String sql = "CREATE TABLE IF NOT EXISTS spawners(location,world,etype,max_mobs,chance,weapons,durability)";
+        String sql = "CREATE TABLE IF NOT EXISTS spawners(location,world,etype,max_mobs,chance,weapons,durability,enchantments, effects)";
         try (
         	PreparedStatement pstmt = mobConn.prepareStatement(sql)) {
             pstmt.execute();
@@ -939,6 +939,8 @@ public class Database {
 	                	data.add(rs.getString("chance"));//4
 	                	data.add(rs.getString("weapons"));//5
 	                	data.add(rs.getString("durability"));//6
+	                	data.add(rs.getString("enchantments"));//7
+	                	data.add(rs.getString("effects"));//8
                 	}
                 	catch(Exception er){
                 		plugin.getLogger().info("Error " + er.toString());
@@ -951,73 +953,28 @@ public class Database {
         finally{ try {mobConn.close();} catch (SQLException e) {} }
         return null;
     }
-    
-    public void makeSpawner(int min_x, int min_y, int min_z, int max_x, int max_y, int max_z, String world, int radius, String etype, int max_mobs, int xoff, int yoff, int zoff, int chance, String weapon, int durability) {
-        try{
-        	if(mobConn.isClosed()){
-        		
-        		plugin.getLogger().info("OPENING CONNECTION...");
-        		connectMobs();
-        	}
-        }
-        catch(NullPointerException np){
-        	plugin.getLogger().info("NULL, OPENING CONNECTION...");
-        	connectMobs();
-        }
-        catch(Exception er){
-        	plugin.getLogger().info("Conn check failed. " + er.toString());
-        }
-    	
-    	String sql = "INSERT INTO spawners(min_x,min_y,min_z,max_x,max_y,max_z,world,radius,etype,max_mobs,x_offset,y_offset,z_offset,chance,weapons,durability)"
-    			+ " VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
-        try {
-        	PreparedStatement pstmt = mobConn.prepareStatement(sql);
-        	pstmt.setInt(1, min_x);
-        	pstmt.setInt(2, min_y);
-        	pstmt.setInt(3, min_z);
-        	
-        	pstmt.setInt(4, max_x);
-        	pstmt.setInt(5, max_y);
-        	pstmt.setInt(6, max_z);
-        	
-        	pstmt.setString(7, world);
-        	pstmt.setInt(8, radius);
-        	pstmt.setString(9, etype);
-        	
-        	pstmt.setInt(10, max_mobs);
-        	pstmt.setInt(11, xoff);
-        	pstmt.setInt(12, yoff);
-        	pstmt.setInt(13, zoff);
-        	
-        	pstmt.setInt(14, chance);
-        	pstmt.setString(15, weapon);
-        	pstmt.setInt(16, durability);
-            
-            pstmt.executeUpdate();
-        } catch (SQLException e) {plugin.getLogger().info("FUCK, PROBLEM HERE: " + e.toString());}
-        catch(Exception err){
-        	plugin.getLogger().info("BAD IN INSERT, NOT SQL PROBLEM: " + err.toString());
-        }
-        finally{ try {mobConn.close();} catch (Exception e) {} }
-    }
-    public void makeSpawner(String location, String world, String mobType, int maxMobs, int chance, String weapon, int durability) {
+    public void makeSpawner(String location, String world, String mobType, int maxMobs, String weapon, int chance, int durability, List<String> enchantments, List<String> effects) {
         try{
         	if(mobConn.isClosed()){plugin.getLogger().info("OPENING CONNECTION...");connectMobs();}}
         catch(NullPointerException np){plugin.getLogger().info("NULL, OPENING CONNECTION...");connectMobs();}
         catch(Exception er){plugin.getLogger().info("Conn check failed. " + er.toString());}
     	
-    	String sql = "INSERT INTO spawners(location,world,etype,max_mobs,chance,weapons,durability)"
-    			+ " VALUES(?,?,?,?,?,?,?)";
+    	String sql = "INSERT INTO spawners(location,world,etype,max_mobs,chance,weapons,durability,enchantments,effects)"
+    			+ " VALUES(?,?,?,?,?,?,?,?,?)";
         try {
         	PreparedStatement pstmt = mobConn.prepareStatement(sql);
-        	pstmt.setString(1, location.toString());
+        	if(enchantments == null || enchantments.isEmpty()) {pstmt.setString(8, "NONE");}
+        	else {pstmt.setString(8, StringUtils.join(enchantments, ","));}//Convert list to CSV string
+        	if(effects==null || effects.isEmpty()) {pstmt.setString(9, "NONE");}
+        	else {pstmt.setString(9, StringUtils.join(effects, ","));}//Convert list to CSV String
+        	pstmt.setString(1, location);
         	pstmt.setString(2, world);
         	pstmt.setString(3, mobType);
         	pstmt.setInt(4, maxMobs);        	
         	pstmt.setInt(5, chance);
         	pstmt.setString(6, weapon);
         	pstmt.setInt(7, durability);
-            
+                    
             pstmt.executeUpdate();
         } catch (SQLException e) {plugin.getLogger().info("PROBLEM ADDING MOB SPAWNER TO DB: " + e.toString());}
         catch(Exception err){

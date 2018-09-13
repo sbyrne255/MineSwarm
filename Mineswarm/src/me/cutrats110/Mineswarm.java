@@ -11,6 +11,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -35,6 +36,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
+
 public class Mineswarm extends JavaPlugin implements Listener{
 
 	public final String version = "1.13.a";
@@ -44,7 +46,7 @@ public class Mineswarm extends JavaPlugin implements Listener{
 	private Kits kits = new Kits(this, potions);
 	private TeamBoards board = new TeamBoards(this);
 	private MineswarmTeams teams = new MineswarmTeams(this, board);
-	private ScheduledMobs smobs = new ScheduledMobs(this);
+	private ScheduledMobs smobs = new ScheduledMobs(this, potions);
 	
 	//Util & logging
 	@Override
@@ -476,9 +478,37 @@ public class Mineswarm extends JavaPlugin implements Listener{
 			
 			try {
 				Block block = player.getTargetBlock(null, 10);
+				String xyz = block.getX() + ","+block.getY()+ ","+block.getZ();
+				String world = player.getWorld().getName();
 				
-				//						Block location									World			       Mob type (0)	        Max Mobs (1)       Item chance (2)  weapon (3), durability(4)
-				db.makeSpawner(block.getX() + ","+block.getY()+ ","+block.getZ(), player.getWorld().getName(), args[0], Integer.valueOf(args[1]),  Integer.valueOf(args[2]), args[3], Integer.valueOf(args[4]));
+				//Example: /MAKESPAWNER ZOMBIE 5 10 IRON_SWORD 0 ENCHANTMENT:SHARPNESS 3 POTION:56
+				
+				
+				//Spawning just a mob, no weapons, potions, of effects.
+				if(args.length == 2) {
+					// 			XZY, World, Type, Number, Weapon, Chance, Durability, Enchantments, Effects.
+					db.makeSpawner(xyz, world, args[0], Integer.valueOf(args[1]), "NONE", 0, 0, null, null);
+					this.getLogger().info("ARGS = 2");
+					return true;
+				
+				}
+				List<String> enchantments = new ArrayList<>();
+				List<String> effects = new ArrayList<>();
+				String weapon = "NONE";
+
+				for(int i = 0; i < args.length; i++) {
+					if(StringUtils.countMatches(args[i].toLowerCase(), "enchantment:") >= 1) {enchantments.add(args[i].toUpperCase().replaceAll("enchantment:".toUpperCase(), "")+":"+args[i+1]);}
+					if(StringUtils.countMatches(args[i].toLowerCase(), "potion:") >= 1) {effects.add(args[i].toUpperCase().replaceAll("potion:".toUpperCase(), ""));}
+					if(StringUtils.countMatches(args[i].toLowerCase(), "weapon:") >= 1) {weapon = args[i].toUpperCase().replaceAll("weapon:".toUpperCase(), "");}
+				}
+				//ZOMBIE 5 POTION:54
+				if(weapon == "NONE") {
+					this.getLogger().info("WEAPON IS NONE....");
+					db.makeSpawner(xyz, world, args[0], Integer.valueOf(args[1]), weapon, 0, 0, enchantments, effects);
+					return true;
+				}
+				this.getLogger().info("MEEEEEEEEEP");
+				db.makeSpawner(xyz, world, args[0], Integer.valueOf(args[1]), weapon, Integer.valueOf(args[3]), Integer.valueOf(args[4]), enchantments, effects);	
 			}
 			catch(Exception err) {
 				getLogger().info(err.toString() + " IN COMMAND MAKESPAWNER");
