@@ -40,6 +40,9 @@ public class ScheduledMobs implements Listener {
 		for(World world : plugin.getServer().getWorlds()) {
 			plugin.getServer().dispatchCommand(plugin.getServer().getConsoleSender(), "killall mobs "+world.getName());
 		}
+		plugin.getServer().dispatchCommand(plugin.getServer().getConsoleSender(), "time " + plugin.getConfig().getString("set-time"));
+		plugin.getServer().dispatchCommand(plugin.getServer().getConsoleSender(), "gamerule doDaylightCycle " + plugin.getConfig().getBoolean("stop-time"));	
+		
 		mobSpawns();		
 	}
 	
@@ -79,6 +82,10 @@ public class ScheduledMobs implements Listener {
 			    		loc = Arrays.asList(data.get(d).split("\\s*,\\s*"));
 			    		world = data.get(d+1);
 			    		location = new Location(Bukkit.getWorld(world), Integer.valueOf(loc.get(0)), Integer.valueOf(loc.get(1)), Integer.valueOf(loc.get(2)));
+			    		if(!Bukkit.getWorld(world).getChunkAt(location).isLoaded()) {
+			    			plugin.getLogger().info("World chunk not loaded, skipping mobs");
+			    			continue;//Major error loading chunk as "isLoaded" should load the chunk.
+			    		}
 			    		entityType = data.get(d+2);
 			    		maxEntities = Integer.valueOf(data.get(d+3));
 			    		chance = Integer.valueOf(data.get(d+4));
@@ -116,12 +123,12 @@ public class ScheduledMobs implements Listener {
 		    			if(entity.isDead()) {//Spawn new guy
 		    				if(chance != 0){
 		    		    		Random rand = new Random();				
-								if( (rand.nextInt(chance)+1 == 1) || debugging)
+								if( (rand.nextInt(chance)+1 == 1) && weapon != "NONE")
 								{
 									ItemStack item = new ItemStack( Material.matchMaterial(weapon), 1);
 									item.setDurability(dura);
 									
-									if(!enchantments.isEmpty()) {
+									if(!enchantments.isEmpty() && enchantments.size() > 0 && !enchantments.contains("NONE")) {
 										//Enchantments are not empty...
 										for(String enchantment : enchantments) {
 											String[] en = enchantment.split(":");

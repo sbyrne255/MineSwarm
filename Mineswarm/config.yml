@@ -2,6 +2,8 @@
 
 #Set true for debugging messages and 100% drop of keys and random items.
 debugging: false
+set-time: night
+stop-time: true
 max-team-size: 6
 #mob or player sets where items are dropped after killing a mob
 items-drop-to: player

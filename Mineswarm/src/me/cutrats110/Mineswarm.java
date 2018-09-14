@@ -15,12 +15,16 @@ import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Chest;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.EntityType;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -483,12 +487,18 @@ public class Mineswarm extends JavaPlugin implements Listener{
 				
 				//Example: /MAKESPAWNER ZOMBIE 5 10 IRON_SWORD 0 ENCHANTMENT:SHARPNESS 3 POTION:56
 				
-				
+				LivingEntity mob;
 				//Spawning just a mob, no weapons, potions, of effects.
+				try {
+					mob = (LivingEntity) Bukkit.getWorld(world).spawnEntity(block.getLocation(), EntityType.valueOf(args[0]));
+				}
+				catch(Exception err) {
+					player.sendMessage("Unrecognized Mob type.");
+					return true;
+				}
 				if(args.length == 2) {
 					// 			XZY, World, Type, Number, Weapon, Chance, Durability, Enchantments, Effects.
-					db.makeSpawner(xyz, world, args[0], Integer.valueOf(args[1]), "NONE", 0, 0, null, null);
-					this.getLogger().info("ARGS = 2");
+					db.makeSpawner(xyz, world, args[0].toUpperCase(), Integer.valueOf(args[1]), "NONE", 0, 0, null, null);
 					return true;
 				
 				}
@@ -501,14 +511,33 @@ public class Mineswarm extends JavaPlugin implements Listener{
 					if(StringUtils.countMatches(args[i].toLowerCase(), "potion:") >= 1) {effects.add(args[i].toUpperCase().replaceAll("potion:".toUpperCase(), ""));}
 					if(StringUtils.countMatches(args[i].toLowerCase(), "weapon:") >= 1) {weapon = args[i].toUpperCase().replaceAll("weapon:".toUpperCase(), "");}
 				}
+				if(!effects.isEmpty()) {
+		    		for(String pid : effects) {			
+		    			MakePotion poData = potions.getDrinkableDataById(Integer.valueOf(pid));
+		    			for(PotionEffectType effect : poData.effectTypes) {
+	    					mob.addPotionEffect((new PotionEffect(effect, Integer.MAX_VALUE, poData.amplifier, true)));
+	    				}
+		    		}
+		    	}
 				//ZOMBIE 5 POTION:54
 				if(weapon == "NONE") {
-					this.getLogger().info("WEAPON IS NONE....");
-					db.makeSpawner(xyz, world, args[0], Integer.valueOf(args[1]), weapon, 0, 0, enchantments, effects);
+					db.makeSpawner(xyz, world, args[0].toUpperCase(), Integer.valueOf(args[1]), weapon, 0, 0, enchantments, effects);
 					return true;
 				}
-				this.getLogger().info("MEEEEEEEEEP");
-				db.makeSpawner(xyz, world, args[0], Integer.valueOf(args[1]), weapon, Integer.valueOf(args[3]), Integer.valueOf(args[4]), enchantments, effects);	
+				
+				try {
+					ItemStack item = new ItemStack( Material.matchMaterial(weapon), 1);
+					item.setDurability(Short.valueOf(args[4]));
+					
+					if(!enchantments.isEmpty()) {
+						for(String enchantment : enchantments) {
+							String[] en = enchantment.split(":");
+							item.addEnchantment(Enchantment.getByKey(NamespacedKey.minecraft(en[0].toLowerCase())), Integer.valueOf(en[1]));
+						}
+					}
+				}catch(Exception err) {player.sendMessage("Failed to add enchantment to weapon"); return true;}
+
+				db.makeSpawner(xyz, world, args[0].toUpperCase(), Integer.valueOf(args[1]), weapon, Integer.valueOf(args[3]), Integer.valueOf(args[4]), enchantments, effects);	
 			}
 			catch(Exception err) {
 				getLogger().info(err.toString() + " IN COMMAND MAKESPAWNER");
