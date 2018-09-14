@@ -64,7 +64,11 @@ public class Kits {
     			try {
     				int pID = Integer.valueOf(stuff.get(0).toString());//Should error out here if it's not an ID...
     				MakePotion potionData = potions.getDrinkableDataById(pID);
-    				toAdd = new ItemStack(Material.POTION, Integer.valueOf(stuff.get(1).toString()));    				
+    				if(potionData.isSplash) {
+    					toAdd = new ItemStack(Material.SPLASH_POTION, Integer.valueOf(stuff.get(1).toString()));
+    				}else {
+    					toAdd = new ItemStack(Material.POTION, Integer.valueOf(stuff.get(1).toString()));
+    				}
     				ItemMeta im = toAdd.getItemMeta();
     				im.setDisplayName(potionData.name);
     				PotionMeta pm = (PotionMeta) im;
@@ -80,7 +84,7 @@ public class Kits {
     			if(stuff.size() > 2) {//Item has Type, Quantitiy, and some other CS fields...
     				for(int i = 2; i < stuff.size(); i+=2) {
     					try {
-    						toAdd.addEnchantment(Enchantment.getByKey(NamespacedKey.minecraft(stuff.get(i).toLowerCase())), Integer.valueOf(stuff.get(i+1)));
+    						toAdd.addUnsafeEnchantment(Enchantment.getByKey(NamespacedKey.minecraft(stuff.get(i).toLowerCase())), Integer.valueOf(stuff.get(i+1)));
     					}
     					catch(IndexOutOfBoundsException bounds) {
     						plugin.getLogger().info("Config misconfiguration at: " + stuff.get(0) + " Index is out of bounds for enchantments.");

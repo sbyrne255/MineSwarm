@@ -2,12 +2,16 @@
 <section name="Workbench">
 	<section name="org.eclipse.ui.texteditor.FindReplaceDialog">
 		<item value="false" key="isRegEx"/>
-		<item value="Spawner" key="selection"/>
+		<item value="Potion" key="selection"/>
 		<item value="false" key="casesensitive"/>
 		<item value="false" key="incremental"/>
 		<item value="true" key="wrap"/>
 		<item value="false" key="wholeword"/>
 		<list key="findhistory">
+			<item value="potion"/>
+			<item value="key"/>
+			<item value="[SQLite"/>
+			<item value="clear"/>
 			<item value="spawner"/>
 			<item value="5"/>
 			<item value="team"/>
@@ -19,10 +23,6 @@
 			<item value="makemob"/>
 			<item value="makespawner"/>
 			<item value="makespaw"/>
-			<item value="setPlayerData"/>
-			<item value="updatePlayerData"/>
-			<item value="remove"/>
-			<item value="saveTeamData"/>
 		</list>
 		<list key="replacehistory">
 			<item value=" downedPlayers.remove"/>

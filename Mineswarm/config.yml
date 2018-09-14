@@ -17,12 +17,16 @@ item-dropping-mobs:
   - SKELETON
   - ZOMBIE
   - PIG
+  - CAVE_SPIDER
+  - SPIDER
 #Mobs that drop keys, 1 in X probability key will drop.
 key-dropping-mobs:
   - ZOMBIE
   - 10
+  - ILLUSIONER
+  - 2
   - SKELETON
-  - 16
+  - 12
   - ENDERMITE
   - 10
   - SPIDER
@@ -39,6 +43,9 @@ mob-drops:
   - 4
   - APPLE
   - 20
+  - 1
+  - MAP
+  - 50
   - 1
 #Boss mobs boosts: Mob, HP Regen per hit, Damage addition, Thornmail (returns damage to sender) [1 = .5 hearts]
 boss-mobs:
@@ -131,6 +138,7 @@ dropping-whitelist:
   - COOKED_MUTTON
   - BEETROOT
   - BEETROOT_SOUP
+  - MAP
 guide-title: Mineswarm Guide
 guide-author: Cutrats110
 guide-pages:
@@ -155,13 +163,37 @@ globally-allowed-potions:
 tank-allowed-potions:
   - Healing Splash
 #Class items, one per line
+mage-class:
+  - LEATHER_HELMET,1
+  - LEATHER_CHESTPLATE,1
+  - LEATHER_LEGGINGS,1
+  - LEATHER_BOOTS,1
+  - BLAZE_ROD,1,SHARPNESS,3,FIRE_ASPECT,2
+  - 1903,2
+  - 19035,2
+  - 19015,4
+  - 19022,2
+  - 19033,4
+  
+  
+archer-class:
+  - LEATHER_HELMET,1
+  - LEATHER_CHESTPLATE,1
+  - LEATHER_LEGGINGS,1
+  - LEATHER_BOOTS,1,FEATHER_FALLING,3
+  - BOW,1,POWER,1
+  - WOODEN_SWORD,1,SHARPNESS,1
+  - SPECTRAL_ARROW,20
+  - ARROW,52
+  - 15,1
+  - 4,1
 aquadic-class:
   - TURTLE_HELMET,1
   - LEATHER_LEGGINGS,1
   - CHAINMAIL_CHESTPLATE,1
   - LEATHER_BOOTS,1,DEPTH_STRIDER,3
-  - 3,2
-  - 4,2
+  - 29,2
+  - 20,2
   - TRIDENT,1,RIPTIDE,3
   - TRIDENT,1,LOYALTY,1
 adc-class:
@@ -170,8 +202,9 @@ adc-class:
   - CHAINMAIL_LEGGINGS,1
   - CHAINMAIL_BOOTS,1
   - IRON_SWORD,1,SHARPNESS,1,UNBREAKING,1
-  - 3,2
+  - 29,2
 solo-class:
+  - STICK,1,KNOCK_BACK,2
   - BOOK,1
   - ARROW,20
   - WOODEN_SWORD,1,KNOCKBACK,2

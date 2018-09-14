@@ -1,8 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <qualifiedTypeNameHistroy>
-<fullyQualifiedTypeName name="org.bukkit.metadata.FixedMetadataValue"/>
-<fullyQualifiedTypeName name="java.util.Calendar"/>
-<fullyQualifiedTypeName name="java.util.Collection"/>
 <fullyQualifiedTypeName name="org.bukkit.scoreboard.Team"/>
 <fullyQualifiedTypeName name="org.bukkit.entity.Player"/>
 <fullyQualifiedTypeName name="java.util.Set"/>
@@ -36,7 +33,6 @@
 <fullyQualifiedTypeName name="org.bukkit.entity.Arrow"/>
 <fullyQualifiedTypeName name="org.bukkit.event.entity.ProjectileHitEvent"/>
 <fullyQualifiedTypeName name="org.bukkit.potion.Potion"/>
-<fullyQualifiedTypeName name="org.bukkit.entity.LivingEntity"/>
 <fullyQualifiedTypeName name="java.util.List"/>
 <fullyQualifiedTypeName name="org.bukkit.entity.ThrownPotion"/>
 <fullyQualifiedTypeName name="org.bukkit.inventory.meta.PotionMeta"/>
@@ -45,13 +41,11 @@
 <fullyQualifiedTypeName name="org.bukkit.inventory.meta.ItemMeta"/>
 <fullyQualifiedTypeName name="org.bukkit.entity.Trident"/>
 <fullyQualifiedTypeName name="org.bukkit.event.entity.ProjectileLaunchEvent"/>
-<fullyQualifiedTypeName name="org.bukkit.entity.SplashPotion"/>
 <fullyQualifiedTypeName name="org.bukkit.entity.Projectile"/>
 <fullyQualifiedTypeName name="java.util.HashMap"/>
 <fullyQualifiedTypeName name="java.util.Arrays"/>
 <fullyQualifiedTypeName name="java.util.ArrayList"/>
 <fullyQualifiedTypeName name="net.minecraft.server.v1_13_R1.EntitySheep"/>
-<fullyQualifiedTypeName name="org.bukkit.Bukkit"/>
 <fullyQualifiedTypeName name="org.bukkit.World"/>
 <fullyQualifiedTypeName name="java.util.Map"/>
 <fullyQualifiedTypeName name="com.google.common.base.CharMatcher"/>
@@ -60,4 +54,10 @@
 <fullyQualifiedTypeName name="org.bukkit.potion.PotionEffect"/>
 <fullyQualifiedTypeName name="org.bukkit.potion.PotionEffectType"/>
 <fullyQualifiedTypeName name="org.bukkit.event.entity.EntityDamageEvent"/>
+<fullyQualifiedTypeName name="org.bukkit.entity.LivingEntity"/>
+<fullyQualifiedTypeName name="org.bukkit.Bukkit"/>
+<fullyQualifiedTypeName name="org.bukkit.Chunk"/>
+<fullyQualifiedTypeName name="org.bukkit.event.world.ChunkUnloadEvent"/>
+<fullyQualifiedTypeName name="org.bukkit.entity.SplashPotion"/>
+<fullyQualifiedTypeName name="java.lang.String"/>
 </qualifiedTypeNameHistroy>

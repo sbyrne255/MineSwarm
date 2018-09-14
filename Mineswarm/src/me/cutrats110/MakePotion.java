@@ -11,23 +11,27 @@ public class MakePotion {
 	public double duration;
 	public String description;
 	public int amplifier;
+	public boolean isSplash;
 	public List<Integer> amplifierList;
 	
 	
-	public MakePotion(int id, String name, List<PotionEffectType> effectTypes, double duration, List<Integer> amplifier, String description) {
+	public MakePotion(int id, String name, List<PotionEffectType> effectTypes, double duration, List<Integer> amplifier, boolean isSplash, String description) {
 		this.id = id;
 		this.name = name;
 		this.effectTypes = effectTypes;
 		this.duration = duration;
 		this.amplifierList = amplifier;
 		this.description = description;		
+		this.isSplash = isSplash;
 	}
-	public MakePotion(int id, String name, List<PotionEffectType> effectTypes, double duration, int amplifier, String description) {
+	public MakePotion(int id, String name, List<PotionEffectType> effectTypes, double duration, int amplifier, boolean isSplash, String description) {
 		this.id = id;
 		this.name = name;
 		this.effectTypes = effectTypes;
 		this.duration = duration;
 		this.amplifier = amplifier;
 		this.description = description;		
+		this.isSplash = isSplash;
 	}
 }
+

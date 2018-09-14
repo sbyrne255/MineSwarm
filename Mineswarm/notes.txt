@@ -2,6 +2,11 @@
 //BUGS:
 	#Potions class does not have real IDs for any items, I should probably set those...	
 //TODO:
+	Finish tunnels/making regions
+	Fix essentials so bed spawns are set. (or just override and make myself if I can't get it to work...)
+	
+	
+
 	*Load a configfile
 		*Enable a YML
 		*Also, create multiple SQL-DBs and provide a scheduled backup (once ever 10 minutes, hold 3 versions?)//Have not implemented multiple DBs, want to see how this scales.

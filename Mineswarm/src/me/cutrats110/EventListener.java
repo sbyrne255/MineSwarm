@@ -14,6 +14,7 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
+import org.bukkit.entity.SplashPotion;
 import org.bukkit.entity.Trident;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -233,8 +234,8 @@ public class EventListener implements Listener {
 			catch(IndexOutOfBoundsException ibe) {}
 		}
 		
-		
-		if (event.getEntity().getKiller() != null && event.getEntity().getKiller() instanceof Player) 
+		Entity killer = event.getEntity().getKiller();
+		if (killer != null && (killer instanceof Player || killer instanceof Arrow || killer instanceof Trident || killer instanceof SplashPotion)) 
 		{
 			Player player = event.getEntity().getKiller();
 			if(debugging){player.sendMessage(event.getEntity().getType().toString());}
@@ -434,27 +435,42 @@ public class EventListener implements Listener {
 				List<PotionEffectType> effectTypes = new ArrayList<>();
 				for (PotionEffect effect : event.getPotion().getEffects()) {effectTypes.add(effect.getType());}
 				String potionName = potions.getNameByEffects(effectTypes);
-				if(!(plugin.getConfig().getList("globally-allowed-potions").contains(potionName))) {
-				
+				plugin.getLogger().info(potionName);
+				for(String x : plugin.getConfig().getStringList("globally-allowed-potions")) {
+					if(x.equals(potionName)) {
+						return;
+					}
+					else {
+						plugin.getLogger().info(x + " " + potionName);
+					}
+				}
+					plugin.getLogger().info("THERE");
+					
+					
 					//Loop through all effect entities.
 					for(Entity ent : event.getAffectedEntities()) {
 						//If entity is a player get the effects and find out if the potion should effect the player or not (based on config)
 						if(ent instanceof Player) {
-							if(ent.hasMetadata("class") && plugin.getConfig().getList(ent.getMetadata("class").get(0).asString()+"-allowed-potions").contains(potionName)){
-								//Item was in the allowed list for this class!
-								plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() 
-						    	{
-							    	public void run() 
+							for(String y : plugin.getConfig().getStringList(ent.getMetadata("class").get(0).asString()+"-allowed-potions")) {
+								if(y.equals(potionName)) {
+									plugin.getLogger().info("HERE");
+									plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() 
 							    	{
-										((Player) ent).addPotionEffects(event.getPotion().getEffects());
-							    	}
-						    	}, 1L);
-							}
-							else {
-								//Potion is blocked from effecting players so continue with loop (event will be cancelled, mobs will be hurt in 1 tick)
-								continue;						
+								    	public void run() 
+								    	{
+											((Player) ent).addPotionEffects(event.getPotion().getEffects());
+								    	}
+							    	}, 1L);
+								}
+								else {
+									//Potion is blocked from effecting players so continue with loop (event will be cancelled, mobs will be hurt in 1 tick)
+									event.setCancelled(true);
+									continue;			
+								}
 							}
 						}else {
+							//BUG HERE WHERE CUSTOM SPLASHES DON'T DO ANYTHING, REGULAR SPAWNED ONES DO.
+							
 							//ALTERNATIVE, CANCEL THE EVENT BUT SCHEDULE TO ADD THE EFFECT TO EVERY MOB 1TICK AFTER...
 							//THIS WORKS, IT CANCELS ALL POTIONS ON PLAYERS SENT BY PLAYERS...
 							//PROBABLY NEED TO ADD SOME EXECEPTIONS SUCH AS MEDICS BEING ALLOWED TO USE HEALING POTIONS?
@@ -467,11 +483,11 @@ public class EventListener implements Listener {
 										mob.addPotionEffects(event.getPotion().getEffects());
 							    	}
 						    	}, 1L);
+						    	continue;
 						    }
 						}
 					}
 					event.setCancelled(true);
-				}
 				
 			}
 		}catch(Exception er) {}
