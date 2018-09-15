@@ -23,10 +23,18 @@ item-dropping-mobs:
 key-dropping-mobs:
   - ZOMBIE
   - 10
+  - HUSK
+  - 10
+  - SLIME
+  - 30
+  - WOLF
+  - 6
   - ILLUSIONER
   - 2
   - SKELETON
   - 12
+  - STRAY
+  - 10
   - ENDERMITE
   - 10
   - SPIDER
@@ -35,6 +43,8 @@ key-dropping-mobs:
   - 13
   - WITHER_SKELETON
   - 4
+  - VEX
+  - 10
 #items the above mobs will drop,
 #Item name, 1/X chance of a drop (1 to 100%), quantity of items dropped
 mob-drops:

@@ -13,8 +13,6 @@ import org.bukkit.World;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.Player;
-import org.bukkit.entity.Wolf;
 import org.bukkit.event.Listener;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
@@ -40,7 +38,7 @@ public class ScheduledMobs implements Listener {
 	}
 	public void startMobs() {
 		for(World world : plugin.getServer().getWorlds()) {
-			plugin.getServer().dispatchCommand(plugin.getServer().getConsoleSender(), "killall all "+world.getName());
+			plugin.getServer().dispatchCommand(plugin.getServer().getConsoleSender(), "killall mobs "+world.getName());
 		}
 		plugin.getServer().dispatchCommand(plugin.getServer().getConsoleSender(), "time " + plugin.getConfig().getString("set-time"));
 		plugin.getServer().dispatchCommand(plugin.getServer().getConsoleSender(), "gamerule doDaylightCycle " + plugin.getConfig().getBoolean("stop-time"));	
@@ -123,6 +121,7 @@ public class ScheduledMobs implements Listener {
 		    		for(int i = 0; i< entities.size(); i++) {
 		    			LivingEntity entity = entities.get(i);
 		    			if(entity.isDead()) {//Spawn new guy
+		    				if(entity instanceof Wolf)
 		    				if(chance != 0){
 		    		    		Random rand = new Random();				
 								if( (rand.nextInt(chance)+1 == 1) && weapon != "NONE")
@@ -181,27 +180,6 @@ public class ScheduledMobs implements Listener {
 			    		    	}
 								entities.set(i, mob);
 							}
-		    			}else {
-		    				//Mob is alive, check if it's doggo
-		    				if(entity instanceof Wolf) {
-		    					Wolf doggo = (Wolf)entity;
-		    					if(doggo.getOwner() instanceof Player) {
-		    						doggo.setCustomName(doggo.getOwner().getName() + "'s Doggo");
-		    						//doggo.setCustomNameVisible(true);
-		    						LivingEntity mob = (LivingEntity) Bukkit.getWorld(world).spawnEntity(location, EntityType.valueOf(entityType));
-									if(!effects.isEmpty()) {
-				    		    		for(int pid : effects) {			
-				    		    			MakePotion poData = po.getDrinkableDataById(pid);
-				    		    			for(PotionEffectType effect : poData.effectTypes) {
-				    		    				//mob.setCustomName("PuffyCloud");
-				    		    		        //mob.setCustomNameVisible(true);
-				    	    					mob.addPotionEffect((new PotionEffect(effect, Integer.MAX_VALUE, poData.amplifier, true)));
-				    	    				}
-				    		    		}
-				    		    	}
-									entities.set(i, mob);
-		    					}
-		    				}
 		    			}
 		    		}
 		    		

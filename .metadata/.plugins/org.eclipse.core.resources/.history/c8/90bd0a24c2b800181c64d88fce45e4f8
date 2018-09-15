@@ -40,7 +40,7 @@ public class ScheduledMobs implements Listener {
 	}
 	public void startMobs() {
 		for(World world : plugin.getServer().getWorlds()) {
-			plugin.getServer().dispatchCommand(plugin.getServer().getConsoleSender(), "killall all "+world.getName());
+			plugin.getServer().dispatchCommand(plugin.getServer().getConsoleSender(), "killall mobs "+world.getName());
 		}
 		plugin.getServer().dispatchCommand(plugin.getServer().getConsoleSender(), "time " + plugin.getConfig().getString("set-time"));
 		plugin.getServer().dispatchCommand(plugin.getServer().getConsoleSender(), "gamerule doDaylightCycle " + plugin.getConfig().getBoolean("stop-time"));	
@@ -187,19 +187,7 @@ public class ScheduledMobs implements Listener {
 		    					Wolf doggo = (Wolf)entity;
 		    					if(doggo.getOwner() instanceof Player) {
 		    						doggo.setCustomName(doggo.getOwner().getName() + "'s Doggo");
-		    						//doggo.setCustomNameVisible(true);
-		    						LivingEntity mob = (LivingEntity) Bukkit.getWorld(world).spawnEntity(location, EntityType.valueOf(entityType));
-									if(!effects.isEmpty()) {
-				    		    		for(int pid : effects) {			
-				    		    			MakePotion poData = po.getDrinkableDataById(pid);
-				    		    			for(PotionEffectType effect : poData.effectTypes) {
-				    		    				//mob.setCustomName("PuffyCloud");
-				    		    		        //mob.setCustomNameVisible(true);
-				    	    					mob.addPotionEffect((new PotionEffect(effect, Integer.MAX_VALUE, poData.amplifier, true)));
-				    	    				}
-				    		    		}
-				    		    	}
-									entities.set(i, mob);
+		    						doggo.setCustomNameVisible(true);
 		    					}
 		    				}
 		    			}

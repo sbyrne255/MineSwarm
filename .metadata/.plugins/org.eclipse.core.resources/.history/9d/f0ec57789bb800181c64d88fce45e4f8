@@ -43,7 +43,7 @@ import org.bukkit.potion.PotionEffectType;
 
 public class Mineswarm extends JavaPlugin implements Listener{
 
-	public final String version = "1.13.c";
+	public final String version = "1.13.a";
 	private boolean preventDouble = true;
 	private Database db = null;
 	private PotionObjects potions = new PotionObjects();

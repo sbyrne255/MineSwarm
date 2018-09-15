@@ -40,7 +40,7 @@ public class ScheduledMobs implements Listener {
 	}
 	public void startMobs() {
 		for(World world : plugin.getServer().getWorlds()) {
-			plugin.getServer().dispatchCommand(plugin.getServer().getConsoleSender(), "killall all "+world.getName());
+			plugin.getServer().dispatchCommand(plugin.getServer().getConsoleSender(), "killall mobs "+world.getName());
 		}
 		plugin.getServer().dispatchCommand(plugin.getServer().getConsoleSender(), "time " + plugin.getConfig().getString("set-time"));
 		plugin.getServer().dispatchCommand(plugin.getServer().getConsoleSender(), "gamerule doDaylightCycle " + plugin.getConfig().getBoolean("stop-time"));	

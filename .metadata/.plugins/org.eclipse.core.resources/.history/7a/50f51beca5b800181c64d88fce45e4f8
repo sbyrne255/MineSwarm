@@ -8,6 +8,8 @@ import java.util.List;
 
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.attribute.Attribute;
+import org.bukkit.craftbukkit.v1_13_R1.inventory.CraftItemStack;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -19,6 +21,11 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
+import net.minecraft.server.v1_13_R1.NBTTagCompound;
+import net.minecraft.server.v1_13_R1.NBTTagDouble;
+import net.minecraft.server.v1_13_R1.NBTTagInt;
+import net.minecraft.server.v1_13_R1.NBTTagList;
+import net.minecraft.server.v1_13_R1.NBTTagString;
 
 public class Kits {
 	public Plugin plugin;
@@ -94,6 +101,11 @@ public class Kits {
     						plugin.getLogger().info("Unhandled Exception trying to make item enchantments: " + err.toString());
     					}
     				}
+    			}
+    			if(toAdd.getType().equals(Material.STONE_AXE)) {
+    				player.getAttribute(Attribute.GENERIC_ATTACK_SPEED).setBaseValue(1);
+
+
     			}
     			player.getInventory().addItem(toAdd);
     		}catch(Exception err) {

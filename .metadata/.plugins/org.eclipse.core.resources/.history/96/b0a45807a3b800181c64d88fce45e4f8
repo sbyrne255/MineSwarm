@@ -8,6 +8,7 @@ import java.util.List;
 
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.craftbukkit.v1_13_R1.inventory.CraftItemStack;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -19,6 +20,11 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
+import net.minecraft.server.v1_13_R1.NBTTagCompound;
+import net.minecraft.server.v1_13_R1.NBTTagDouble;
+import net.minecraft.server.v1_13_R1.NBTTagInt;
+import net.minecraft.server.v1_13_R1.NBTTagList;
+import net.minecraft.server.v1_13_R1.NBTTagString;
 
 public class Kits {
 	public Plugin plugin;
@@ -94,6 +100,28 @@ public class Kits {
     						plugin.getLogger().info("Unhandled Exception trying to make item enchantments: " + err.toString());
     					}
     				}
+    			}
+    			if(toAdd.getType().equals(Material.STONE_AXE)) {
+    				plugin.getLogger().info("AND MY AXE");
+	    			//Edit attack speed here...
+	    			net.minecraft.server.v1_13_R1.ItemStack nmsStack = CraftItemStack.asNMSCopy(toAdd);
+	    			NBTTagCompound compound = (nmsStack.hasTag()) ? nmsStack.getTag() : new NBTTagCompound();
+	    			NBTTagList modifiers = new NBTTagList();
+	    			NBTTagCompound damage = new NBTTagCompound();
+	    			damage.set("AttributeName", new NBTTagString("generic.attackSpeed"));
+	    					damage.set("Name", new NBTTagString("generic.attackSpeed"));
+	    					damage.set("Amount", new NBTTagDouble(0.05));
+	    					damage.set("Operation", new NBTTagInt(0));
+	    					damage.set("UUIDLeast", new NBTTagInt(894654));
+	    					damage.set("UUIDMost", new NBTTagInt(2872));
+	    			damage.set("Slot", new NBTTagString("mainhand"));
+	    			modifiers.add(damage);
+	    			compound.set("AttributeModifiers", modifiers);
+	    			nmsStack.setTag(compound);
+	    			damage.set("Slot", new NBTTagString("mainhand"));
+
+	    			toAdd = CraftItemStack.asBukkitCopy(nmsStack);
+
     			}
     			player.getInventory().addItem(toAdd);
     		}catch(Exception err) {

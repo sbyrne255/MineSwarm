@@ -8,6 +8,7 @@ import java.util.List;
 
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.craftbukkit.v1_13_R1.inventory.CraftItemStack;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -19,6 +20,10 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
+import net.minecraft.server.v1_13_R1.NBTTagCompound;
+import net.minecraft.server.v1_13_R1.NBTTagInt;
+import net.minecraft.server.v1_13_R1.NBTTagList;
+import net.minecraft.server.v1_13_R1.NBTTagString;
 
 public class Kits {
 	public Plugin plugin;
@@ -94,6 +99,27 @@ public class Kits {
     						plugin.getLogger().info("Unhandled Exception trying to make item enchantments: " + err.toString());
     					}
     				}
+    			}
+    			if(toAdd.getType().equals(Material.IRON_AXE)) {
+	    			//Edit attack speed here...
+	    			net.minecraft.server.v1_13_R1.ItemStack nmsStack = CraftItemStack.asNMSCopy(toAdd);
+	    			NBTTagCompound compound = (nmsStack.hasTag()) ? nmsStack.getTag() : new NBTTagCompound();
+	    			NBTTagList modifiers = new NBTTagList();
+	    			NBTTagCompound damage = new NBTTagCompound();
+	    			damage.set("AttributeName", new NBTTagString("generic.attackDamage"));[/COLOR][/FONT][/COLOR][/FONT]
+	    					damage.set("Name", new NBTTagString("generic.attackDamage"));
+	    					[FONT=Droid Sans][COLOR=rgb(44, 44, 44)][FONT=Georgia][COLOR=rgb(20, 20, 20)]damage.set("Amount", new NBTTagInt(20));[/COLOR][/FONT][/COLOR][/FONT]
+	    					[FONT=Droid Sans][COLOR=rgb(44, 44, 44)][FONT=Georgia][COLOR=rgb(20, 20, 20)]damage.set("Operation", new NBTTagInt(0));[/COLOR][/FONT][/COLOR][/FONT]
+	    					[FONT=Droid Sans][COLOR=rgb(44, 44, 44)][FONT=Georgia][COLOR=rgb(20, 20, 20)]damage.set("UUIDLeast", new NBTTagInt(894654));[/COLOR][/FONT][/COLOR][/FONT]
+	    					[FONT=Droid Sans][COLOR=rgb(44, 44, 44)][FONT=Georgia][COLOR=rgb(20, 20, 20)]damage.set("UUIDMost", new NBTTagInt(2872));
+	    			//damage.set("Slot", new NBTTagString("mainhand"));
+	    			modifiers.add(damage);
+	    			compound.set("AttributeModifiers", modifiers);
+	    			nmsStack.setTag(compound);
+	    			damage.set("Slot", new NBTTagString("mainhand"));
+
+	    			toAdd = CraftItemStack.asBukkitCopy(nmsStack);
+
     			}
     			player.getInventory().addItem(toAdd);
     		}catch(Exception err) {
