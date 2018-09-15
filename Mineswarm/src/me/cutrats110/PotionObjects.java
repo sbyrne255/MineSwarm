@@ -10,6 +10,7 @@ public class PotionObjects {
 	private List<MakePotion> splashPotions = new ArrayList<MakePotion>();
 	
 	public PotionObjects() {
+		splashPotions.add(new MakePotion(0, "Water", 			Arrays.asList(PotionEffectType.LUCK), 				(0), 	0, false, "With a duration of 0 no effects should happen."));
 		splashPotions.add(new MakePotion(1, "Turtle Master", 	Arrays.asList(PotionEffectType.SLOW,PotionEffectType.DAMAGE_RESISTANCE), 20, Arrays.asList(4,3), false, "Makes player move slower and grants damage resistance"));
 		splashPotions.add(new MakePotion(2, "Turtle Master", 	Arrays.asList(PotionEffectType.SLOW,PotionEffectType.DAMAGE_RESISTANCE), 40, Arrays.asList(4,3), false, "Makes player move slower and grants damage resistance"));
 		splashPotions.add(new MakePotion(3, "Turtle Master", 	Arrays.asList(PotionEffectType.SLOW,PotionEffectType.DAMAGE_RESISTANCE), 20, Arrays.asList(6,4), false, "Makes player move slower and grants damage resistance"));
@@ -30,10 +31,10 @@ public class PotionObjects {
 		splashPotions.add(new MakePotion(18, "Slowness", 		Arrays.asList(PotionEffectType.SLOW), 				(20*10*2), 		3, false, "Makes player move slower"));
 		splashPotions.add(new MakePotion(19, "Water Breathing", Arrays.asList(PotionEffectType.WATER_BREATHING),	(180*10*2), 	0, false, "Makes player breath under water"));
 		splashPotions.add(new MakePotion(20, "Water Breathing", Arrays.asList(PotionEffectType.WATER_BREATHING),	(480*10*2), 	0, false, "Makes player breath under water"));
-		splashPotions.add(new MakePotion(21, "Healing", 		Arrays.asList(PotionEffectType.HEAL), 				0, 				0, false, "Instantly curse Damage"));
-		splashPotions.add(new MakePotion(22, "Healing", 		Arrays.asList(PotionEffectType.HEAL), 				0, 				1, false, "Instantly curse Damage"));
-		splashPotions.add(new MakePotion(23, "Harming", 		Arrays.asList(PotionEffectType.HARM), 				0, 				0, false, "Instantly causes Damage"));
-		splashPotions.add(new MakePotion(24, "Harming", 		Arrays.asList(PotionEffectType.HARM), 				0, 				1, false, "Instantly causes Damage (2)"));
+		splashPotions.add(new MakePotion(21, "Healing", 		Arrays.asList(PotionEffectType.HEAL), 				2, 				0, false, "Instantly curse Damage"));
+		splashPotions.add(new MakePotion(22, "Healing", 		Arrays.asList(PotionEffectType.HEAL), 				2, 				1, false, "Instantly curse Damage"));
+		splashPotions.add(new MakePotion(23, "Harming", 		Arrays.asList(PotionEffectType.HARM), 				2, 				0, false, "Instantly causes Damage"));
+		splashPotions.add(new MakePotion(24, "Harming", 		Arrays.asList(PotionEffectType.HARM), 				2, 				1, false, "Instantly causes Damage (2)"));
 		splashPotions.add(new MakePotion(24, "Poison", 			Arrays.asList(PotionEffectType.POISON), 			(45*10*2), 		0, false, "Poison player or heals undead"));
 		splashPotions.add(new MakePotion(26, "Poison", 			Arrays.asList(PotionEffectType.POISON), 			(90*10*2), 		0, false, "Poison player or heals undead"));
 		splashPotions.add(new MakePotion(27, "Poison 2", 		Arrays.asList(PotionEffectType.POISON), 			(21*10*2), 		1, false, "Poison player or heals undead (2)"));
@@ -48,7 +49,12 @@ public class PotionObjects {
 		splashPotions.add(new MakePotion(36, "Luck", 			Arrays.asList(PotionEffectType.LUCK), 				(300*10*2), 	0, false, "We're up all night to get lucky"));
 		splashPotions.add(new MakePotion(37, "Slow Falling", 	Arrays.asList(PotionEffectType.SLOW_FALLING), 		(90*10*2), 		0, false, "Reduces fall damage"));
 		splashPotions.add(new MakePotion(38, "Slow Falling", 	Arrays.asList(PotionEffectType.SLOW_FALLING), 		(240*10*2), 	0, false, "Reduces fall damage"));
+		splashPotions.add(new MakePotion(39, "Saturation", 		Arrays.asList(PotionEffectType.SATURATION), 		(4), 			0, false, "Feeds player 1 food per level per tick"));
+		splashPotions.add(new MakePotion(40, "Saturation", 	Arrays.asList(PotionEffectType.SATURATION), 		(4), 			1, false, "Feeds player 1 food per level per tick"));
+		splashPotions.add(new MakePotion(41, "Saturation", 	Arrays.asList(PotionEffectType.SATURATION), 		(4),		 	2, false, "Feeds player 1 food per level per tick"));
+		splashPotions.add(new MakePotion(42, "Saturation", 	Arrays.asList(PotionEffectType.SATURATION), 		(4), 			3, false, "Feeds player 1 food per level per tick"));
 		
+		splashPotions.add(new MakePotion(1900, "Water", 				Arrays.asList(PotionEffectType.LUCK), 				(0), 			0, true, "With a duration of 0 no effects should happen."));
 		splashPotions.add(new MakePotion(1901, "Turtle Master", 	Arrays.asList(PotionEffectType.SLOW,PotionEffectType.DAMAGE_RESISTANCE), 20, Arrays.asList(4,3), true, "Makes player move slower and grants damage resistance"));
 		splashPotions.add(new MakePotion(1902, "Turtle Master", 	Arrays.asList(PotionEffectType.SLOW,PotionEffectType.DAMAGE_RESISTANCE), 40, Arrays.asList(4,3), true, "Makes player move slower and grants damage resistance"));
 		splashPotions.add(new MakePotion(1903, "Turtle Master", 	Arrays.asList(PotionEffectType.SLOW,PotionEffectType.DAMAGE_RESISTANCE), 20, Arrays.asList(6,4), true, "Makes player move slower and grants damage resistance"));
@@ -69,10 +75,10 @@ public class PotionObjects {
 		splashPotions.add(new MakePotion(19018, "Slowness", 		Arrays.asList(PotionEffectType.SLOW), 				(20*10*2), 		3, true, "Makes player move slower"));
 		splashPotions.add(new MakePotion(19019, "Water Breathing",	Arrays.asList(PotionEffectType.WATER_BREATHING),	(180*10*2), 	0, true, "Makes player breath under water"));
 		splashPotions.add(new MakePotion(19020, "Water Breathing", 	Arrays.asList(PotionEffectType.WATER_BREATHING),	(480*10*2), 	0, true, "Makes player breath under water"));
-		splashPotions.add(new MakePotion(19021, "Healing", 			Arrays.asList(PotionEffectType.HEAL), 				0, 				0, true, "Instantly curse Damage"));
-		splashPotions.add(new MakePotion(19022, "Healing", 			Arrays.asList(PotionEffectType.HEAL), 				0, 				1, true, "Instantly curse Damage"));
-		splashPotions.add(new MakePotion(19023, "Harming", 			Arrays.asList(PotionEffectType.HARM), 				0, 				0, true, "Instantly causes Damage"));
-		splashPotions.add(new MakePotion(19024, "Harming", 			Arrays.asList(PotionEffectType.HARM), 				0, 				1, true, "Instantly causes Damage (2)"));
+		splashPotions.add(new MakePotion(19021, "Healing", 			Arrays.asList(PotionEffectType.HEAL), 				2, 				0, true, "Instantly cures Damage"));
+		splashPotions.add(new MakePotion(19022, "Healing 2", 		Arrays.asList(PotionEffectType.HEAL), 				2, 				1, true, "Instantly cures Damage"));
+		splashPotions.add(new MakePotion(19023, "Harming", 			Arrays.asList(PotionEffectType.HARM), 				2, 				0, true, "Instantly causes Damage"));
+		splashPotions.add(new MakePotion(19024, "Harming", 			Arrays.asList(PotionEffectType.HARM), 				2, 				1, true, "Instantly causes Damage (2)"));
 		splashPotions.add(new MakePotion(19024, "Poison", 			Arrays.asList(PotionEffectType.POISON), 			(45*10*2), 		0, true, "Poison player or heals undead"));
 		splashPotions.add(new MakePotion(19026, "Poison", 			Arrays.asList(PotionEffectType.POISON), 			(90*10*2), 		0, true, "Poison player or heals undead"));
 		splashPotions.add(new MakePotion(19027, "Poison 2", 		Arrays.asList(PotionEffectType.POISON), 			(21*10*2), 		1, true,"Poison player or heals undead (2)"));
@@ -87,6 +93,11 @@ public class PotionObjects {
 		splashPotions.add(new MakePotion(19036, "Luck", 			Arrays.asList(PotionEffectType.LUCK), 				(300*10*2), 	0, true, "We're up all night to get lucky"));
 		splashPotions.add(new MakePotion(19037, "Slow Falling", 	Arrays.asList(PotionEffectType.SLOW_FALLING), 		(90*10*2), 		0, true, "Reduces fall damage"));
 		splashPotions.add(new MakePotion(19038, "Slow Falling", 	Arrays.asList(PotionEffectType.SLOW_FALLING), 		(240*10*2), 	0, true, "Reduces fall damage"));
+		splashPotions.add(new MakePotion(19039, "Saturation", 		Arrays.asList(PotionEffectType.SATURATION), 		(4), 	0, true, "Feeds player 1 food per level per tick"));
+		splashPotions.add(new MakePotion(19040, "Saturation", 		Arrays.asList(PotionEffectType.SATURATION), 		(4), 	1, true, "Feeds player 1 food per level per tick"));
+		splashPotions.add(new MakePotion(19041, "Saturation", 		Arrays.asList(PotionEffectType.SATURATION), 		(4), 	2, true, "Feeds player 1 food per level per tick"));
+		splashPotions.add(new MakePotion(19041, "Saturation", 		Arrays.asList(PotionEffectType.SATURATION), 		(4), 	3, true, "Feeds player 1 food per level per tick"));
+		splashPotions.add(new MakePotion(19041, "Dolphin's Grace",	Arrays.asList(PotionEffectType.DOLPHINS_GRACE), 	(4), 	3, true, "Feeds player 1 food per level per tick"));
 		
 		
 		
@@ -97,6 +108,15 @@ public class PotionObjects {
 		for(MakePotion potion :splashPotions) {
 			if(potion.effectTypes.equals(effectTypes)) {
 				return potion.name;
+			}
+		}
+		
+		return null;
+	}
+	public MakePotion getPotionByEffects(List<PotionEffectType> effectTypes) {
+		for(MakePotion potion :splashPotions) {
+			if(potion.effectTypes.equals(effectTypes)) {
+				return potion;
 			}
 		}
 		

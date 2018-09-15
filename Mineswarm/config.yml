@@ -144,24 +144,15 @@ guide-author: Cutrats110
 guide-pages:
   - This is page one
   - This is on page two...t
-globally-allowed-potions:
-  - Night Vision Splash
-  - Invisibility Splash
-  - Leaping Splash
-  - Fire Resistance Splash
-  - Speed Splash
-  - Slowness Splash
-  - Turtle Master Splash
-  - Water Breathing Splash
-  - Harming Splash
-  - Poison Splash
-  - Regeneration Splash
-  - Strength Splash
-  - Weakness Splash
-  - Luck Splash
-  - Slow Falling Splash
-tank-allowed-potions:
-  - Healing Splash
+tank-potions-disabled-mobs:
+  - Healing
+tank-potions-disabled-players:
+  - Poison
+mage-potions-disabled-mobs:
+  - Poison
+mage-potions-disabled-players:
+  - Healing
+  - Healing 2
 #Class items, one per line
 mage-class:
   - LEATHER_HELMET,1
@@ -172,10 +163,10 @@ mage-class:
   - 1903,2
   - 19035,2
   - 19015,4
-  - 19022,2
+  - 19022,4
   - 19033,4
-  
-  
+  - 1904,2
+  - 19011,1
 archer-class:
   - LEATHER_HELMET,1
   - LEATHER_CHESTPLATE,1

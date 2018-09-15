@@ -426,71 +426,74 @@ public class EventListener implements Listener {
 		//Shooter is player.
 		try {
 			if(event.getPotion().getShooter() instanceof Player) {
+				boolean effectPlayer = true;
+				boolean effectMob = true;
+				String playerClass = "default";
+				
 				Player shooter = (Player) event.getPotion().getShooter();
+				if(shooter.hasMetadata("class")) {
+					playerClass = shooter.getMetadata("class").get(0).asString();
+				}
+				
+				//If Player is down, cancel right away.
 				if(shooter.hasMetadata("isdown") && shooter.getMetadata("isdown").get(0).asBoolean()) {
 					event.setCancelled(true);
 					return;
 				}
 				
+				//Get what potion was used...
+				//If potion is allowed for player config, return
+				//If potion is disallowed, add effect to mobs.
+				
+				
 				List<PotionEffectType> effectTypes = new ArrayList<>();
 				for (PotionEffect effect : event.getPotion().getEffects()) {effectTypes.add(effect.getType());}
-				String potionName = potions.getNameByEffects(effectTypes);
-				plugin.getLogger().info(potionName);
-				for(String x : plugin.getConfig().getStringList("globally-allowed-potions")) {
-					if(x.equals(potionName)) {
-						return;
-					}
-					else {
-						plugin.getLogger().info(x + " " + potionName);
+				MakePotion potion = potions.getPotionByEffects(effectTypes);
+				String potionName = potion.name;
+								
+				for(String configPotion : plugin.getConfig().getStringList(playerClass+"-potions-disabled-players")) {
+					if(configPotion.equals(potionName)) {
+						effectPlayer = false;
+						break;
 					}
 				}
-					plugin.getLogger().info("THERE");
-					
-					
-					//Loop through all effect entities.
-					for(Entity ent : event.getAffectedEntities()) {
-						//If entity is a player get the effects and find out if the potion should effect the player or not (based on config)
-						if(ent instanceof Player) {
-							for(String y : plugin.getConfig().getStringList(ent.getMetadata("class").get(0).asString()+"-allowed-potions")) {
-								if(y.equals(potionName)) {
-									plugin.getLogger().info("HERE");
-									plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() 
-							    	{
-								    	public void run() 
-								    	{
-											((Player) ent).addPotionEffects(event.getPotion().getEffects());
-								    	}
-							    	}, 1L);
-								}
-								else {
-									//Potion is blocked from effecting players so continue with loop (event will be cancelled, mobs will be hurt in 1 tick)
-									event.setCancelled(true);
-									continue;			
-								}
-							}
-						}else {
-							//BUG HERE WHERE CUSTOM SPLASHES DON'T DO ANYTHING, REGULAR SPAWNED ONES DO.
-							
-							//ALTERNATIVE, CANCEL THE EVENT BUT SCHEDULE TO ADD THE EFFECT TO EVERY MOB 1TICK AFTER...
-							//THIS WORKS, IT CANCELS ALL POTIONS ON PLAYERS SENT BY PLAYERS...
-							//PROBABLY NEED TO ADD SOME EXECEPTIONS SUCH AS MEDICS BEING ALLOWED TO USE HEALING POTIONS?
-							if(ent instanceof LivingEntity) {
-						    	plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() 
-						    	{
-							    	public void run() 
-							    	{
-							    		LivingEntity mob = (LivingEntity) ent;
-										mob.addPotionEffects(event.getPotion().getEffects());
-							    	}
-						    	}, 1L);
-						    	continue;
-						    }
-						}
+				for(String configPotion : plugin.getConfig().getStringList(playerClass+"-potions-disabled-mobs")) {
+					if(potionName.equals(configPotion)) {
+						effectMob = false;
+						break;
 					}
-					event.setCancelled(true);
+				}
 				
+				for(Entity ent : event.getAffectedEntities()) {
+					if(ent instanceof Player && effectPlayer == true) {
+				    	plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() 
+				    	{
+					    	public void run() 
+					    	{
+					    		Player mob = (Player) ent;
+					    		for(PotionEffectType ef : potion.effectTypes) {
+					    			mob.addPotionEffect(new PotionEffect(ef, (int) potion.duration, potion.amplifier));
+					    		}
+					    	}
+				    	}, 1L);
+						
+					}
+					if(ent instanceof LivingEntity && effectMob && !(ent instanceof Player)) {
+				    	plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() 
+				    	{
+					    	public void run() 
+					    	{
+					    		LivingEntity mob = (LivingEntity) ent;
+					    		for(PotionEffectType ef : potion.effectTypes) {
+					    			mob.addPotionEffect(new PotionEffect(ef, (int) potion.duration, potion.amplifier), true);
+					    		}
+					    	}
+				    	}, 1L);
+					}
+				}
+				event.setCancelled(true);				
 			}
-		}catch(Exception er) {}
+		}catch(Exception er) {plugin.getLogger().info("Error with potion blocking: " + er.toString());}
 	}
 	
 	//This section handles:
