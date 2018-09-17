@@ -2,6 +2,7 @@ package me.cutrats110;
 
 import java.util.List;
 
+import org.bukkit.Color;
 import org.bukkit.potion.PotionEffectType;
 
 public class MakePotion {
@@ -13,9 +14,10 @@ public class MakePotion {
 	public int amplifier;
 	public boolean isSplash;
 	public List<Integer> amplifierList;
+	public Color color;
 	
 	
-	public MakePotion(int id, String name, List<PotionEffectType> effectTypes, double duration, List<Integer> amplifier, boolean isSplash, String description) {
+	public MakePotion(int id, String name, List<PotionEffectType> effectTypes, double duration, List<Integer> amplifier, boolean isSplash, Color color, String description) {
 		this.id = id;
 		this.name = name;
 		this.effectTypes = effectTypes;
@@ -23,8 +25,9 @@ public class MakePotion {
 		this.amplifierList = amplifier;
 		this.description = description;		
 		this.isSplash = isSplash;
+		this.color = color;
 	}
-	public MakePotion(int id, String name, List<PotionEffectType> effectTypes, double duration, int amplifier, boolean isSplash, String description) {
+	public MakePotion(int id, String name, List<PotionEffectType> effectTypes, double duration, int amplifier, boolean isSplash,  Color color,String description) {
 		this.id = id;
 		this.name = name;
 		this.effectTypes = effectTypes;
@@ -32,6 +35,7 @@ public class MakePotion {
 		this.amplifier = amplifier;
 		this.description = description;		
 		this.isSplash = isSplash;
+		this.color = color;
 	}
 }
 

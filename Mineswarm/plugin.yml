@@ -71,3 +71,7 @@ commands:
    description: Gets the exact type name for the item in main hand (used for making config)
    permission-message: No perms yo
    usagage: /inhand
+  potiontypes:
+   description: Gets list of possible potion types for tipped arrows.
+   permission-message: No perms yo
+   usagage: /potiontypes

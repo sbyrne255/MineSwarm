@@ -8,6 +8,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
+import org.bukkit.block.Block;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
@@ -36,6 +37,7 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.world.ChunkUnloadEvent;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -350,10 +352,24 @@ public class EventListener implements Listener {
     	event.setCancelled(true);
     }
     @EventHandler(priority = EventPriority.HIGHEST)
-    public void onPlayerClick(InventoryClickEvent event) {   
+    public void onPlayerClick(InventoryClickEvent event) {
+    	if(event.getInventory().getType().equals(InventoryType.CRAFTING) && event.getSlot() >=-1) {
+    		return;    		
+    	}
+    	
+    	if(event.getSlot() < 0) {
+    		event.setCancelled(true);
+    		return;
+    	}
     	try {
-	    	//Got some null pointers here...
-	    	if(!event.getWhoClicked().getGameMode().equals(GameMode.CREATIVE)){
+    		if(event.getInventory().getType().equals(InventoryType.ANVIL)) {
+    			InventoryHolder ih = event.getInventory().getHolder();
+    				Block block = (Block) ih;
+    				if(debugging) {plugin.getLogger().info("Reparing Anvil on use...");}
+    				block.setType(Material.ANVIL);
+    		}
+    		
+   	    	if(!event.getWhoClicked().getGameMode().equals(GameMode.CREATIVE)){
 		    	if(getClickedInventory(event.getView(), event.getRawSlot()).getType().equals(InventoryType.CHEST)){  //Top peice...
 		    		//plugin.getLogger().info(getClickedInventory(event.getView(), event.getRawSlot()).getType().toString());
 		    		if(!event.isShiftClick()){
@@ -502,13 +518,6 @@ public class EventListener implements Listener {
 	//Prevents PVP from player to player in none PVP zones.
 	//Prevents downed players from harming mobs
 	//Scores damage done to mobs
-	
-	
-	
-	
-	
-	
-	
 	
 	HashMap<UUID,BukkitTask> downedPlayers = new HashMap<>();
 	@EventHandler(priority = EventPriority.HIGH)

@@ -1,5 +1,6 @@
 //FEATURE:
 //BUGS:	
+	Potions need colors set.
 //TODO:
 	Finish tunnels/making regions
 	*Load a configfile

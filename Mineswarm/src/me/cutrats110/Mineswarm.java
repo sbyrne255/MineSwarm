@@ -39,6 +39,7 @@ import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.bukkit.potion.PotionType;
 
 
 public class Mineswarm extends JavaPlugin implements Listener{
@@ -176,8 +177,7 @@ public class Mineswarm extends JavaPlugin implements Listener{
 			{
 				getLogger().info("Problem with opening door in MineSwarm. " + err.toString());
 			}
-			preventDouble = false; }else{ preventDouble = true;	}
-			
+			preventDouble = false; }else{ preventDouble = true;	}			
 			if(event.getAction().equals(Action.RIGHT_CLICK_BLOCK) && event.getClickedBlock().getType().equals(Material.JUNGLE_BUTTON)) {
 				File f = new File(System.getProperty("user.dir") +"/plugins/Mineswarm/buttons.yml");
 				List<String> lines = FileUtils.readLines(f, "UTF-8");
@@ -348,7 +348,11 @@ public class Mineswarm extends JavaPlugin implements Listener{
 			return true;
 		}
 		
-		
+		if(cmd.getName().equalsIgnoreCase("PotionTypes")) {
+			for(PotionType x : PotionType.values()) {
+				player.sendMessage(x.toString());
+			}
+		}
 		//MCMS Marking Tool
 		if (cmd.getName().equalsIgnoreCase("markingtool") && sender instanceof Player){
 			ItemStack markingTool = new ItemStack( Material.GOLDEN_HOE, 1);
@@ -600,23 +604,50 @@ public class Mineswarm extends JavaPlugin implements Listener{
 			try{
 				String items = "";
 				for(int i = 0; i < args.length;i+=2) {
+					ItemStack toAdd = null;
 						try {
-		    				int pID = Integer.valueOf(args[i]);//Should error out here if it's not an ID...
+							int pID = Integer.valueOf(args[i]);//Should error out here if it's not an ID...
 		    				MakePotion potionData = potions.getDrinkableDataById(pID);
-		    				ItemStack toAdd = new ItemStack(Material.POTION, Integer.valueOf(args[i+1]));    				
-		    				ItemMeta im = toAdd.getItemMeta();
-		    				im.setDisplayName(potionData.name);
-		    				PotionMeta pm = (PotionMeta) im;
-		    				for(PotionEffectType effect : potionData.effectTypes) {
-		    					//									Type	time in seconds probably	amplifier(1=2)
-		    					pm.addCustomEffect(new PotionEffect(effect, (int)potionData.duration, potionData.amplifier), true);
+		    				if(potionData.isSplash) {
+		    					toAdd = new ItemStack(Material.SPLASH_POTION, Integer.valueOf(args[i+1].toString()));
+		    				}else {
+		    					toAdd = new ItemStack(Material.POTION, Integer.valueOf(args[i+1].toString()));
 		    				}
-		    				toAdd.setItemMeta(im);
+			    			try {
+				    				ItemMeta im = toAdd.getItemMeta();
+				    				im.setDisplayName(potionData.name);
+				    				PotionMeta pm = (PotionMeta) im;
+				    				for(PotionEffectType effect : potionData.effectTypes) {
+				    					//									Type	time in seconds probably	amplifier(1=2)
+				    					pm.addCustomEffect(new PotionEffect(effect, (int)potionData.duration, potionData.amplifier), true);
+				    				}
+				    				pm.setColor(potionData.color);
+				    				toAdd.setItemMeta(im);
+			    			}
+			    			catch(Exception err) {this.getLogger().info("ERROR : " + err.toString());}
 							
 						}catch(NumberFormatException nfe) {
 							try {
-								new ItemStack(Material.getMaterial(args[i].toString()), Integer.valueOf(args[i+1]));
-							}
+								try {
+				    				int pID = Integer.valueOf(args[i].toString().replaceAll("TIPPED_ARROW:", ""));//Should error out here if it's not an ID...
+				    				MakePotion potionData = potions.getDrinkableDataById(pID);
+									if(args[i].toUpperCase().contains("TIPPED_ARROW:")) {    					
+				    					toAdd = new ItemStack(Material.TIPPED_ARROW, Integer.valueOf(args[i+1]));
+				    					
+				    					ItemMeta im = toAdd.getItemMeta();
+				    					PotionMeta pm = (PotionMeta) im;
+				    					//meta.setBasePotionData(new PotionData(PotionType.valueOf(stuff.get(0).toUpperCase().replace("TIPPED_ARROW:", ""))) );
+				    					im.setDisplayName(potionData.name);
+				        				for(PotionEffectType effect : potionData.effectTypes) {
+				        					pm.addCustomEffect(new PotionEffect(effect, (int)potionData.duration, potionData.amplifier), true);
+				        				}
+				        				pm.setColor(potionData.color);
+				    					toAdd.setItemMeta(im);
+				    				}
+				    				}catch(NumberFormatException nfe2) {
+										toAdd = new ItemStack(Material.getMaterial(args[i].toString()),Integer.valueOf(args[i+1]));
+									}
+								}
 							catch(Exception problem) {
 								player.sendMessage("Could not convert one of more of the args to an item stack.");
 								return false;
@@ -668,8 +699,6 @@ public class Mineswarm extends JavaPlugin implements Listener{
 		}
 		if (cmd.getName().equalsIgnoreCase("makebutton")){
 			try{
-				
-				
 				Block block = player.getTargetBlock(null, 10);
 				if(block.getType().equals(Material.JUNGLE_BUTTON)) {
 					

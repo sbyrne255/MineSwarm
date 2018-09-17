@@ -12,6 +12,7 @@ import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BookMeta;
+import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.metadata.FixedMetadataValue;
@@ -70,22 +71,54 @@ public class Kits {
     				}else {
     					toAdd = new ItemStack(Material.POTION, Integer.valueOf(stuff.get(1).toString()));
     				}
-    				ItemMeta im = toAdd.getItemMeta();
-    				im.setDisplayName(potionData.name);
-    				PotionMeta pm = (PotionMeta) im;
-    				for(PotionEffectType effect : potionData.effectTypes) {
-    					//									Type	time in seconds probably	amplifier(1=2)
-    					pm.addCustomEffect(new PotionEffect(effect, (int)potionData.duration, potionData.amplifier), true);
-    				}
-    				toAdd.setItemMeta(im);
+	    			try {
+		    				ItemMeta im = toAdd.getItemMeta();
+		    				im.setDisplayName(potionData.name);
+		    				PotionMeta pm = (PotionMeta) im;
+		    				for(PotionEffectType effect : potionData.effectTypes) {
+		    					//									Type	time in seconds probably	amplifier(1=2)
+		    					pm.addCustomEffect(new PotionEffect(effect, (int)potionData.duration, potionData.amplifier), true);
+		    				}
+		    				pm.setColor(potionData.color);
+		    				toAdd.setItemMeta(im);
+	    			}
+	    			catch(Exception err) {plugin.getLogger().info("ERROR : " + err.toString());}
+    				
+    				
+    				
     			}catch(NumberFormatException  nf) {
-    				toAdd = new ItemStack(Material.getMaterial(stuff.get(0).toString()),Integer.valueOf(stuff.get(1)));
+    				//Tipped Arrow?
+    				try {
+    				int pID = Integer.valueOf(stuff.get(0).toString().replaceAll("TIPPED_ARROW:", ""));//Should error out here if it's not an ID...
+    				MakePotion potionData = potions.getDrinkableDataById(pID);
+					if(stuff.get(0).toUpperCase().contains("TIPPED_ARROW:")) {    					
+    					toAdd = new ItemStack(Material.TIPPED_ARROW, Integer.valueOf(stuff.get(1)));
+    					
+    					ItemMeta im = toAdd.getItemMeta();
+    					PotionMeta pm = (PotionMeta) im;
+    					//meta.setBasePotionData(new PotionData(PotionType.valueOf(stuff.get(0).toUpperCase().replace("TIPPED_ARROW:", ""))) );
+    					im.setDisplayName(potionData.name);
+        				for(PotionEffectType effect : potionData.effectTypes) {
+        					pm.addCustomEffect(new PotionEffect(effect, (int)potionData.duration, potionData.amplifier), true);
+        				}
+        				pm.setColor(potionData.color);
+    					toAdd.setItemMeta(im);
+    				}
+    				}catch(NumberFormatException nfe) {
+						toAdd = new ItemStack(Material.getMaterial(stuff.get(0).toString()),Integer.valueOf(stuff.get(1)));
+					}
     			}
     			
     			if(stuff.size() > 2) {//Item has Type, Quantitiy, and some other CS fields...
     				for(int i = 2; i < stuff.size(); i+=2) {
     					try {
-    						toAdd.addUnsafeEnchantment(Enchantment.getByKey(NamespacedKey.minecraft(stuff.get(i).toLowerCase())), Integer.valueOf(stuff.get(i+1)));
+    						if(toAdd.getType().equals(Material.ENCHANTED_BOOK)) {
+    							EnchantmentStorageMeta esm = (EnchantmentStorageMeta)toAdd.getItemMeta();
+    							esm.addStoredEnchant(Enchantment.getByKey(NamespacedKey.minecraft(stuff.get(i).toLowerCase())), Integer.valueOf(stuff.get(i+1)), true);
+    							toAdd.setItemMeta(esm);
+    						}else {
+    							toAdd.addUnsafeEnchantment(Enchantment.getByKey(NamespacedKey.minecraft(stuff.get(i).toLowerCase())), Integer.valueOf(stuff.get(i+1)));
+    						}
     					}
     					catch(IndexOutOfBoundsException bounds) {
     						plugin.getLogger().info("Config misconfiguration at: " + stuff.get(0) + " Index is out of bounds for enchantments.");

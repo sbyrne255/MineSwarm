@@ -1,22 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <qualifiedTypeNameHistroy>
-<fullyQualifiedTypeName name="org.bukkit.scoreboard.Team"/>
-<fullyQualifiedTypeName name="org.bukkit.entity.Player"/>
-<fullyQualifiedTypeName name="java.util.Set"/>
-<fullyQualifiedTypeName name="java.util.Random"/>
-<fullyQualifiedTypeName name="java.io.FileOutputStream"/>
-<fullyQualifiedTypeName name="java.io.ObjectOutputStream"/>
-<fullyQualifiedTypeName name="java.io.IOException"/>
-<fullyQualifiedTypeName name="java.io.FileInputStream"/>
-<fullyQualifiedTypeName name="java.io.ObjectInputStream"/>
-<fullyQualifiedTypeName name="java.io.Serializable"/>
-<fullyQualifiedTypeName name="org.bukkit.scheduler.BukkitTask"/>
-<fullyQualifiedTypeName name="org.bukkit.Location"/>
-<fullyQualifiedTypeName name="java.util.concurrent.Callable"/>
-<fullyQualifiedTypeName name="org.bukkit.scheduler.BukkitRunnable"/>
-<fullyQualifiedTypeName name="org.bukkit.event.player.PlayerMoveEvent"/>
-<fullyQualifiedTypeName name="org.bukkit.plugin.Plugin"/>
-<fullyQualifiedTypeName name="java.util.UUID"/>
 <fullyQualifiedTypeName name="org.bukkit.ChatColor"/>
 <fullyQualifiedTypeName name="org.bukkit.event.entity.EntityRegainHealthEvent"/>
 <fullyQualifiedTypeName name="org.bukkit.entity.EntityType"/>
@@ -36,8 +19,6 @@
 <fullyQualifiedTypeName name="java.util.List"/>
 <fullyQualifiedTypeName name="org.bukkit.entity.ThrownPotion"/>
 <fullyQualifiedTypeName name="org.bukkit.inventory.meta.PotionMeta"/>
-<fullyQualifiedTypeName name="org.bukkit.potion.PotionData"/>
-<fullyQualifiedTypeName name="org.bukkit.potion.PotionType"/>
 <fullyQualifiedTypeName name="org.bukkit.inventory.meta.ItemMeta"/>
 <fullyQualifiedTypeName name="org.bukkit.entity.Trident"/>
 <fullyQualifiedTypeName name="org.bukkit.event.entity.ProjectileLaunchEvent"/>
@@ -51,8 +32,6 @@
 <fullyQualifiedTypeName name="com.google.common.base.CharMatcher"/>
 <fullyQualifiedTypeName name="org.apache.commons.lang.StringUtils"/>
 <fullyQualifiedTypeName name="org.bukkit.enchantments.Enchantment"/>
-<fullyQualifiedTypeName name="org.bukkit.potion.PotionEffect"/>
-<fullyQualifiedTypeName name="org.bukkit.potion.PotionEffectType"/>
 <fullyQualifiedTypeName name="org.bukkit.event.entity.EntityDamageEvent"/>
 <fullyQualifiedTypeName name="org.bukkit.entity.LivingEntity"/>
 <fullyQualifiedTypeName name="org.bukkit.Bukkit"/>
@@ -60,4 +39,25 @@
 <fullyQualifiedTypeName name="org.bukkit.event.world.ChunkUnloadEvent"/>
 <fullyQualifiedTypeName name="org.bukkit.entity.SplashPotion"/>
 <fullyQualifiedTypeName name="java.lang.String"/>
+<fullyQualifiedTypeName name="org.bukkit.potion.PotionEffectType"/>
+<fullyQualifiedTypeName name="org.bukkit.potion.PotionEffect"/>
+<fullyQualifiedTypeName name="org.bukkit.craftbukkit.v1_13_R1.inventory.CraftItemStack"/>
+<fullyQualifiedTypeName name="net.minecraft.server.v1_13_R1.ItemStack"/>
+<fullyQualifiedTypeName name="net.minecraft.server.v1_13_R1.NBTTagCompound"/>
+<fullyQualifiedTypeName name="net.minecraft.server.v1_13_R1.NBTTagList"/>
+<fullyQualifiedTypeName name="net.minecraft.server.v1_13_R1.NBTTagString"/>
+<fullyQualifiedTypeName name="net.minecraft.server.v1_13_R1.NBTTagInt"/>
+<fullyQualifiedTypeName name="net.minecraft.server.v1_13_R1.NBTTagDouble"/>
+<fullyQualifiedTypeName name="org.bukkit.attribute.Attribute"/>
+<fullyQualifiedTypeName name="org.bukkit.entity.Wolf"/>
+<fullyQualifiedTypeName name="org.bukkit.entity.Player"/>
+<fullyQualifiedTypeName name="org.bukkit.potion.PotionData"/>
+<fullyQualifiedTypeName name="org.bukkit.potion.PotionType"/>
+<fullyQualifiedTypeName name="org.bukkit.event.entity.EntityChangeBlockEvent"/>
+<fullyQualifiedTypeName name="org.bukkit.block.Block"/>
+<fullyQualifiedTypeName name="org.bukkit.event.block.BlockBreakEvent"/>
+<fullyQualifiedTypeName name="org.bukkit.inventory.InventoryHolder"/>
+<fullyQualifiedTypeName name="org.bukkit.event.inventory.InventoryType"/>
+<fullyQualifiedTypeName name="org.bukkit.inventory.meta.EnchantmentStorageMeta"/>
+<fullyQualifiedTypeName name="org.bukkit.Color"/>
 </qualifiedTypeNameHistroy>
