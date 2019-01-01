@@ -2,27 +2,20 @@
 <section name="Workbench">
 	<section name="org.eclipse.ui.texteditor.FindReplaceDialog">
 		<item value="false" key="isRegEx"/>
-		<item value="makebutton" key="selection"/>
+		<item value="" key="selection"/>
 		<item value="false" key="casesensitive"/>
 		<item value="false" key="incremental"/>
 		<item value="true" key="wrap"/>
 		<item value="false" key="wholeword"/>
 		<list key="findhistory">
-			<item value="makebutton"/>
-			<item value="chest"/>
-			<item value="getChests"/>
-			<item value="chestSp"/>
-			<item value="cmd.getNAme"/>
-			<item value="inventory"/>
-			<item value="break"/>
-			<item value="anvil"/>
-			<item value="aNVIL"/>
-			<item value="Splash"/>
-			<item value="potion"/>
-			<item value="key"/>
-			<item value="[SQLite"/>
-			<item value="clear"/>
-			<item value="spawner"/>
+			<item value="backup"/>
+			<item value="meta"/>
+			<item value="KEY"/>
+			<item value="damageable"/>
+			<item value="list"/>
+			<item value="There are "/>
+			<item value="team"/>
+			<item value="save"/>
 		</list>
 		<list key="replacehistory">
 			<item value=" downedPlayers.remove"/>
@@ -33,13 +26,6 @@
 			<item value="MakeSplashPotion"/>
 			<item value="SplashPotions"/>
 			<item value="team_name"/>
-			<item value="(int) (Math.round(player.getHealth())"/>
-			<item value="}catch(NullPointerException np) {} catch(Exception err) {plugin.getLogger().info(&quot;Other Error&quot;);}"/>
-			<item value="}catch(NullPointerException np) {} }catch(Exception err) {plugin.getLogger().info(&quot;Other Error&quot;);}"/>
-			<item value="if(player.hasMetadata(&quot;team_members&quot;) &amp;&amp; player.getMetadata(&quot;team_members&quot;).get(0).toString().length() &gt;= 1)"/>
-			<item value="if(debugging){plugin.getLogger().info(&quot;team_members NOT SET&quot;);}"/>
-			<item value="plugin.getConfig"/>
-			<item value="plugin.getLogger"/>
 		</list>
 	</section>
 	<section name="org.eclipse.ui.texteditor.FindReplaceDialog_dialogBounds">

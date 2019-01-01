@@ -17,6 +17,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.entity.Wolf;
 import org.bukkit.event.Listener;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.Damageable;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -128,7 +130,11 @@ public class ScheduledMobs implements Listener {
 								if( (rand.nextInt(chance)+1 == 1) && weapon != "NONE")
 								{
 									ItemStack item = new ItemStack( Material.matchMaterial(weapon), 1);
-									item.setDurability(dura);
+									ItemMeta meta = item.getItemMeta();
+									if (meta instanceof Damageable){
+										((Damageable) meta).setDamage(dura);
+									}
+									//item.setDurability(dura);
 									
 									if(!enchantments.isEmpty() && enchantments.size() > 0 && !enchantments.contains("NONE")) {
 										//Enchantments are not empty...
@@ -214,7 +220,12 @@ public class ScheduledMobs implements Listener {
 							if( (rand.nextInt(chance+1) == 1) || debugging)
 							{
 								ItemStack item = new ItemStack( Material.matchMaterial(weapon), 1);
-								item.setDurability(dura);
+								//try here
+								ItemMeta meta = item.getItemMeta();
+								if (meta instanceof Damageable){
+									((Damageable) meta).setDamage(dura);
+								}
+								//item.setDurability(dura);
 								
 								mob = (LivingEntity) Bukkit.getWorld(world).spawnEntity(location, EntityType.valueOf(entityType));
 			    		    	mob.getEquipment().setItemInMainHand(item);

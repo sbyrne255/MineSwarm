@@ -146,6 +146,7 @@ public class EventListener implements Listener {
 	        }
         }catch(NullPointerException np) {}
         catch(Exception err) {plugin.getLogger().info("Error on player join with Meta data: " + err.toString());}
+        if(!player.hasMetadata("msgq")){player.setMetadata("msgq", new FixedMetadataValue(plugin, false));}
     }
 	@EventHandler(priority = EventPriority.LOW)
 	public void onPlayerRespawn(PlayerRespawnEvent event) {
@@ -320,16 +321,48 @@ public class EventListener implements Listener {
 		}
 	}
 
-  
+	
 	@EventHandler(priority = EventPriority.LOWEST)
     public void PickupItem(EntityPickupItemEvent  e) {
         ItemStack pickedUp = e.getItem().getItemStack();
-        if (pickedUp.getType().equals(Material.BOOK) && pickedUp.hasItemMeta() && pickedUp.getItemMeta().getDisplayName().equals("Key")){
+        if (pickedUp.getType().equals(Material.BOOK) && pickedUp.hasItemMeta() && pickedUp.getItemMeta().getDisplayName().equals("Key")){     	
         	if(e.getEntity() instanceof Player) {
         		Player player = (Player)e.getEntity();
-        		player.sendMessage(ChatColor.GOLD + "" + ChatColor.BOLD + "You picked up a " + pickedUp.getItemMeta().getLore().get(0) + " Key");
-        		try {teams.sendTeamMessage(player.getMetadata("team_name").get(0).asString(), ChatColor.GOLD + "" + ChatColor.BOLD + player.getName() + " picked up a " + pickedUp.getItemMeta().getLore().get(0) + " Key", player);									
-				}catch(Exception err) {}
+        		Inventory invt = player.getInventory();	        		
+        		if(invt.firstEmpty() == -1)
+        		{
+        			if(!player.hasMetadata("msgq")){player.setMetadata("msgq", new FixedMetadataValue(plugin, false));}
+        			//LOOP TO SEE IF STACK OF KEYS ALREADY EXITS.
+        			for(ItemStack is : invt){
+        				if(is == null){continue;}
+    					//Item is same as stack...
+	        			if(is.getType().equals(Material.BOOK) && is.hasItemMeta() && is.getItemMeta().getLore().get(0).equals(pickedUp.getItemMeta().getLore().get(0)))
+	        			{
+        					player.setMetadata("msgq", new FixedMetadataValue(plugin, false));
+        					player.sendMessage(ChatColor.GOLD + "" + ChatColor.BOLD + "You picked up a " + pickedUp.getItemMeta().getLore().get(0) + " Key");
+        	        		try {teams.sendTeamMessage(player.getMetadata("team_name").get(0).asString(), ChatColor.GOLD + "" + ChatColor.BOLD + player.getName() + " picked up a " + pickedUp.getItemMeta().getLore().get(0) + " Key", player);									
+        					}catch(Exception err) {}
+        	        		
+        					e.setCancelled(false);
+        					return;
+        				}
+        			}
+        			if(player.getMetadata("msgq").get(0).asBoolean()){//There is a MSGQ waiting...
+        				e.setCancelled(true);
+    					return;
+        			}
+        			player.setMetadata("msgq", new FixedMetadataValue(plugin, true));
+        			player.sendMessage(ChatColor.GOLD + "" + ChatColor.BOLD + "A key dropped by you, but you can't carry it because your inventory is full.");
+            		try {teams.sendTeamMessage(player.getMetadata("team_name").get(0).asString(), ChatColor.GOLD + "" + ChatColor.BOLD + "A key dropped near " + player.getName() + " but inventory is full ", player);									
+    				}catch(Exception err) {}
+        		}
+        		else
+        		{
+	        		player.sendMessage(ChatColor.GOLD + "" + ChatColor.BOLD + "You picked up a " + pickedUp.getItemMeta().getLore().get(0) + " Key");
+	        		try {teams.sendTeamMessage(player.getMetadata("team_name").get(0).asString(), ChatColor.GOLD + "" + ChatColor.BOLD + player.getName() + " picked up a " + pickedUp.getItemMeta().getLore().get(0) + " Key", player);									
+					}catch(Exception err) {}
+	        		player.setMetadata("msgq", new FixedMetadataValue(plugin, false));
+        		}
         	}
         } 
     }

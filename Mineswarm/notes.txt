@@ -1,6 +1,7 @@
 //FEATURE:
 //BUGS:	
 	Potions need colors set.
+	/team is not a command, but it also is a command and runs code, isolate to a plugin and fix.
 //TODO:
 	Finish tunnels/making regions
 	*Load a configfile

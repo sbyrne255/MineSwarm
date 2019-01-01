@@ -31,6 +31,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.material.Door;
@@ -341,6 +342,9 @@ public class Mineswarm extends JavaPlugin implements Listener{
 						player.sendMessage("Problem saving: " + exc.toString());
 					}
 					break;
+				default:
+					player.sendMessage("Invalid subcommand, type /help mineswarm for command details.");
+					break;
 			}
 			//player.sendMessage(bl.toString());
 			
@@ -531,7 +535,12 @@ public class Mineswarm extends JavaPlugin implements Listener{
 				
 				try {
 					ItemStack item = new ItemStack( Material.matchMaterial(weapon), 1);
-					item.setDurability(Short.valueOf(args[4]));
+					//check here
+					ItemMeta meta = item.getItemMeta();
+					if (meta instanceof Damageable){
+						((Damageable) meta).setDamage((short) Short.valueOf(args[4]));
+					}
+					//item.setDurability(Short.valueOf(args[4]));
 					
 					if(!enchantments.isEmpty()) {
 						for(String enchantment : enchantments) {
