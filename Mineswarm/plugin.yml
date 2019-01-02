@@ -8,6 +8,11 @@ website: robertsroom.com
 prefix: Mineswarm
 softdepend: [Essentials]
 commands:
+  team:
+   description: Used to statically override native Bukkit/MC teams.
+   permission: test.foo
+   permission-message: You do not have permission!
+   usage: /NA
   doorlevel:
    description: Shows the door level
    permission: test.foo

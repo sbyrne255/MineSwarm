@@ -556,6 +556,29 @@ public class Mineswarm extends JavaPlugin implements Listener{
 				getLogger().info(err.toString() + " IN COMMAND MAKESPAWNER");
 			}
 			return true;
+			
+			
+			/*
+			try{
+				int min_x, min_z, min_y;
+				int max_x, max_z, max_y;
+				
+				Block block = player.getTargetBlock(null, 10);
+				min_x = block.getX() - Integer.valueOf(args[0]);
+				min_y = block.getY() - Integer.valueOf(args[0]);
+				min_z = block.getZ() - Integer.valueOf(args[0]);
+				
+				max_x = block.getX() + Integer.valueOf(args[0]);
+				max_y = block.getY() + Integer.valueOf(args[0]);
+				max_z = block.getZ() + Integer.valueOf(args[0]);
+				db.makeSpawner(min_x, min_y, min_z, max_x, max_y, max_z, block.getWorld().toString().replace("CraftWorld{name=", "").replace("}", ""), Integer.valueOf(args[0]), args[1], Integer.valueOf(args[2]), Integer.valueOf(args[3]), Integer.valueOf(args[4]), Integer.valueOf(args[5]), Integer.valueOf(args[6]), args[7], Integer.valueOf(args[8]));
+
+				return true;
+			}
+			catch(Exception er){
+				player.sendMessage("Error ON INSERT: " + er.toString());
+			}
+			*/
 		}
 		if (cmd.getName().equalsIgnoreCase("save") && sender instanceof Player){			
 			try{
@@ -704,11 +727,8 @@ public class Mineswarm extends JavaPlugin implements Listener{
 				return false;
 			}
 		}
-		//Overrides vanilla command for teams.
-		if (cmd.getName().equalsIgnoreCase("team") && sender instanceof Player){
-			player.sendMessage("Native teams are disbaled, try msteam instead.");
-			return true;
-		}
 		return false;
 	}
+	//BETTER IDEA WHEN THIS WORKS... 
+	//USE MARKED REGION AS REGION TO CHECK PLAYERS AGAINST, THEN USE BLOCK PLAYER IS LOOKING AT FOR SPAWNER LOCATION (NO OFFSETS)
 }

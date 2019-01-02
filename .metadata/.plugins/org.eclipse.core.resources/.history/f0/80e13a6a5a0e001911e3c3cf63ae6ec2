@@ -704,11 +704,13 @@ public class Mineswarm extends JavaPlugin implements Listener{
 				return false;
 			}
 		}
-		//Overrides vanilla command for teams.
-		if (cmd.getName().equalsIgnoreCase("team") && sender instanceof Player){
-			player.sendMessage("Native teams are disbaled, try msteam instead.");
-			return true;
+		
+		
+		if (cmd.getName().equalsIgnoreCase("team") && sender instanceof Player){			
+				return true;
 		}
 		return false;
 	}
+	//BETTER IDEA WHEN THIS WORKS... 
+	//USE MARKED REGION AS REGION TO CHECK PLAYERS AGAINST, THEN USE BLOCK PLAYER IS LOOKING AT FOR SPAWNER LOCATION (NO OFFSETS)
 }

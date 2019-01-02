@@ -705,8 +705,8 @@ public class Mineswarm extends JavaPlugin implements Listener{
 			}
 		}
 		//Overrides vanilla command for teams.
-		if (cmd.getName().equalsIgnoreCase("team") && sender instanceof Player){
-			player.sendMessage("Native teams are disbaled, try msteam instead.");
+		if (cmd.getName().equalsIgnoreCase("team") && sender instanceof Player){		
+			
 			return true;
 		}
 		return false;
