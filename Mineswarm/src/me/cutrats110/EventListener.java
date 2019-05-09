@@ -49,6 +49,7 @@ import org.bukkit.scheduler.BukkitTask;
 import java.util.HashMap;
 import java.util.UUID;
 
+@SuppressWarnings("deprecation")
 public class EventListener implements Listener {
 	public Plugin plugin;
 	public Database db = null;
@@ -238,6 +239,7 @@ public class EventListener implements Listener {
 		}
 		
 		Entity killer = event.getEntity().getKiller();
+		//Bukkit says "splash status depends on only on the potion item." Sense I am checking the potion item as long as this effectively works I will leave it 
 		if (killer != null && (killer instanceof Player || killer instanceof Arrow || killer instanceof Trident || killer instanceof SplashPotion)) 
 		{
 			Player player = event.getEntity().getKiller();
