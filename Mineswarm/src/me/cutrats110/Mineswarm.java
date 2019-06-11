@@ -3,14 +3,13 @@ package me.cutrats110;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -43,6 +42,7 @@ import org.bukkit.potion.PotionEffectType;
 import org.bukkit.potion.PotionType;
 
 
+@SuppressWarnings("deprecation")
 public class Mineswarm extends JavaPlugin implements Listener{
 
 	public final String version = "1.13.c";
@@ -102,6 +102,7 @@ public class Mineswarm extends JavaPlugin implements Listener{
 						for(ItemStack item : player.getInventory()) {
 							if(item != null && item.getType().equals(Material.BOOK) && item.hasItemMeta() && item.getItemMeta().hasLore() && item.getItemMeta().getLore().toString().equals(level))
 							{
+								//https://bukkit.org/threads/open-iron-door-door-deprecated.213967/
 								try{
 									state = block.getRelative(BlockFace.DOWN).getState();
 						            Openable door = (Openable)state.getData();
@@ -142,6 +143,7 @@ public class Mineswarm extends JavaPlugin implements Listener{
 								state = event.getClickedBlock().getState();
 					            Openable door = (Openable)state.getData();
 					            door.setOpen(true);
+					            //((Openable)door).setOpen(true);
 					            state.setData((Door)door);
 					            state.update();
 							}
@@ -180,8 +182,12 @@ public class Mineswarm extends JavaPlugin implements Listener{
 			}
 			preventDouble = false; }else{ preventDouble = true;	}			
 			if(event.getAction().equals(Action.RIGHT_CLICK_BLOCK) && event.getClickedBlock().getType().equals(Material.JUNGLE_BUTTON)) {
-				File f = new File(System.getProperty("user.dir") +"/plugins/Mineswarm/buttons.yml");
-				List<String> lines = FileUtils.readLines(f, "UTF-8");
+				//List<String> lines = FileUtils.readLines(f, "UTF-8");
+				//TODO
+				//CONVERT FILE TO SQLITE DATABASE!!!
+				
+				List<String> lines = Files.readAllLines(Paths.get("System.getProperty(\"user.dir\") +\"/plugins/Mineswarm/buttons.yml"), StandardCharsets.UTF_8);
+
 				for (String line : lines) {
 					List<String> button = Arrays.asList(line.split("\\s*,\\s*"));
 					if(button.get(0).equals(String.valueOf(event.getClickedBlock().getX())) && button.get(1).equals(String.valueOf(event.getClickedBlock().getY())) && button.get(2).equals(String.valueOf(event.getClickedBlock().getZ())) && button.get(3).equals(String.valueOf(event.getClickedBlock().getWorld().getName()))) {
@@ -683,6 +689,8 @@ public class Mineswarm extends JavaPlugin implements Listener{
 				return false;
 			}
 		}
+		//TODO
+		//USE SQLITE INSTEAD OF FILE!
 		if (cmd.getName().equalsIgnoreCase("makebutton")){
 			try{
 				Block block = player.getTargetBlock(null, 10);

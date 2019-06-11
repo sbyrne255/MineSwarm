@@ -1,11 +1,9 @@
 package me.cutrats110;
 
 import java.io.File;
-import java.io.IOException;
-import java.text.SimpleDateFormat;
+//import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Date;
-import org.apache.commons.io.FileUtils;
+//import java.util.Date;
 import org.bukkit.Bukkit;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.Plugin;
@@ -14,7 +12,7 @@ public class ScheduledBackupDB implements Listener {
 	public Plugin plugin;
 	public Database db = null;
 	private String destDir = System.getProperty("user.dir") +"/plugins/Mineswarm/backups/";
-	private String sourceDir = System.getProperty("user.dir") +"/plugins/Mineswarm/";
+	//private String sourceDir = System.getProperty("user.dir") +"/plugins/Mineswarm/";
 	public MineswarmTeams teams = null;
 	
 	public ScheduledBackupDB(Plugin instance, MineswarmTeams teams) {
@@ -38,14 +36,15 @@ public class ScheduledBackupDB implements Listener {
 		Bukkit.getScheduler().scheduleSyncRepeatingTask(plugin, new Runnable() {
 		    public void run() {
 		    	plugin.getLogger().info("Scheduled Player Database Backup Starting...");
-		    	String timeStamp = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new Date());
 		    	try {
 		    	    File directory = new File(destDir);
 		    		if (! directory.exists()){ directory.mkdir(); }
-		    		
+		    		/*
+		    		String timeStamp = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new Date());
 			    	File source = new File(sourceDir + "playerdata.db");
 			    	File dest = new File(destDir + timeStamp + "_playerdata.db");
 			    	FileUtils.copyFile(source, dest);
+			    	*/
 		    	    
 		    	    //Delete files older than 1 days.
 		    	    final File[] listFiles = directory.listFiles();
@@ -58,9 +57,8 @@ public class ScheduledBackupDB implements Listener {
 		                }
 		            }
 		    	    
-		    	} catch (IOException e) {
-		    		plugin.getLogger().info(e.toString());
-		    	} catch (Exception e) {
+		    	} //catch (IOException e) {plugin.getLogger().info(e.toString()); 	} 
+		    	catch (Exception e) {
 					plugin.getLogger().info(e.toString());
 				}		    	
 		    }
@@ -72,11 +70,12 @@ public class ScheduledBackupDB implements Listener {
 		Bukkit.getScheduler().scheduleSyncRepeatingTask(plugin, new Runnable() {
 		    public void run() {
 		    	plugin.getLogger().info("Scheduled Database Backup Starting...");
-		    	String timeStamp = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new Date());
 		    	try {
 		    	    File directory = new File(destDir);
 		    		if (! directory.exists()){ directory.mkdir(); }
+		    		/*
 		    		
+		    		String timeStamp = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new Date());
 			    	File source = new File(sourceDir+"mineswarmChests.db");
 			    	File dest = new File(destDir+ timeStamp + "_mineswarmChests.db");
 			    	FileUtils.copyFile(source, dest);
@@ -90,7 +89,7 @@ public class ScheduledBackupDB implements Listener {
 		    	    FileUtils.copyFile(source, dest);
 
 		    	    
-		    	    
+		    	    */
 		    	    //Delete files older than 5 days.
 		    	    final File[] listFiles = directory.listFiles();
 		    	    Calendar cal = Calendar.getInstance();  
@@ -102,9 +101,9 @@ public class ScheduledBackupDB implements Listener {
 		                }
 		            }
 		    	    
-		    	} catch (IOException e) {
-		    		plugin.getLogger().info(e.toString());
-		    	} catch (Exception e) {
+		    	} //catch (IOException e) {
+		    		//plugin.getLogger().info(e.toString());} 
+		         catch (Exception e) {
 					plugin.getLogger().info(e.toString());
 				}		    	
 		    }

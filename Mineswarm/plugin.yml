@@ -1,6 +1,7 @@
 name: Mineswarm
 main: me.cutrats110.Mineswarm
 version: 1.6.3
+description: Woop The Shooops
 api-version: 1.13
 load: POSTWORLD
 author: Steven Byrne
