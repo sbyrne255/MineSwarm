@@ -674,14 +674,10 @@ public class Mineswarm extends JavaPlugin implements Listener{
 				return false;
 			}
 		}
-		//TODONE
-		//USE SQLITE INSTEAD OF FILE!
 		if (cmd.getName().equalsIgnoreCase("makebutton")){
 			try{
 				Block block = player.getTargetBlock(null, 10);
 				if(block.getType().equals(Material.JUNGLE_BUTTON)) {
-					
-					this.getLogger().warning("JUNGLE BUTTONNNNNNN");
 					try {
 						db.saveButton(block.getLocation(), args[0]);
 					}catch (Exception e) {
