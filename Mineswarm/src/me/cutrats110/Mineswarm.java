@@ -1,14 +1,8 @@
 package me.cutrats110;
 
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
@@ -45,8 +39,8 @@ import org.bukkit.potion.PotionType;
 @SuppressWarnings("deprecation")
 public class Mineswarm extends JavaPlugin implements Listener{
 
-	public final String version = "1.13.c";
-	private boolean preventDouble = true;
+	public final String version = "1.14.c";
+	//private boolean preventDouble = false;
 	private Database db = null;
 	private PotionObjects potions = new PotionObjects();
 	private Kits kits = new Kits(this, potions);
@@ -72,6 +66,7 @@ public class Mineswarm extends JavaPlugin implements Listener{
 		db.createPlayersTable();		
 		db.createScoresTable();
 		db.createTeamsTable();
+		db.createButtonsTable();
 		smobs.startMobs();
 	}
 	@Override
@@ -87,131 +82,121 @@ public class Mineswarm extends JavaPlugin implements Listener{
 		try{
 			Player player = event.getPlayer();
 			boolean opendoor = false;
-			if(preventDouble){
-				try{
-					if (event.getAction() == Action.RIGHT_CLICK_BLOCK && event.getClickedBlock().getType().equals(Material.IRON_DOOR)) 
-					{
-						Block block = event.getClickedBlock();
-						
-						String blockID = "X:" + String.valueOf(block.getX()) + "Z:"+String.valueOf(block.getZ()) + "W:"+String.valueOf(block.getWorld());
-						int blockY = block.getY();
-						String level = db.selectDoor(blockID, blockY);
-						level = "[" + level + "]";
-						
-						BlockState state = block.getState();
-						for(ItemStack item : player.getInventory()) {
-							if(item != null && item.getType().equals(Material.BOOK) && item.hasItemMeta() && item.getItemMeta().hasLore() && item.getItemMeta().getLore().toString().equals(level))
-							{
-								//https://bukkit.org/threads/open-iron-door-door-deprecated.213967/
-								try{
-									state = block.getRelative(BlockFace.DOWN).getState();
-						            Openable door = (Openable)state.getData();
-						            if(door.isOpen()){
-						            	return;
-						            }
-						            else{
-						            	opendoor = true;
-						            	//Remove Key
-										item.setAmount(item.getAmount() -1);
-										break;
-						            }
-								}catch(Exception doorer){
-									state = event.getClickedBlock().getState();
-						            Openable door = (Openable)state.getData();
-						            if(door.isOpen()){
-						            	return;
-						            }
-						            else{
-						            	opendoor = true;
-						            	//Remove Key
-										item.setAmount(item.getAmount() -1);	
-										break;
-						            }
-								}	
-							}
-						}
-						if(opendoor){
+		//if(preventDouble){
+			try{
+				if (event.getAction() == Action.RIGHT_CLICK_BLOCK && event.getClickedBlock().getType().equals(Material.IRON_DOOR)) 
+				{
+					Block block = event.getClickedBlock();
+					
+					String blockID = "X:" + String.valueOf(block.getX()) + "Z:"+String.valueOf(block.getZ()) + "W:"+String.valueOf(block.getWorld());
+					int blockY = block.getY();
+					String level = db.selectDoor(blockID, blockY);
+					level = "[" + level + "]";
+					
+					BlockState state = block.getState();
+					for(ItemStack item : player.getInventory()) {
+						if(item != null && item.getType().equals(Material.BOOK) && item.hasItemMeta() && item.getItemMeta().hasLore() && item.getItemMeta().getLore().toString().equals(level))
+						{
+							//https://bukkit.org/threads/open-iron-door-door-deprecated.213967/
 							try{
-					            state = block.getRelative(BlockFace.DOWN).getState();
+								state = block.getRelative(BlockFace.DOWN).getState();
 					            Openable door = (Openable)state.getData();
-					            door.setOpen(true);
-					            state.setData((Door)door);
-					            state.update();
-							}
-							catch(Exception err)
-							{
+					            if(door.isOpen()){
+					            	return;
+					            }
+					            else{
+					            	opendoor = true;
+					            	//Remove Key
+									item.setAmount(item.getAmount() -1);
+									break;
+					            }
+							}catch(Exception doorer){
 								state = event.getClickedBlock().getState();
 					            Openable door = (Openable)state.getData();
-					            door.setOpen(true);
-					            //((Openable)door).setOpen(true);
-					            state.setData((Door)door);
-					            state.update();
-							}
-							//Schedule Close
-						    	getServer().getScheduler().scheduleSyncDelayedTask(this, new Runnable() 
-						    	{
-							    	public void run() 
-							    	{
-							    		BlockState state = block.getState();
-										try{
-								            state = event.getClickedBlock().getRelative(BlockFace.DOWN).getState();
-								            Openable door = (Openable)state.getData();
-								            door.setOpen(false);
-								            state.setData((Door)door);
-								            state.update();
-										}catch(Exception err)
-										{
-											state = event.getClickedBlock().getState();
-								            Openable door = (Openable)state.getData();
-								            door.setOpen(false);
-								            state.setData((Door)door);
-								            state.update();
-										}
-							    	}
-						    	}, 55L);
-						    event.setCancelled(true);//Probably want to cancel but shouldn't matter in adventure mode
-						    return;
-						}else {
-							player.sendMessage("You need a " + level + " key to open this door");
+					            if(door.isOpen()){
+					            	return;
+					            }
+					            else{
+					            	opendoor = true;
+					            	//Remove Key
+									item.setAmount(item.getAmount() -1);	
+									break;
+					            }
+							}	
 						}
-				}
-			}
-			catch(Exception err)
-			{
-				getLogger().info("Problem with opening door in MineSwarm. " + err.toString());
-			}
-			preventDouble = false; }else{ preventDouble = true;	}			
-			if(event.getAction().equals(Action.RIGHT_CLICK_BLOCK) && event.getClickedBlock().getType().equals(Material.JUNGLE_BUTTON)) {
-				//List<String> lines = FileUtils.readLines(f, "UTF-8");
-				//TODO
-				//CONVERT FILE TO SQLITE DATABASE!!!
-				
-				List<String> lines = Files.readAllLines(Paths.get("System.getProperty(\"user.dir\") +\"/plugins/Mineswarm/buttons.yml"), StandardCharsets.UTF_8);
-
-				for (String line : lines) {
-					List<String> button = Arrays.asList(line.split("\\s*,\\s*"));
-					if(button.get(0).equals(String.valueOf(event.getClickedBlock().getX())) && button.get(1).equals(String.valueOf(event.getClickedBlock().getY())) && button.get(2).equals(String.valueOf(event.getClickedBlock().getZ())) && button.get(3).equals(String.valueOf(event.getClickedBlock().getWorld().getName()))) {
+					}
+					if(opendoor){
 						try{
-							if(!(player.hasMetadata("class"))) {
-								kits.giveKit(player, button.get(4));
-								return;
-							}
-							else
-							{
-								player.sendMessage("You can't use more than 1 class, die to pick a new class >:)");
-								return;
-							}
+				            state = block.getRelative(BlockFace.DOWN).getState();
+				            Openable door = (Openable)state.getData();
+				            door.setOpen(true);
+				            state.setData((Door)door);
+				            state.update();
 						}
-						catch(Exception er){
-							player.sendMessage("Error on class command: " + er.toString());
+						catch(Exception err)
+						{
+							state = event.getClickedBlock().getState();
+				            Openable door = (Openable)state.getData();
+				            door.setOpen(true);
+				            //((Openable)door).setOpen(true);
+				            state.setData((Door)door);
+				            state.update();
+						}
+						//Schedule Close
+					    	getServer().getScheduler().scheduleSyncDelayedTask(this, new Runnable() 
+					    	{
+						    	public void run() 
+						    	{
+						    		BlockState state = block.getState();
+									try{
+							            state = event.getClickedBlock().getRelative(BlockFace.DOWN).getState();
+							            Openable door = (Openable)state.getData();
+							            door.setOpen(false);
+							            state.setData((Door)door);
+							            state.update();
+									}catch(Exception err)
+									{
+										state = event.getClickedBlock().getState();
+							            Openable door = (Openable)state.getData();
+							            door.setOpen(false);
+							            state.setData((Door)door);
+							            state.update();
+									}
+						    	}
+					    	}, 55L);
+					    event.setCancelled(true);//Probably want to cancel but shouldn't matter in adventure mode
+					    return;
+					}else {
+						player.sendMessage("You need a " + level + " key to open this door");
+					}
+			}
+		}
+		catch(Exception err)
+		{
+			getLogger().info("Problem with opening door in MineSwarm. " + err.toString());
+		}
+		//preventDouble = false; }else{ preventDouble = true;	}	
+			
+			if(event.getAction().equals(Action.RIGHT_CLICK_BLOCK) && event.getClickedBlock().getType().equals(Material.JUNGLE_BUTTON)) {
+				Location blockLocation = event.getClickedBlock().getLocation();
+				HashMap<Location, String> buttons = db.getButtons();
+				
+				if(buttons.containsKey(blockLocation)) {
+					try{
+						if(!(player.hasMetadata("class"))) {
+							kits.giveKit(player, buttons.get(blockLocation));
 							return;
 						}
-						
+						else
+						{
+							player.sendMessage("You can't use more than 1 class, die to pick a new class >:)");
+							return;
+						}
 					}
-					else {
-						getLogger().info("Didn't meet if requirment....");
+					catch(Exception er){
+						player.sendMessage("Error on class command: " + er.toString());
+						return;
 					}
-					
 				}
 				
 			}
@@ -689,20 +674,18 @@ public class Mineswarm extends JavaPlugin implements Listener{
 				return false;
 			}
 		}
-		//TODO
+		//TODONE
 		//USE SQLITE INSTEAD OF FILE!
 		if (cmd.getName().equalsIgnoreCase("makebutton")){
 			try{
 				Block block = player.getTargetBlock(null, 10);
 				if(block.getType().equals(Material.JUNGLE_BUTTON)) {
 					
-					File f = new File(System.getProperty("user.dir") +"/plugins/Mineswarm/buttons.yml");
-		    		f.createNewFile();
-		    		
+					this.getLogger().warning("JUNGLE BUTTONNNNNNN");
 					try {
-					    Files.write(Paths.get(f.getPath()), (String.valueOf(block.getX()) + "," + (String.valueOf(block.getY()) +"," + String.valueOf(block.getZ()) + "," + block.getWorld().getName() +","+ args[0] + "\n")).getBytes(), StandardOpenOption.APPEND);
-					}catch (IOException e) {
-						this.getLogger().info(e.toString());
+						db.saveButton(block.getLocation(), args[0]);
+					}catch (Exception e) {
+						this.getLogger().warning(e.toString());
 					}
 					return true;
 				}

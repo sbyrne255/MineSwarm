@@ -2,7 +2,6 @@
 //BUGS:	
 	Potions need colors set.
 	/team is not a command, but it also is a command and runs code, isolate to a plugin and fix.
-	BUTTONS DO NOT WORK, MIGRATING TO SQLITE INSTEAD OF FLAT FILES
 	DOWNED PLAYERS TAKE NO DAMAGE, NEEDS INVESTIGATION, LIKELY HAS TO DO WITH PLAYER HEADS/WITHER HEADS NOT BEING SUPPORT IN NEWER APIs.
 //TODO:
 	Finish tunnels/making regions

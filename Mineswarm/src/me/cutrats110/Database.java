@@ -38,6 +38,7 @@ public class Database {
 	private Connection playerConn = null;
 	private Connection scoreboardConn = null;
 	private Connection teamsConn = null;
+	private Connection buttonsConn = null;
 	
 	public Database(Plugin instance) {
 		plugin = instance;
@@ -50,6 +51,16 @@ public class Database {
             String url = "jdbc:sqlite:plugins/Mineswarm/mineswarmChests.db";
             // create a connection to the database
             chestConn = DriverManager.getConnection(url);
+        } catch (SQLException e) {
+        	plugin.getLogger().info(e.getMessage());
+        }
+    }
+	public void connectButtons() {
+        try {
+        	File directory = new File(System.getProperty("user.dir") +"/Mineswarm");
+    		if (! directory.exists()){ directory.mkdir(); }
+            String url = "jdbc:sqlite:plugins/Mineswarm/buttons.db";
+            buttonsConn = DriverManager.getConnection(url);
         } catch (SQLException e) {
         	plugin.getLogger().info(e.getMessage());
         }
@@ -140,6 +151,28 @@ public class Database {
         } catch (SQLException e) {plugin.getLogger().info(e.getMessage());}
         finally{ try {conn.close();} catch (SQLException e) {} }
     }	
+    public void createButtonsTable() {
+        try{
+        	if(buttonsConn.isClosed()){
+        		
+        		connectButtons();
+        	}
+        }
+        catch(NullPointerException np){
+        	connectButtons();
+        }
+        catch(Exception er){
+        	plugin.getLogger().info("Conn check failed. " + er.toString());
+        }
+    	
+        String sql = "CREATE TABLE IF NOT EXISTS buttons(x,y,z,world,class)";
+        try {
+        	PreparedStatement pstmt = buttonsConn.prepareStatement(sql);
+            pstmt.execute();
+            
+        } catch (SQLException e) {plugin.getLogger().info(e.getMessage());}
+        finally{ try {buttonsConn.close();} catch (SQLException e) {} }
+    }		
     public void createTeamsTable() {
         try{
         	if(teamsConn.isClosed()){
@@ -171,7 +204,7 @@ public class Database {
             pstmt = teamsConn.prepareStatement("CREATE TABLE IF NOT EXISTS servers(data)");
             pstmt.execute();
         } catch (SQLException e) {plugin.getLogger().info(e.getMessage());}
-        finally{ try {mobConn.close();} catch (SQLException e) {} }
+        finally{ try {teamsConn.close();} catch (SQLException e) {} }
     }	
     public void clearTeamsTables() {
     	File file = new File(System.getProperty("user.dir") +"/Mineswarm/teams.db");
@@ -475,8 +508,41 @@ public class Database {
     	}
     }
 	
-    
-    
+    public HashMap<Location, String> getButtons(){
+		try{if(buttonsConn.isClosed()){connectButtons();}}
+        catch(NullPointerException np){connectButtons();}
+        catch(Exception er){plugin.getLogger().info("Conn check failed. " + er.toString());}
+		HashMap<Location, String> newData = new HashMap<>();
+    	String sql = "SELECT * FROM buttons";//CONSIDER SWITCHING THIS TO A SELECT * WHERE LOCATION = LOCATION, LESS SCALEABLE, BUT REASONABLE
+    	try {
+        	PreparedStatement pstmt = buttonsConn.prepareStatement(sql);
+            ResultSet rs = pstmt.executeQuery();
+            while (rs.next()) {
+            	//Returns Location object as key, class as value.
+            	newData.put((new Location(Bukkit.getWorld(rs.getString("world")), rs.getInt("x"),rs.getInt("y"),rs.getInt("z"))), rs.getString("class"));
+            }
+        } catch (SQLException e) {plugin.getLogger().info("ERROR SELECTING: " + e.getMessage());}
+    	finally{ try {buttonsConn.close();} catch (SQLException e) {} }		
+		return newData;
+	}
+    public void saveButton(Location location, String name) {
+		try{if(buttonsConn.isClosed()){connectButtons();}}
+        catch(NullPointerException np){connectButtons();}
+        catch(Exception er){plugin.getLogger().info("Conn check failed. " + er.toString());}
+		
+		String sql = "INSERT INTO buttons(x,y,z,world,class) VALUES(?,?,?,?,?)";
+			try {
+    			PreparedStatement pstmt = buttonsConn.prepareStatement(sql);
+        		pstmt.setInt(1, (int)location.getX());
+        		pstmt.setInt(2, (int)location.getY());
+        		pstmt.setInt(3, (int)location.getZ());
+        		pstmt.setString(4, location.getWorld().getName());
+        		pstmt.setString(5, name);
+        		pstmt.executeUpdate();
+    		}catch(Exception err) {plugin.getLogger().info(err.toString());}
+	    	finally{ try {buttonsConn.close();} catch (SQLException e) {} }	
+			
+    }
     
     
     
