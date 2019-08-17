@@ -39,7 +39,7 @@ import org.bukkit.potion.PotionType;
 @SuppressWarnings("deprecation")
 public class Mineswarm extends JavaPlugin implements Listener{
 
-	public final String version = "1.14.c";
+	public final String version = "1.14.4";
 	//private boolean preventDouble = false;
 	private Database db = null;
 	private PotionObjects potions = new PotionObjects();
@@ -53,12 +53,15 @@ public class Mineswarm extends JavaPlugin implements Listener{
 	public void onEnable(){
 		getLogger().info("Mineswarm is starting...");
 	    getServer().getPluginManager().registerEvents(this, this);
-		getLogger().info("Mineswarm has been enabled");	
-		new EventListener(this, teams, board);		
+		getLogger().info("Mineswarm has been Registered");	
+		new EventListener(this, teams, board);
+		getLogger().info("Mineswarm Event Listen has started for Teams");	
 		new ScheduledChests(this, potions);
-		new ScheduledBackupDB(this, teams);
+		getLogger().info("Mineswarm Scheduler has started for Chests");
         this.saveDefaultConfig();
+        getLogger().info("Mineswarm Default Config has been saved");
         db = new Database(this);
+        getLogger().info("Mineswarm Databases have been started...");
 		db.connect();
 		db.createTable();
 		db.createMobsTable();
@@ -67,7 +70,12 @@ public class Mineswarm extends JavaPlugin implements Listener{
 		db.createScoresTable();
 		db.createTeamsTable();
 		db.createButtonsTable();
+		getLogger().info("Mineswarm all Databases have been enabled");
+		getLogger().info("Mineswarm finished Databases...");
 		smobs.startMobs();
+		getLogger().info("Mineswarm Scheduled Mob spawns have been enabled");
+		getLogger().info("Mineswarm has been enabled!");
+
 	}
 	@Override
 	public void onDisable(){
@@ -547,15 +555,6 @@ public class Mineswarm extends JavaPlugin implements Listener{
 				getLogger().info(err.toString() + " IN COMMAND MAKESPAWNER");
 			}
 			return true;
-		}
-		if (cmd.getName().equalsIgnoreCase("save") && sender instanceof Player){			
-			try{
-
-				return true;
-			}
-			catch(Exception er){
-				player.sendMessage("Error ON DB BACKUP: " + er.toString());
-			}
 		}
 		if (cmd.getName().equalsIgnoreCase("chest") && sender instanceof Player){
 			

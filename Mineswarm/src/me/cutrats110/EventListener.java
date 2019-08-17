@@ -1,5 +1,6 @@
 package me.cutrats110;
 
+//import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -45,6 +46,7 @@ import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+//import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 import java.util.HashMap;
 import java.util.UUID;
@@ -221,9 +223,45 @@ public class EventListener implements Listener {
 	        }
         }catch(Exception err) {}
         
+        
+        //new BukkitRunnable(){
+            //public void run(){
+                //try {
+                    //Object nmsPlayer = player.getClass().getMethod("getHandle").invoke(player);
+                    //Object packet = Class.forName("net.minecraft.server." + Bukkit.getServer().getClass().getPackage().getName().replace(".", ",").split(",")[3] + ".Packet205ClientCommand").newInstance();
+                    //packet.getClass().getField("a").set(packet, 1);
+                    //Object con = nmsPlayer.getClass().getField("playerConnection").get(nmsPlayer);
+                    //con.getClass().getMethod("a", packet.getClass()).invoke(con, packet);
+                //} catch (Throwable e) {
+                    //e.printStackTrace();
+                //}
+            //}
+        //}.runTaskLater(plugin, 2L);
+        
+        //new BukkitRunnable(){
+            //public void run(){
+               // try {
+                  //  Object nmsPlayer = player.getClass().getMethod("getHandle").invoke(player);
+                    //Object packet = Class.forName("net.minecraft.server." + Bukkit.getServer().getClass().getPackage().getName().replace(".", ",").split(",")[3] + ".Packet").newInstance();
+                    //Field a = packet.getClass().getDeclaredField("a");
+                    //a.setAccessible(true);
+                    //a.set(packet,  Class.forName("net.minecraft.server." + Bukkit.getServer().getClass().getPackage().getName().replace(".", ",").split(",")[3] + ".EnumClientCommand").getEnumConstants()[0]);
+ 
+//                    Object con = nmsPlayer.getClass().getField("playerConnection").get(nmsPlayer);
+  //                  con.getClass().getMethod("a", packet.getClass()).invoke(con, packet);
+    //            } catch (Throwable e) {
+      //              e.printStackTrace();
+        //        }
+          //  }
+        //}.runTaskLater(plugin, 2L);
+        //14.4GOOD LUCK FINDING THE DAMN CLASS THAT REPLACED THE CLIENT205 PACKET. 
+        
     }
 	@EventHandler
 	public void onEDeath(EntityDeathEvent event) {
+		if(event.getEntity() instanceof Player){
+			return;
+		}
 		
 		if(event.getEntity().getKiller() instanceof Player) {
 			Player player = event.getEntity().getKiller();
@@ -742,14 +780,13 @@ public class EventListener implements Listener {
 					
 					downedPlayers.put(damagee.getUniqueId(), Bukkit.getScheduler().runTaskTimer(plugin, () -> {
 						try {
-						damagee.setHealth(damagee.getHealth() - 1);
-						if(damagee.hasMetadata("team_name") && damagee.getMetadata("team_name").get(0).toString().length() >= 1) {//If player is part of a team...
-				        	board.makeScoreBoard(damagee.getMetadata("team_name").get(0).asString());
-				        	board.setScoreboard(teams.getTeamMembers(damagee.getMetadata("team_name").get(0).asString()), damagee.getMetadata("team_name").get(0).asString(), damagee, (int) ((damagee.getHealth()-1)*-1));
-				        }
-						}catch(Exception err) {
-							damagee.setHealth(0);
-						}
+							if((damagee.getHealth() - 1) <= 0){plugin.getServer().dispatchCommand(plugin.getServer().getConsoleSender(), "kill "+ damagee.getName().toString()); return;}
+							else{damagee.setHealth(damagee.getHealth() - 1);}
+							if(damagee.hasMetadata("team_name") && damagee.getMetadata("team_name").get(0).toString().length() >= 1) {//If player is part of a team...
+					        	board.makeScoreBoard(damagee.getMetadata("team_name").get(0).asString());
+					        	board.setScoreboard(teams.getTeamMembers(damagee.getMetadata("team_name").get(0).asString()), damagee.getMetadata("team_name").get(0).asString(), damagee, (int) ((damagee.getHealth()-1)*-1));
+					        }
+						}catch(Exception err) { plugin.getLogger().info("Error on slowly killing person. " + err.toString()); }
 					}, 10, 35));//delay before first run, sequential runs after...
 					
 					
