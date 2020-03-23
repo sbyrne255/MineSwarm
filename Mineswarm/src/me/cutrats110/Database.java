@@ -611,7 +611,8 @@ public class Database {
     			+ "VALUES(?,?,?,?,?,?,?,?,?,?,?,?)";
         try {
         	String teamName = player.getMetadata("team_name").get(0).asString();
-        	List<Player> teamMembers = teamData.getTeamMembers(teamName);
+        	MSTeam team = teamData.getTeam(player);
+        	List<Player> teamMembers = team.getMembersPlayerObjects();
         	int teamDmg = 0;
         	int teamTakenDmg = 0;
         	int teamDeaths = 0;

@@ -245,8 +245,12 @@ public class Mineswarm extends JavaPlugin implements Listener{
 			
 			return true;
 		}
-		
+		//START TEAM COMMANDS
 		if (cmd.getName().equalsIgnoreCase("msteam") && sender instanceof Player){
+			if(args.length <= 0) {
+				player.sendMessage("Type /msteam help for help. No subcommand given.");
+				return true;
+			}
 			switch(args[0]) {
 				case "tpr":
 					if(teams.tpQueue.get(player.getUniqueId()) != null) {
@@ -254,7 +258,8 @@ public class Mineswarm extends JavaPlugin implements Listener{
 						teams.tpQueue.get(player.getUniqueId()).cancel();
 						teams.tpQueue.remove(player.getUniqueId());
 					}
-					teams.addTPAQue(player);
+					//teams.addTPAQue(player);
+					//TODO
 					player.sendMessage("You will be TPed in ~20 seconds, do not move or this will be cancelled");
 					break;
 				case "tpp":
@@ -263,7 +268,8 @@ public class Mineswarm extends JavaPlugin implements Listener{
 						teams.tpQueue.get(player.getUniqueId()).cancel();
 						teams.tpQueue.remove(player.getUniqueId());
 					}
-					teams.addTPAQue(player, args[1]);
+					//teams.addTPAQue(player, args[1]);
+					//TODO
 					player.sendMessage("You will be TPed in ~20 seconds, do not move or this will be cancelled");
 					break;
 				case "no":
@@ -271,7 +277,7 @@ public class Mineswarm extends JavaPlugin implements Listener{
 					break;
 				case "join": 
 					try {
-						teams.joinTeam(player, args[1]);
+						teams.joinRequest(player, args[1]);
 						return true;
 					}catch(IndexOutOfBoundsException ib) {
 						player.sendMessage("Please enter a team name you want to join");
@@ -306,7 +312,7 @@ public class Mineswarm extends JavaPlugin implements Listener{
 					break;
 				case "create":
 					try {
-						teams.createTeam(args[1], player);
+						teams.createClosedTeam(args[1], player);
 						return true;
 					}catch(IndexOutOfBoundsException ib) {
 						player.sendMessage("Please enter a team name you want to create");
@@ -314,18 +320,20 @@ public class Mineswarm extends JavaPlugin implements Listener{
 					break;
 				case "kick":
 					try {
-						teams.kickTeamMember(args[1], player);
+//						teams.kickTeamMember(args[1], player);
+						//TODO
 						return true;
 					}catch(IndexOutOfBoundsException ib) {
 						player.sendMessage("Please enter the player name you want to kick.");
 					}
 					break;
-				case "list":
+				case "list"://List all players in the command sender's team.
 					try {
 						if(player.hasMetadata("team_name") && player.getMetadata("team_name").get(0).asString().length() > 0) {
-							for(String name : teams.getTeamMembersNames(player.getMetadata("team_name").get(0).asString())) {
-								player.sendMessage(name);
-							}
+							//TODO 
+							//for(String name : teams.getTeamMembersNames(player.getMetadata("team_name").get(0).asString())) {
+								//player.sendMessage(name);
+							//}
 							
 						}
 						return true;
@@ -345,9 +353,6 @@ public class Mineswarm extends JavaPlugin implements Listener{
 					player.sendMessage("Invalid subcommand, type /help mineswarm for command details.");
 					break;
 			}
-			//player.sendMessage(bl.toString());
-			
-			
 			return true;
 		}
 		

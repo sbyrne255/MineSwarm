@@ -101,18 +101,21 @@ public class EventListener implements Listener {
 		}catch(Exception np) {}
 		try {
 			//Remove from owner position..
-			if(teams.getTeamOwner(player.getMetadata("team_name").get(0).asString()).equals(player)) {
+			//if(teams.getTeamOwner(player.getMetadata("team_name").get(0).asString()).equals(player)) {
+			//TODO
 				if(debugging) {plugin.getLogger().info("Exiting player is team owner");}
 				//Player is owner of team...
-				teams.setNewTeamOwner(player.getMetadata("team_name").get(0).asString());
-			}
+//				teams.setNewTeamOwner(player.getMetadata("team_name").get(0).asString());
+				//TODO
+			//}
 		}catch(Exception err) {}
 		try {db.updatePlayerData(event.getPlayer());}
 		catch(Exception err) {plugin.getLogger().info("ERROR WITH DB... " + err.toString());}
 		try {
 			if(player.hasMetadata("team_name") && player.getMetadata("team_name").get(0).toString().length() >= 1) {
+				MSTeam team = teams.getTeam(player);
 		    	board.makeScoreBoard(player.getMetadata("team_name").get(0).asString());
-		    	board.setScoreboard(teams.getTeamMembers(player.getMetadata("team_name").get(0).asString()), player.getMetadata("team_name").get(0).asString());
+		    	board.setScoreboard(team.getMembersPlayerObjects(), player.getMetadata("team_name").get(0).asString());
 		    }
 		    else {
 		    	if(debugging){plugin.getLogger().info("team_name NOT SET");}
@@ -141,8 +144,9 @@ public class EventListener implements Listener {
         
         try {
 	        if(player.hasMetadata("team_name") && player.getMetadata("team_name").get(0).toString().length() >= 1) {//If player is part of a team...
+	        	MSTeam team = teams.getTeam(player);
 	        	board.makeScoreBoard(player.getMetadata("team_name").get(0).asString());
-	        	board.setScoreboard(teams.getTeamMembers(player.getMetadata("team_name").get(0).asString()), player.getMetadata("team_name").get(0).asString());
+	        	board.setScoreboard(team.getMembersPlayerObjects(), player.getMetadata("team_name").get(0).asString());
 	        }
 	        else {
 	        	if(debugging){plugin.getLogger().info("team_name NOT SET");}
@@ -167,8 +171,9 @@ public class EventListener implements Listener {
 	        player.setGlowing(false);
 	        
 			if(player.hasMetadata("team_name") && player.getMetadata("team_name").get(0).toString().length() >= 1) {//If player is part of a team...
+				MSTeam team = teams.getTeam(player);
 	        	board.makeScoreBoard(player.getMetadata("team_name").get(0).asString());
-	        	board.setScoreboard(teams.getTeamMembers(player.getMetadata("team_name").get(0).asString()), player.getMetadata("team_name").get(0).asString(), player, 20);
+	        	board.setScoreboard(team.getMembersPlayerObjects(), player.getMetadata("team_name").get(0).asString(), player, 20);
 	        }
 	        else {
 	        	if(debugging){plugin.getLogger().info("team_name NOT SET");}
@@ -218,8 +223,9 @@ public class EventListener implements Listener {
         try {
 	    	//Update scoreboard now that player has been revived.		    	
 	    	if(player.hasMetadata("team_name") && player.getMetadata("team_name").get(0).toString().length() >= 1) {//If player is part of a team...
+	    		MSTeam team = teams.getTeam(player);
 	        	board.makeScoreBoard(player.getMetadata("team_name").get(0).asString());
-	        	board.setScoreboard(teams.getTeamMembers(player.getMetadata("team_name").get(0).asString()), player.getMetadata("team_name").get(0).asString(), player, 0);
+	        	board.setScoreboard(team.getMembersPlayerObjects(), player.getMetadata("team_name").get(0).asString(), player, 0);
 	        }
         }catch(Exception err) {}
         
@@ -368,7 +374,7 @@ public class EventListener implements Listener {
         if (pickedUp.getType().equals(Material.BOOK) && pickedUp.hasItemMeta() && pickedUp.getItemMeta().getDisplayName().equals("Key")){     	
         	if(e.getEntity() instanceof Player) {
         		Player player = (Player)e.getEntity();
-        		Inventory invt = player.getInventory();	        		
+        		Inventory invt = player.getInventory();	  
         		if(invt.firstEmpty() == -1)
         		{
         			if(!player.hasMetadata("msgq")){player.setMetadata("msgq", new FixedMetadataValue(plugin, false));}
@@ -380,7 +386,7 @@ public class EventListener implements Listener {
 	        			{
         					player.setMetadata("msgq", new FixedMetadataValue(plugin, false));
         					player.sendMessage(ChatColor.GOLD + "" + ChatColor.BOLD + "You picked up a " + pickedUp.getItemMeta().getLore().get(0) + " Key");
-        	        		try {teams.sendTeamMessage(player.getMetadata("team_name").get(0).asString(), ChatColor.GOLD + "" + ChatColor.BOLD + player.getName() + " picked up a " + pickedUp.getItemMeta().getLore().get(0) + " Key", player);									
+        	        		try {teams.sendTeamMessage(player.getMetadata("team_name").get(0).asString(), player);									
         					}catch(Exception err) {}
         	        		
         					e.setCancelled(false);
@@ -393,13 +399,13 @@ public class EventListener implements Listener {
         			}
         			player.setMetadata("msgq", new FixedMetadataValue(plugin, true));
         			player.sendMessage(ChatColor.GOLD + "" + ChatColor.BOLD + "A key dropped by you, but you can't carry it because your inventory is full.");
-            		try {teams.sendTeamMessage(player.getMetadata("team_name").get(0).asString(), ChatColor.GOLD + "" + ChatColor.BOLD + "A key dropped near " + player.getName() + " but inventory is full ", player);									
+            		try {teams.sendTeamMessage(player.getMetadata("team_name").get(0).asString(), player);									
     				}catch(Exception err) {}
         		}
         		else
         		{
 	        		player.sendMessage(ChatColor.GOLD + "" + ChatColor.BOLD + "You picked up a " + pickedUp.getItemMeta().getLore().get(0) + " Key");
-	        		try {teams.sendTeamMessage(player.getMetadata("team_name").get(0).asString(), ChatColor.GOLD + "" + ChatColor.BOLD + player.getName() + " picked up a " + pickedUp.getItemMeta().getLore().get(0) + " Key", player);									
+	        		try {teams.sendTeamMessage(player.getMetadata("team_name").get(0).asString(), player);									
 					}catch(Exception err) {}
 	        		player.setMetadata("msgq", new FixedMetadataValue(plugin, false));
         		}
@@ -723,8 +729,9 @@ public class EventListener implements Listener {
 				}else {
 			    	//Update scoreboard now that player has been revived.		    	
 			    	if(damagee.hasMetadata("team_name") && damagee.getMetadata("team_name").get(0).toString().length() >= 1) {//If player is part of a team...
-			        	board.makeScoreBoard(damagee.getMetadata("team_name").get(0).asString());
-			        	board.setScoreboard(teams.getTeamMembers(damagee.getMetadata("team_name").get(0).asString()), damagee.getMetadata("team_name").get(0).asString(), damagee, (int) ((damagee.getHealth()-e.getFinalDamage())));
+			    		MSTeam team = teams.getTeam(damagee);
+			    		board.makeScoreBoard(damagee.getMetadata("team_name").get(0).asString());
+			        	board.setScoreboard(team.getMembersPlayerObjects(), damagee.getMetadata("team_name").get(0).asString(), damagee, (int) ((damagee.getHealth()-e.getFinalDamage())));
 			        }
 				}
 			}
@@ -739,6 +746,7 @@ public class EventListener implements Listener {
 		//Player is being damaged...
 		if(e.getEntity() instanceof Player) {
 			Player damagee = (Player) e.getEntity();
+			MSTeam team = teams.getTeam(damagee);
 			
 			//Update total damage taken...
 			if(damagee.hasMetadata("total_damage_taken")) {damagee.setMetadata("total_damage_taken",new FixedMetadataValue(plugin, damagee.getMetadata("total_damage_taken").get(0).asInt() + damagee.getLastDamage()));}
@@ -751,7 +759,7 @@ public class EventListener implements Listener {
 				//Update scoreboard.
 				if(damagee.hasMetadata("team_name") && damagee.getMetadata("team_name").get(0).toString().length() >= 1) {//If player is part of a team...
 		        	board.makeScoreBoard(damagee.getMetadata("team_name").get(0).asString());
-		        	board.setScoreboard(teams.getTeamMembers(damagee.getMetadata("team_name").get(0).asString()), damagee.getMetadata("team_name").get(0).asString(), damagee, (int) ((damagee.getHealth()-e.getFinalDamage())*-1));
+		        	board.setScoreboard(team.getMembersPlayerObjects(), damagee.getMetadata("team_name").get(0).asString(), damagee, (int) ((damagee.getHealth()-e.getFinalDamage())*-1));
 		        }
 				
 			}
@@ -775,7 +783,7 @@ public class EventListener implements Listener {
 		    		else {damagee.setMetadata("downs",new FixedMetadataValue(plugin, 1));}
 					if(damagee.hasMetadata("team_name") && damagee.getMetadata("team_name").get(0).toString().length() >= 1) {//If player is part of a team...
 			        	board.makeScoreBoard(damagee.getMetadata("team_name").get(0).asString());
-			        	board.setScoreboard(teams.getTeamMembers(damagee.getMetadata("team_name").get(0).asString()), damagee.getMetadata("team_name").get(0).asString(), damagee, (int) ((damagee.getHealth()-e.getFinalDamage())*-1));
+			        	board.setScoreboard(team.getMembersPlayerObjects(), damagee.getMetadata("team_name").get(0).asString(), damagee, (int) ((damagee.getHealth()-e.getFinalDamage())*-1));
 			        }
 					
 					downedPlayers.put(damagee.getUniqueId(), Bukkit.getScheduler().runTaskTimer(plugin, () -> {
@@ -783,8 +791,9 @@ public class EventListener implements Listener {
 							if((damagee.getHealth() - 1) <= 0){plugin.getServer().dispatchCommand(plugin.getServer().getConsoleSender(), "kill "+ damagee.getName().toString()); return;}
 							else{damagee.setHealth(damagee.getHealth() - 1);}
 							if(damagee.hasMetadata("team_name") && damagee.getMetadata("team_name").get(0).toString().length() >= 1) {//If player is part of a team...
+								
 					        	board.makeScoreBoard(damagee.getMetadata("team_name").get(0).asString());
-					        	board.setScoreboard(teams.getTeamMembers(damagee.getMetadata("team_name").get(0).asString()), damagee.getMetadata("team_name").get(0).asString(), damagee, (int) ((damagee.getHealth()-1)*-1));
+					        	board.setScoreboard(team.getMembersPlayerObjects(), damagee.getMetadata("team_name").get(0).asString(), damagee, (int) ((damagee.getHealth()-1)*-1));
 					        }
 						}catch(Exception err) { plugin.getLogger().info("Error on slowly killing person. " + err.toString()); }
 					}, 10, 35));//delay before first run, sequential runs after...
@@ -804,8 +813,9 @@ public class EventListener implements Listener {
 			Player player = (Player) event.getEntity();
 			try {
 				if(player.hasMetadata("team_name") && player.getMetadata("team_name").get(0).toString().length() >= 1) {//If player is part of a team...
-		        	board.makeScoreBoard(player.getMetadata("team_name").get(0).asString());
-		        	board.setScoreboard(teams.getTeamMembers(player.getMetadata("team_name").get(0).asString()), player.getMetadata("team_name").get(0).asString(), player, (int) (player.getHealth() + event.getAmount()));
+					MSTeam team = teams.getTeam(player);
+					board.makeScoreBoard(player.getMetadata("team_name").get(0).asString());
+		        	board.setScoreboard(team.getMembersPlayerObjects(), player.getMetadata("team_name").get(0).asString(), player, (int) (player.getHealth() + event.getAmount()));
 		        }
 			}catch(NullPointerException np) {} catch(Exception err) {plugin.getLogger().info("Other Error");}		
 		}
