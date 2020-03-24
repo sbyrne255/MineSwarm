@@ -258,8 +258,7 @@ public class Mineswarm extends JavaPlugin implements Listener{
 						teams.tpQueue.get(player.getUniqueId()).cancel();
 						teams.tpQueue.remove(player.getUniqueId());
 					}
-					//teams.addTPAQue(player);
-					//TODO
+					teams.addRandomTPAQue(player);
 					player.sendMessage("You will be TPed in ~20 seconds, do not move or this will be cancelled");
 					break;
 				case "tpp":
@@ -268,8 +267,7 @@ public class Mineswarm extends JavaPlugin implements Listener{
 						teams.tpQueue.get(player.getUniqueId()).cancel();
 						teams.tpQueue.remove(player.getUniqueId());
 					}
-					//teams.addTPAQue(player, args[1]);
-					//TODO
+					teams.addTPAQue(player, args[1]);
 					player.sendMessage("You will be TPed in ~20 seconds, do not move or this will be cancelled");
 					break;
 				case "no":
@@ -304,7 +302,7 @@ public class Mineswarm extends JavaPlugin implements Listener{
 					break;
 				case "leave":
 					try {
-						teams.leaveTeam(player);
+						teams.leaveTeam(player, false);
 						return true;
 					}catch(Exception exc) {
 						player.sendMessage("Error: " + exc.toString());
@@ -320,8 +318,7 @@ public class Mineswarm extends JavaPlugin implements Listener{
 					break;
 				case "kick":
 					try {
-//						teams.kickTeamMember(args[1], player);
-						//TODO
+						teams.kickTeamMember(args[1], player);
 						return true;
 					}catch(IndexOutOfBoundsException ib) {
 						player.sendMessage("Please enter the player name you want to kick.");
@@ -329,13 +326,9 @@ public class Mineswarm extends JavaPlugin implements Listener{
 					break;
 				case "list"://List all players in the command sender's team.
 					try {
-						if(player.hasMetadata("team_name") && player.getMetadata("team_name").get(0).asString().length() > 0) {
-							//TODO 
-							//for(String name : teams.getTeamMembersNames(player.getMetadata("team_name").get(0).asString())) {
-								//player.sendMessage(name);
-							//}
-							
-						}
+						ArrayList<String> members = teams.getMemberNames(player);
+						for(String name : members) {player.sendMessage(name);}
+						if(members == null) {player.sendMessage("Couldn't find any team members.");}
 						return true;
 					}catch(IndexOutOfBoundsException ib) {
 						player.sendMessage("Please enter the player name you want to kick.");

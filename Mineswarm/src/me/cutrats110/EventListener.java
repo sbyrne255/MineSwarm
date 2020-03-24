@@ -134,7 +134,6 @@ public class EventListener implements Listener {
     public void onPlayerJoin(PlayerJoinEvent event)
     {  
         Player player = event.getPlayer();
-        teams.addUUID(player);
         //narrowed it down so there is no doubt, something in this DB code prevents players from going into last stand after leaving and rejoining....
         if(db.setPlayerData(player) == false) {
         	//Player did not exist, create them...

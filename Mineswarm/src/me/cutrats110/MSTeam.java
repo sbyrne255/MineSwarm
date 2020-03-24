@@ -1,6 +1,7 @@
 package me.cutrats110;
 
 import java.util.ArrayList;
+import java.util.Random;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
@@ -39,12 +40,26 @@ public class MSTeam {
 	 * @return void
 	 * @see newOwner() | newOwner(UUID player)
 	 */
-	public void newOwner() {
-		//Logic to select and set a new owner that isn't AFK and IS online.
-		//
+	public boolean newOwner() {
+		ArrayList<Player> onlinePlayers = new ArrayList<Player>();
+		for(UUID id : this.members) {
+			Player player = Bukkit.getPlayer(id);
+			if(player != null && player.isOnline() && player.getUniqueId() != this.owner) {
+				onlinePlayers.add(player);
+			}
+		}
+		if(onlinePlayers.size() >0) {
+		    int rnd = new Random().nextInt(onlinePlayers.size()-1);
+			this.owner = onlinePlayers.get(rnd).getUniqueId();
+			return true;
+		} else {return false;} 
 	}
-		//TODO
-	public void newOwner(UUID player) {	this.owner = player;}//Needs to check player is member of team before assign as owner.
+	public boolean newOwner(UUID player) {	
+		if(this.members.contains(player)) {
+			this.owner = player; //Old owner remains in the team as a member.
+			return true;
+		} else {return false;}
+	}
 	
 	/**
 	 * @return Returns ArrayList of team members' UUIDs
@@ -65,20 +80,26 @@ public class MSTeam {
 		}
 		return playerObjects; 		
 	}
+	public ArrayList<Player> getOnlineMembersPlayerObjects() { 
+		ArrayList<Player> playerObjects = new ArrayList<Player>();
+		for(UUID id : this.members) {
+			Player player = Bukkit.getPlayer(id);
+			if(player != null && player.isOnline()) {
+				playerObjects.add(player);	
+			}
+		}
+		return playerObjects; 		
+	}
 	/**
 	 * Adds player UUID to members ArrayList assuming criteria is met
-	 * New player must be a valid UUID, online, and not AFK
+	 * New player must be a valid UUID, and online
 	 *
 	 * @param Player's UUID that is being added
-	 * @return Returns true if remember is added, false if they are not.
+	 * @return Returns void
 	 * @see addMember(UUID playerUUID)
 	 */
-	public boolean addMember(UUID playerUUID) { 
-		//Check max number of members
-		//Check sending player is owner
-		//TODO
-		this.members.add(playerUUID); return true; 
-	}
+	public void addMember(UUID playerUUID) { this.members.add(playerUUID);}
+	public boolean removeMember(UUID playerUUID) { this.members.remove(playerUUID); return true; }
 	
 	public void setScore(int score) {this.score=score;}
 	public void addScore(int score) {this.score += score;}
