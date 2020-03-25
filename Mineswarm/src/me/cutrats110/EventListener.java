@@ -41,6 +41,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.plugin.Plugin;
@@ -201,6 +202,12 @@ public class EventListener implements Listener {
     	
     	event.getDrops().clear();
         Player player = event.getEntity();
+        PlayerInventory inv= player.getInventory();
+        inv.clear();
+        inv.setArmorContents(new ItemStack[4]);
+        inv.getItemInOffHand().setAmount(0);
+        inv.getItemInMainHand().setAmount(0);
+        inv.setExtraContents(new ItemStack[inv.getExtraContents().length]);
         try {
         	downedPlayers.get(player.getUniqueId()).cancel();
 			downedPlayers.remove(player.getUniqueId());

@@ -57,9 +57,8 @@ public class TeamBoards {
 					p.setScoreboard(teamBoard);
 				}
 			}
-		}catch(Exception er) {
-			plugin.getLogger().info("Error setting scoreboard " + er.toString());
-		}
+		}catch(NullPointerException np) {}
+		catch(Exception er) {plugin.getLogger().info("Error setting scoreboard " + er.toString());}
 	}
 	public void setScoreboard(List<Player> players, String teamName, Player updatedPlayer, int health) {
 		

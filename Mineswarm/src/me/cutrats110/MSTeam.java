@@ -22,6 +22,12 @@ public class MSTeam {
 		this.name = name;
 		this.closed = closed;
 	}
+	public MSTeam(String name, UUID owner, boolean closed, int score) {
+		this.name = name;
+		this.owner = owner;
+		this.closed = closed;
+		this.score = score;
+	}
 	
 	public String getName() { return this.name; }
 	

@@ -5,18 +5,25 @@ import java.util.HashMap;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.List;
+import java.util.Map;
+
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitTask;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
 //It is POSSIBLE a medic could TP to a downed player and save them, or a downed player could TP to a medic/team... Considering if this is a bug of feature...
 //Note, I may also change how player is selected, if an arg is given to TP to a specific player, maybe give them a heads up?
 //Maybe give them an option to deny or block it? (if so, just get sender.uid, lookup and cancel event.
 //For random player it may be nice to allow cancel or tell the player someone will be TPing to them shortly
 //On one hand this makes sure they aren't jumping off a cliff or running near lava, but also gives them a heads up to get ready
 //Allowing the player to exploit the system potentially...
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 //Major TODO 
 // Add persistant teams with database (removed, shorta)
@@ -41,32 +48,90 @@ public class MineswarmTeams {
 	
 	public boolean loadTeamData() 
 	{
-
-		//		teams = db.getTeams();
-		//TODO load team data from database.
-		/*
-		if(teams.size() <= 0) {
-			teams = new HashMap<>();
-		}
-		players = db.getPlayers();
-		if(players.size() <= 0) {
-			players = new HashMap<>();
-		}
-		joinRequests = db.getJoinRequests();
-		if(joinRequests.size() <= 0) {
-			joinRequests = new HashMap<>();
-		}
-		*/
-		
-		db.clearTeamsTables();
+		Connection teamsConn = db.getTeamsConnection();
+    	if(teamsConn == null) {
+    		plugin.getLogger().info("Connection returned null.");
+    		return false;
+    	}
+    	String sql = "SELECT name, owner, closed, score, rowid as id FROM teams";
+    	try {
+        	PreparedStatement pstmt = teamsConn.prepareStatement(sql);
+        	HashMap<Integer, MSTeam> teams = new HashMap<Integer, MSTeam>();
+        	
+            ResultSet rs = pstmt.executeQuery();
+            while (rs.next()) {
+            	MSTeam team = new MSTeam(rs.getString("name"), UUID.fromString(rs.getString("owner")), rs.getBoolean("closed"), rs.getInt("score"));
+            	teams.put(rs.getInt("id"), team);
+            }
+            sql = "SELECT * FROM members";
+            pstmt = teamsConn.prepareStatement(sql);       	
+            rs = pstmt.executeQuery();
+            while (rs.next()) {
+            	MSTeam cur_team = teams.get(rs.getInt("team_id"));
+            	UUID cur_player = UUID.fromString(rs.getString("member"));
+            	cur_team.addMember(cur_player);
+            	players.put(cur_player, cur_team);
+            }
+            
+        } catch (SQLException e) {plugin.getLogger().info("ERROR GETTING TEAMS OR MEMBERS: " + e.getMessage());}
+    	finally{ try {teamsConn.close();} catch (SQLException e) {} }		
+    	
 		return true;
 	}
 
 	public boolean saveTeamData() {
-		//db.saveTeams(teams);
-		//TODO save team data in database
-//		db.saveJoinRequests(joinRequests);
-//		db.savePlayers(players);
+		db.emptyTeamsTable();
+		
+    	Connection teamsConn = db.getTeamsConnection();
+    	if(teamsConn == null) {
+    		plugin.getLogger().info("Connection returned null.");
+    		return false;
+    	}
+		for (Map.Entry<String, MSTeam> team : closedTeams.entrySet()) {
+			try {
+				String sql = "INSERT INTO teams(name, owner, closed, score) VALUES(?,?,?,?)";
+				PreparedStatement pstmt = teamsConn.prepareStatement(sql);
+				pstmt.setString(1, team.getValue().getName());
+				pstmt.setString(2, team.getValue().getOwner().toString());
+				pstmt.setBoolean(3, team.getValue().isClosed());
+				pstmt.setInt(4, team.getValue().getScore());
+				pstmt.executeUpdate();
+			}catch(Exception err) {plugin.getLogger().info("Problem inserting closed team data " + err.toString());}	
+			
+			int team_id = db.getLastID(teamsConn);
+			for(UUID playerID : team.getValue().getMembers()) {
+				try {
+					String sql = "INSERT INTO members(member, team_id) VALUES(?,?)";
+					PreparedStatement pstmt = teamsConn.prepareStatement(sql);
+					pstmt.setString(1, playerID.toString());
+					pstmt.setInt(2, team_id);
+					pstmt.executeUpdate();
+				}catch(Exception err) {plugin.getLogger().info("Problem inserting closed team members " + err.toString());}
+			}
+		}
+		for (MSTeam team : openTeams) {
+			try {
+				String sql = "INSERT INTO teams(name, owner, closed, score) VALUES(?,?,?,?)";
+				PreparedStatement pstmt = teamsConn.prepareStatement(sql);
+				pstmt.setString(1, team.getName());
+				pstmt.setString(2, team.getOwner().toString());
+				pstmt.setBoolean(3, team.isClosed());
+				pstmt.setInt(4, team.getScore());
+				pstmt.executeUpdate();
+			}catch(Exception err) {plugin.getLogger().info("Problem inserting open team data " +err.toString());}	
+			
+			int team_id = db.getLastID(teamsConn);
+			for(UUID playerID : team.getMembers()) {
+				try {
+					String sql = "INSERT INTO members(member, team_id) VALUES(?,?)";
+					PreparedStatement pstmt = teamsConn.prepareStatement(sql);
+					pstmt.setString(1, playerID.toString());
+					pstmt.setInt(2, team_id);
+					pstmt.executeUpdate();
+				}catch(Exception err) {plugin.getLogger().info("Problem inserting open team members " +err.toString());}
+			}
+		}
+		
 		return true;
 	}
 
@@ -75,7 +140,6 @@ public class MineswarmTeams {
 		this.board = board;
 		this.db = new Database(plugin);
 		loadTeamData();
-		//Select * from table X... get CSV back from DB
 	}
 
 	
@@ -123,8 +187,8 @@ public class MineswarmTeams {
 				if (players.get(playerID) == null) {
 					
 					MSTeam newTeam = new MSTeam(name);
-					newTeam.newOwner(playerID);
 					newTeam.addMember(playerID);
+					newTeam.newOwner(playerID);
 					
 					closedTeams.put(name, newTeam);
 					players.put(player.getUniqueId(), newTeam);

@@ -1,13 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <section name="Workbench">
 	<section name="org.eclipse.ui.texteditor.FindReplaceDialog">
-		<item value="false" key="isRegEx"/>
-		<item value="" key="selection"/>
-		<item value="false" key="casesensitive"/>
-		<item value="false" key="incremental"/>
-		<item value="true" key="wrap"/>
-		<item value="false" key="wholeword"/>
+		<item key="isRegEx" value="false"/>
+		<item key="selection" value="Config"/>
+		<item key="casesensitive" value="false"/>
+		<item key="incremental" value="false"/>
+		<item key="wrap" value="true"/>
+		<item key="wholeword" value="false"/>
 		<list key="findhistory">
+			<item value="config"/>
+			<item value="addTPAQue"/>
+			<item value="Boolean"/>
+			<item value="servers"/>
+			<item value="tpQueue"/>
+			<item value="TPA"/>
+			<item value="removeSc"/>
+			<item value="leave"/>
 			<item value="back up"/>
 			<item value="backup"/>
 			<item value="ScheduledBackupDB"/>
@@ -15,9 +23,9 @@
 			<item value="meta"/>
 			<item value="KEY"/>
 			<item value="damageable"/>
-			<item value="list"/>
 		</list>
 		<list key="replacehistory">
+			<item value="boolean"/>
 			<item value=" downedPlayers.remove"/>
 			<item value="new MakePotion("/>
 			<item value=""/>
@@ -29,10 +37,10 @@
 		</list>
 	</section>
 	<section name="org.eclipse.ui.texteditor.FindReplaceDialog_dialogBounds">
-		<item value="257" key="DIALOG_WIDTH"/>
-		<item value="1|Segoe UI|9.0|0|WINDOWS|1|-12|0|0|0|400|0|0|0|1|0|0|0|0|Segoe UI" key="DIALOG_FONT_NAME"/>
-		<item value="380" key="DIALOG_HEIGHT"/>
-		<item value="86" key="DIALOG_X_ORIGIN"/>
-		<item value="428" key="DIALOG_Y_ORIGIN"/>
+		<item key="DIALOG_WIDTH" value="257"/>
+		<item key="DIALOG_FONT_NAME" value="1|Segoe UI|9.0|0|WINDOWS|1|-12|0|0|0|400|0|0|0|1|0|0|0|0|Segoe UI"/>
+		<item key="DIALOG_HEIGHT" value="380"/>
+		<item key="DIALOG_X_ORIGIN" value="86"/>
+		<item key="DIALOG_Y_ORIGIN" value="428"/>
 	</section>
 </section>

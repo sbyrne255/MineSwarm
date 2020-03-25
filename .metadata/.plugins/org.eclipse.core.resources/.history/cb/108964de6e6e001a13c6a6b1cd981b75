@@ -1,0 +1,30 @@
+//FEATURE:
+//BUGS:	
+	Potions need colors set.
+	DOWNED PLAYERS TAKE NO DAMAGE, NEEDS INVESTIGATION, LIKELY HAS TO DO WITH PLAYER HEADS/WITHER HEADS NOT BEING SUPPORT IN NEWER APIs.
+//TODO:
+	Finish tunnels/making regions
+	*ZONES
+		*Set keys that are dropped
+		*set PVP
+		*Show zone you are in
+		*TP to zone by name
+	*MetaData
+		*Use SQLite to save MetaData changes, if it is too slow que up a task list for each item (low priority)
+		*On Join, load MetaData
+		*On Leave, save MetaData
+	Leader boards (time/Deaths/KD/start/enddates/team members or solo/team size) Weeklyboard and all time board
+		Meta saves:
+			Time from taking first kit to completion [Meta]//How to signal game end...
+			*Number and type of mobs killed
+			*Number of times downed [Meta]
+			*Number of times reviving [Meta]
+			*Number of times revived [Meta]
+			*Number of times died [Meta]
+			*Kit type [Meta]
+			*Total damage delt to mobs (on damage event, add damage taken/given) [Meta]
+			*Total damage taken [Meta]
+			&Team members [Meta]
+			&Team size [Meta]
+			
+			

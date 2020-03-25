@@ -12,7 +12,6 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 import org.apache.commons.lang.StringUtils;
@@ -65,16 +64,18 @@ public class Database {
         	plugin.getLogger().info(e.getMessage());
         }
     }
-	public void connectTeams() {
+	public Connection getTeamsConnection() {
         try {
         	File directory = new File(System.getProperty("user.dir") +"/Mineswarm");
     		if (! directory.exists()){ directory.mkdir(); }
             String url = "jdbc:sqlite:plugins/Mineswarm/teams.db";
             // create a connection to the database
-            teamsConn = DriverManager.getConnection(url);
+            this.teamsConn = DriverManager.getConnection(url);
         } catch (SQLException e) {
         	plugin.getLogger().info(e.getMessage());
+        	return null;
         }
+        return this.teamsConn;
     }
 	public void connectMobs() {
         try {
@@ -174,39 +175,23 @@ public class Database {
         finally{ try {buttonsConn.close();} catch (SQLException e) {} }
     }		
     public void createTeamsTable() {
-        try{
-        	if(teamsConn.isClosed()){
-        		
-        		connectTeams();
-        	}
-        }
-        catch(NullPointerException np){
-        	connectTeams();
-        }
-        catch(Exception er){
-        	plugin.getLogger().info("Conn check failed. " + er.toString());
-        }
+    	this.teamsConn = getTeamsConnection();
+    	if(this.teamsConn == null) {
+    		plugin.getLogger().info("Connection returned null.");
+    		return;
+    	}
     	
-        String sql = "CREATE TABLE IF NOT EXISTS teams(key,data)";
+        String sql = "CREATE TABLE IF NOT EXISTS teams (name TEXT, owner TEXT, closed INTEGER, score INTEGER)";
         try {
         	PreparedStatement pstmt = teamsConn.prepareStatement(sql);
             pstmt.execute();
             
-            pstmt = teamsConn.prepareStatement("CREATE TABLE IF NOT EXISTS players(key,data)");
-            pstmt.execute();
-            
-            pstmt = teamsConn.prepareStatement("CREATE TABLE IF NOT EXISTS uuids(key,data)");
-            pstmt.execute();
-            
-            pstmt = teamsConn.prepareStatement("CREATE TABLE IF NOT EXISTS join_requests(key,data)");
-            pstmt.execute();
-
-            pstmt = teamsConn.prepareStatement("CREATE TABLE IF NOT EXISTS servers(data)");
+            pstmt = teamsConn.prepareStatement("CREATE TABLE IF NOT EXISTS members(team_id INTEGER, member TEXT)");
             pstmt.execute();
         } catch (SQLException e) {plugin.getLogger().info(e.getMessage());}
         finally{ try {teamsConn.close();} catch (SQLException e) {} }
     }	
-    public void clearTeamsTables() {
+    public void deleteTeamsTables() {
     	File file = new File(System.getProperty("user.dir") +"/Mineswarm/teams.db");
         
         if(file.delete()) 
@@ -214,6 +199,25 @@ public class Database {
             System.out.println("File deleted successfully"); 
         }
     }	
+    public void emptyTeamsTable() {
+    	this.teamsConn = getTeamsConnection();
+    	if(this.teamsConn == null) {
+    		plugin.getLogger().info("Connection returned null.");
+    		return;
+    	}
+    	try {
+    		String sql = "DELETE FROM teams";
+    		PreparedStatement pstmt = teamsConn.prepareStatement(sql);
+    		pstmt.execute();
+    		
+    		
+    		sql = "DELETE FROM members";
+    		pstmt = teamsConn.prepareStatement(sql);
+    		pstmt.execute();
+		} catch (SQLException e) {
+    		plugin.getLogger().info("Error emptying Teams Tables " + e.toString());
+		}
+    } 
 	public void createMobsTable() {
         try{
         	if(mobConn.isClosed()){
@@ -340,9 +344,11 @@ public class Database {
 	
 	
 	public HashMap<String, List<UUID>> getTeams(){
-		try{if(teamsConn.isClosed()){connectTeams();}}
-        catch(NullPointerException np){connectTeams();}
-        catch(Exception er){plugin.getLogger().info("Conn check failed. " + er.toString());}
+    	this.teamsConn = getTeamsConnection();
+    	if(this.teamsConn == null) {
+    		plugin.getLogger().info("Connection returned null.");
+    		return null;
+    	}
 		HashMap<String, List<UUID>> newData = new HashMap<>();
     	String sql = "SELECT * FROM teams";
     	try {
@@ -357,156 +363,15 @@ public class Database {
     	finally{ try {teamsConn.close();} catch (SQLException e) {} }		
 		return newData;
 	}
-    public void saveTeams(HashMap<String, List<UUID>> teamData) {
-		try{if(teamsConn.isClosed()){connectTeams();}}
-        catch(NullPointerException np){connectTeams();}
-        catch(Exception er){plugin.getLogger().info("Conn check failed. " + er.toString());}
-		
-		String sql = "INSERT INTO teams(key,data) VALUES(?,?)";
-		
-    	for (Map.Entry<String, List<UUID>> entry : teamData.entrySet()) {
-    		try {
-    			PreparedStatement pstmt = teamsConn.prepareStatement(sql);
-        		pstmt.setString(1, entry.getKey());
-        		pstmt.setString(2, StringUtils.join(entry.getValue(), ","));
-        		pstmt.executeUpdate();
-    		}catch(Exception err) {plugin.getLogger().info(err.toString());}
-    		
-    	}
-    }
-	
-    public HashMap<String,UUID> getUUIDLookup(){
-		try{if(teamsConn.isClosed()){connectTeams();}}
-        catch(NullPointerException np){connectTeams();}
-        catch(Exception er){plugin.getLogger().info("Conn check failed. " + er.toString());}
-		HashMap<String, UUID> newData = new HashMap<>();
-    	String sql = "SELECT * FROM uuids";
-    	try {
-        	PreparedStatement pstmt = teamsConn.prepareStatement(sql);
-            ResultSet rs = pstmt.executeQuery();
-            while (rs.next()) {
-            	newData.put(rs.getString("key"), UUID.fromString(rs.getString("data")));
-            }
-        } catch (SQLException e) {plugin.getLogger().info("ERROR SELECTING: " + e.getMessage());}
-    	finally{ try {teamsConn.close();} catch (SQLException e) {} }		
-		return newData;
+	public int getLastID(Connection conn) {
+		    try {
+		    	String results = conn.prepareStatement("SELECT last_insert_rowid() AS LAST_ID;").executeQuery().getString("LAST_ID");
+				return Integer.parseInt(results);
+			} catch (SQLException e) {
+				plugin.getLogger().info(e.toString());
+				return -1;
+			}
 	}
-    public void saveUUIDLookup(HashMap<String, UUID> UUIDData) {
-		try{if(teamsConn.isClosed()){connectTeams();}}
-        catch(NullPointerException np){connectTeams();}
-        catch(Exception er){plugin.getLogger().info("Conn check failed. " + er.toString());}
-		
-		String sql = "INSERT INTO uuids(key,data) VALUES(?,?)";
-		
-    	for (Map.Entry<String, UUID> entry : UUIDData.entrySet()) {
-    		try {
-    			PreparedStatement pstmt = teamsConn.prepareStatement(sql);
-        		pstmt.setString(1, entry.getKey());
-        		pstmt.setString(2, entry.getValue().toString());
-        		pstmt.executeUpdate();
-    		}catch(Exception err) {plugin.getLogger().info(err.toString());}
-    		
-    	}
-    }
-	
-    public HashMap<UUID,String> getPlayers(){
-		try{if(teamsConn.isClosed()){connectTeams();}}
-        catch(NullPointerException np){connectTeams();}
-        catch(Exception er){plugin.getLogger().info("Conn check failed. " + er.toString());}
-		HashMap<UUID, String> newData = new HashMap<>();
-    	String sql = "SELECT * FROM players";
-    	try {
-        	PreparedStatement pstmt = teamsConn.prepareStatement(sql);
-            ResultSet rs = pstmt.executeQuery();
-            while (rs.next()) {
-            	newData.put(UUID.fromString(rs.getString("key")), rs.getString("data"));
-            }
-        } catch (SQLException e) {plugin.getLogger().info("ERROR SELECTING: " + e.getMessage());}
-    	finally{ try {teamsConn.close();} catch (SQLException e) {} }		
-		return newData;
-	}
-    public void savePlayers(HashMap<UUID, String> playerData) {
-		try{if(teamsConn.isClosed()){connectTeams();}}
-        catch(NullPointerException np){connectTeams();}
-        catch(Exception er){plugin.getLogger().info("Conn check failed. " + er.toString());}
-		
-		String sql = "INSERT INTO players(key,data) VALUES(?,?)";
-		
-    	for (Map.Entry<UUID, String> entry : playerData.entrySet()) {
-    		try {
-    			PreparedStatement pstmt = teamsConn.prepareStatement(sql);
-        		pstmt.setString(1, entry.getKey().toString());
-        		pstmt.setString(2, entry.getValue());
-        		pstmt.executeUpdate();
-    		}catch(Exception err) {plugin.getLogger().info(err.toString());}
-    		
-    	}
-    }
-	
-	public HashMap<String, String> getJoinRequests(){
-		try{if(teamsConn.isClosed()){connectTeams();}}
-        catch(NullPointerException np){connectTeams();}
-        catch(Exception er){plugin.getLogger().info("Conn check failed. " + er.toString());}
-		HashMap<String, String> newData = new HashMap<>();
-    	String sql = "SELECT * FROM join_requests";
-    	try {
-        	PreparedStatement pstmt = teamsConn.prepareStatement(sql);
-            ResultSet rs = pstmt.executeQuery();
-            while (rs.next()) {
-            	newData.put(rs.getString("key"), rs.getString("data"));
-            }
-        } catch (SQLException e) {plugin.getLogger().info("ERROR SELECTING: " + e.getMessage());}
-    	finally{ try {teamsConn.close();} catch (SQLException e) {} }		
-		return newData;
-	}
-    public void saveJoinRequests(HashMap<String, String> joinData) {
-		try{if(teamsConn.isClosed()){connectTeams();}}
-        catch(NullPointerException np){connectTeams();}
-        catch(Exception er){plugin.getLogger().info("Conn check failed. " + er.toString());}
-		
-		String sql = "INSERT INTO join_requests(key,data) VALUES(?,?)";
-		
-    	for (Map.Entry<String, String> entry : joinData.entrySet()) {
-    		try {
-    			PreparedStatement pstmt = teamsConn.prepareStatement(sql);
-        		pstmt.setString(1, entry.getKey());
-        		pstmt.setString(2, entry.getValue());
-        		pstmt.executeUpdate();
-    		}catch(Exception err) {plugin.getLogger().info(err.toString());}
-    		
-    	}
-    }
-	
-	public List<UUID> getServers(){
-		try{if(teamsConn.isClosed()){connectTeams();}}
-        catch(NullPointerException np){connectTeams();}
-        catch(Exception er){plugin.getLogger().info("Conn check failed. " + er.toString());}
-		List<UUID> newData = new ArrayList<>();
-    	String sql = "SELECT * FROM servers";
-    	try {
-        	PreparedStatement pstmt = teamsConn.prepareStatement(sql);
-            ResultSet rs = pstmt.executeQuery();
-            while (rs.next()) {
-            	newData.add(UUID.fromString(rs.getString("data")));
-            }
-        } catch (SQLException e) {plugin.getLogger().info("ERROR SELECTING: " + e.getMessage());}
-    	finally{ try {teamsConn.close();} catch (SQLException e) {} }		
-		return newData;
-	}
-    public void saveServers(List<UUID> serverData) {
-		try{if(teamsConn.isClosed()){connectTeams();}}
-        catch(NullPointerException np){connectTeams();}
-        catch(Exception er){plugin.getLogger().info("Conn check failed. " + er.toString());}
-		
-		String sql = "INSERT INTO servers(data) VALUES(?)";
-		for(UUID value : serverData) {
-			try {
-    			PreparedStatement pstmt = teamsConn.prepareStatement(sql);
-        		pstmt.setString(1, value.toString());
-        		pstmt.executeUpdate();
-    		}catch(Exception err) {plugin.getLogger().info(err.toString());}
-    	}
-    }
 	
     public HashMap<Location, String> getButtons(){
 		try{if(buttonsConn.isClosed()){connectButtons();}}
