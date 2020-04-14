@@ -1,0 +1,131 @@
+name: Mineswarm
+main: cutrats110.Mineswarm
+version: 1.7.3
+description: Woop The Shooops
+api-version: 1.15
+load: POSTWORLD
+author: Steven Byrne
+website: robertsroom.com
+prefix: Mineswarm
+softdepend: [Essentials]
+commands:
+  team:
+   description: Used to statically override native Bukkit/MC teams.
+   permission: test.foo
+   permission-message: You do not have permission!
+   usage: /NA
+  doorlevel:
+   description: Shows the door level
+   permission: test.foo
+   permission-message: You do not have permission!
+   usage: /NA
+  markingtool:
+   description: Drops tool to player, used to mark zones
+   permission: test.foo
+   permission-message: You do not have permission!
+   usage: /markingtool
+  showzone:
+   description: Shows the zone you are currently in.
+   permission: mineswarm.showzone
+   permission-message: You do not have permission!
+   usage: /showzone [Optional Friendly Name]
+  makezone:
+   description: Create a new zone from markers
+   permission-message: No perms yo
+   usage: /makezone [String Friendly Name] [String Level (Matches Door)] [Bool PVP On true/false] [Int Mob multiplier]
+  makedoor:
+   description: Create a new door you are looking at
+   permission-message: No perms yo
+   usage: /makedoor [String Level/Name (Matches Level of zone)]
+  deletedoor:
+   description: deletes door from DB if you created it
+   permission-message: No perms yo
+   usage: /deletedoor
+  destroydoor:
+   description: destroys door in DB regardless of creator
+   permission-message: No perms yo
+   usage: /destroydoor
+  gotozone:
+   description: TPs you to the middle of the zone
+   permission-message: No perms yo
+   usage: /gotozone [Friendly name OR Level]
+  makespawner:
+   description: Creates a mobspawner.
+   permission-message: No perms yo
+   usage: /makespawner [*Entity] [*Number of Entity] [weapon:type] [weapon drop rate] [durability] [enchantment:NAME] [enchantment level] [potion:potionID]
+  chest:
+   description: Sets items that will spawn in the chest you are looking at.
+   permission-message: No perms yo
+   usage: /chest [ITEM] [QUANTITY] [OPTIONAL NUMBER FOR POTION] [QUANTITY]
+  save:
+   description: Saves teams data.
+   permission-message: No perms yo
+   usage: /save
+  class:
+   description: Gives player a set of items associated with the class (similar to kits)
+   permission-message: No perms yo
+   usage: /class [String classname]
+  makebutton:
+   description: Creates a button that will give a class once per life when pushed.
+   permission-message: No perms yo
+   usage: /makebutton [classname]
+  inhand:
+   description: Gets the exact type name for the item in main hand (used for making config)
+   permission-message: No perms yo
+   usagage: /inhand
+  potiontypes:
+   description: Gets list of possible potion types for tipped arrows.
+   permission-message: No perms yo
+   usagage: /potiontypes
+  msteam:
+   description: Base team command for MineSwarm
+   permission-message: No perms yo
+   usage: /msteam
+  msteam create:
+   description: Creates a new team
+   permission-message: No perms yo
+   usage: /msteam create [team name]
+  msteam leave:
+   description: Leaves current team
+   permission-message: No perms yo
+   usage: /msteam leave
+  msteam tpr:
+   description: Teleport to random player on your team.
+   permission-message: No perms yo
+   usage: /msteam tpr
+  msteam tpp:
+   description: Teleport to a specific player on your team.
+   permission-message: No perms yo
+   usage: /msteam tpp [Player name]
+  msteam no:
+   description: Denies teleport request
+   permission-message: No perms yo
+   usage: /msteam no
+  msteam join:
+   description: Requests to join team
+   permission-message: No perms yo
+   usage: /msteam join [team name]
+  msteam joinr:
+   description: Requests to join a random team (server created)
+   permission-message: No perms yo
+   usage: /msteam joinr
+  msteam add:
+   description: Accepts a request for player to join team (must be owner)
+   permission-message: No perms yo
+   usage: /msteam add [player name]
+  msteam deny:
+   description: Denies a request for player to join team (must be owner)
+   permission-message: No perms yo
+   usage: /msteam deny [player name]
+  msteam kick:
+   description: Kick's a player from team (must be owner)
+   permission-message: No perms yo
+   usage: /msteam kick [player name]
+  msteam list:
+   description: Lists all team members
+   permission-message: No perms yo
+   usage: /msteam list
+  msteam save:
+   description: Saves all team data to DB
+   permission-message: msteam.save
+   usage: /msteam save

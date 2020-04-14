@@ -2,27 +2,27 @@
 <section name="Workbench">
 	<section name="org.eclipse.ui.texteditor.FindReplaceDialog">
 		<item key="isRegEx" value="false"/>
-		<item key="selection" value="Config"/>
+		<item key="selection" value="Death"/>
 		<item key="casesensitive" value="false"/>
 		<item key="incremental" value="false"/>
 		<item key="wrap" value="true"/>
 		<item key="wholeword" value="false"/>
 		<list key="findhistory">
-			<item value="config"/>
-			<item value="addTPAQue"/>
-			<item value="Boolean"/>
-			<item value="servers"/>
-			<item value="tpQueue"/>
-			<item value="TPA"/>
-			<item value="removeSc"/>
-			<item value="leave"/>
-			<item value="back up"/>
-			<item value="backup"/>
-			<item value="ScheduledBackupDB"/>
-			<item value="common"/>
-			<item value="meta"/>
-			<item value="KEY"/>
-			<item value="damageable"/>
+			<item value="death"/>
+			<item value="onDeath"/>
+			<item value="loadTeamData"/>
+			<item value="Mineswarm"/>
+			<item value="Error setting scoreboard"/>
+			<item value="rowid"/>
+			<item value="add"/>
+			<item value="select"/>
+			<item value="saveTeamsData"/>
+			<item value="save"/>
+			<item value="clear"/>
+			<item value="newOwner"/>
+			<item value="createTeam"/>
+			<item value="FICL OFF"/>
+			<item value="owner"/>
 		</list>
 		<list key="replacehistory">
 			<item value="boolean"/>
