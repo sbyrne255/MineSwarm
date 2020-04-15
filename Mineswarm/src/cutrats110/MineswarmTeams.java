@@ -431,7 +431,8 @@ public class MineswarmTeams {
 			return false;
 		}
 	}
-		
+	
+//TODO DOCUMENT FROM HERE UP.
 	private boolean updateRemoveTeamInfo(Player player, MSTeam team, Boolean kicked) {
 		players.remove(player.getUniqueId());
 		if(kicked) {
@@ -464,6 +465,12 @@ public class MineswarmTeams {
 		return true;
 		
 	}
+	/**
+	 * Removes player from team assuming they are part of the team. 
+	 * Sets new owner if owner is leaving team.
+	 * 
+	 * @return True if player leaves, returns false if not all criteria is met.
+	 */
 	public boolean leaveTeam(Player player, Boolean kicked) {
 		MSTeam team = players.get(player.getUniqueId());
 		if(team != null) {
@@ -483,14 +490,26 @@ public class MineswarmTeams {
 			return false;
 		}
 	}
+	/**
+	 * Kicks the specified player if sender is owner and player being kicked is part of the team and not the owner
+	 * Player must be online, a member of your team, and sender being the owner.
+	 * 
+	 * @return True if player is kicked, returns false if not all criteria is met.
+	 * @see leaveTeam(Player player, Boolean kicked)
+	 */
 	public boolean kickTeamMember(String kicky, Player kicker) {
 		MSTeam team = players.get(kicker.getUniqueId());
 		if(team.getOwner() == kicker.getUniqueId()) {
 			if(team.getMembersNames().contains(kicky)) {
 				Player kickyPlayer = Bukkit.getPlayer(kicky);
 				if(kickyPlayer != null && kickyPlayer.isOnline()) {
-					leaveTeam(kickyPlayer, true);
-					return true;
+					if(kickyPlayer.getUniqueId() != team.getOwner()) {
+						leaveTeam(kickyPlayer, true);
+						return true;
+					}else {
+						kicker.sendMessage("yOu CaNnOt KiCk YoUrSeLf...");
+						return false;
+					}
 				}else {
 					kicker.sendMessage("Player is offline. Try again when they are online.");
 					return false;

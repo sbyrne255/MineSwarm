@@ -8,7 +8,7 @@ import org.bukkit.Color;
 import org.bukkit.potion.PotionEffectType;
 
 public class PotionObjects {
-	
+	//TODO Document and re-assess if this is still needed when working outside of development builds of bukkit.
 	private List<MakePotion> splashPotions = new ArrayList<MakePotion>();
 	
 	public PotionObjects() {

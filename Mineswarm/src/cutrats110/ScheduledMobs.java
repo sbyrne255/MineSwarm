@@ -27,19 +27,20 @@ import org.bukkit.potion.PotionEffectType;
 public class ScheduledMobs implements Listener {
 	public Plugin plugin;
 	public Database db = null;
-	private boolean debugging = true;
+	private boolean debugging = false;
 	private PotionObjects po = null;
-	public transient HashMap<Location, List<LivingEntity>> spawners = new HashMap<>();
-	
-	
-	//Can't serialize entityes, but can I get Entity ID and serialize that, then deserialize and set spanwers to Location (from XYZ) and loop IDs getting entity
-	
+	public HashMap<Location, List<LivingEntity>> spawners = new HashMap<>();
+		
 	public ScheduledMobs(Plugin instance, PotionObjects po) {
 		plugin = instance;
 		debugging = plugin.getConfig().getBoolean("debugging");
 		this.db = new Database(plugin);
 		this.po = po;
 	}
+	/**
+	 * Sets the starting mobs by killing all existing mobs on reload/start
+	 * Schedules the mob spawner task to run. 
+	 */
 	public void startMobs() {
 		for(World world : plugin.getServer().getWorlds()) {
 			plugin.getServer().dispatchCommand(plugin.getServer().getConsoleSender(), "killall all "+world.getName());
@@ -50,26 +51,27 @@ public class ScheduledMobs implements Listener {
 		mobSpawns();		
 	}
 	
+	/**
+	 * Checks database for mob spawners set and then checks if the mobs are alive or dead.
+	 * If they are dead it replaced them with the information from the DB.
+	 * If they are alive it skips to next mob/mob spawner.
+	 *
+	 * @return void
+	 */
 	public void mobSpawns(){
 		Bukkit.getScheduler().scheduleSyncRepeatingTask(plugin, new Runnable() {
-			public void run() {
-		    	if(debugging){plugin.getLogger().info("I am a scheduled task, running at a scheduled time!");}	
-		    	
+			public void run() {	    	
 		    	//IF LIST SIZE IS SMALLER THAN MAX MOBS (ADJUST LATER) LOOP THROUGH DIFFERENCES SPAWNING MORE UNTIL IT IS THE SAME...
 		    	//IF LIST SIZE IS BIGGER THAN MAX MOBS, REMOVE ENTRIES UNTIL IT FITS.
 		    	
 		    	//					KEY/SPAWN  % CHANCE			FOR WEAPONS		 FOR MOB 	MOBTYPE 	Max number
 		    	//DB should return, Location, weapon Chance, Weapon Durability, Weapon, Entity Type, Max Entities
-		    	
-		    	//Instead of advanced for loop, just normal loop, then set the value of this position instead of deleting it.
 		    	List<String> data = db.getMobSpawners();
 		    	if(data == null) {
 		    		plugin.getLogger().info("No data found");
 		    		return;
 		    	}
-		    	//Loop each DB entrie...
 		    	for(int d = 0; d < data.size()-8; d+=9) {
-		    		//Prep all global variables...
 		    		List<String> loc = null;
 		    		String world = "";
 		    		Location location = null;
@@ -106,7 +108,7 @@ public class ScheduledMobs implements Listener {
 			    		
 			    		
 		    		}catch(NullPointerException np) {
-		    			plugin.getLogger().info("NP IN  DB INFO FOR MOB SPAWNERS " + np.toString());
+		    			plugin.getLogger().info("Nullpointer in database info for mob spawners " + np.toString());
 		    		}
 		    		try {
 		    			entities = spawners.get(location);
@@ -121,23 +123,18 @@ public class ScheduledMobs implements Listener {
 		    			if(debugging) {plugin.getLogger().info("Entities are too many, removing...");}
 		    		}
 		    		
-		    		//Loop through all known entities and check if we need to spawn more...
 		    		for(int i = 0; i< entities.size(); i++) {
 		    			LivingEntity entity = entities.get(i);
-		    			if(entity.isDead()) {//Spawn new guy
+		    			if(entity.isDead()) {
 		    				if(chance != 0){
 		    		    		Random rand = new Random();				
 								if( (rand.nextInt(chance)+1 == 1) && weapon != "NONE")
 								{
 									ItemStack item = new ItemStack( Material.matchMaterial(weapon), 1);
 									ItemMeta meta = item.getItemMeta();
-									if (meta instanceof Damageable){
-										((Damageable) meta).setDamage(dura);
-									}
-									//item.setDurability(dura);
+									if (meta instanceof Damageable){ ((Damageable) meta).setDamage(dura); }
 									
 									if(!enchantments.isEmpty() && enchantments.size() > 0 && !enchantments.contains("NONE")) {
-										//Enchantments are not empty...
 										for(String enchantment : enchantments) {
 											String[] en = enchantment.split(":");
 											item.addEnchantment(Enchantment.getByKey(NamespacedKey.minecraft(en[0].toLowerCase())), Integer.valueOf(en[1]));
@@ -150,8 +147,6 @@ public class ScheduledMobs implements Listener {
 				    		    		for(int pid : effects) {			
 				    		    			MakePotion poData = po.getDrinkableDataById(pid);
 				    		    			for(PotionEffectType effect : poData.effectTypes) {
-				    		    				//mob.setCustomName("PuffyCloud");
-				    		    		        //mob.setCustomNameVisible(true);
 				    	    					mob.addPotionEffect((new PotionEffect(effect, Integer.MAX_VALUE, poData.amplifier, true)));
 				    	    				}
 				    		    		}
@@ -164,8 +159,6 @@ public class ScheduledMobs implements Listener {
 				    		    		for(int pid : effects) {			
 				    		    			MakePotion poData = po.getDrinkableDataById(pid);
 				    		    			for(PotionEffectType effect : poData.effectTypes) {
-				    		    				//mob.setCustomName("PuffyCloud");
-				    		    		        //mob.setCustomNameVisible(true);
 				    	    					mob.addPotionEffect((new PotionEffect(effect, Integer.MAX_VALUE, poData.amplifier, true)));
 				    	    				}
 				    		    		}
@@ -179,8 +172,6 @@ public class ScheduledMobs implements Listener {
 			    		    		for(int pid : effects) {			
 			    		    			MakePotion poData = po.getDrinkableDataById(pid);
 			    		    			for(PotionEffectType effect : poData.effectTypes) {
-			    		    				//mob.setCustomName("PuffyCloud");
-			    		    		        //mob.setCustomNameVisible(true);
 			    	    					mob.addPotionEffect((new PotionEffect(effect, Integer.MAX_VALUE, poData.amplifier, true)));
 			    	    				}
 			    		    		}
@@ -193,14 +184,11 @@ public class ScheduledMobs implements Listener {
 		    					Wolf doggo = (Wolf)entity;
 		    					if(doggo.getOwner() instanceof Player) {
 		    						doggo.setCustomName(doggo.getOwner().getName() + "'s Doggo");
-		    						//doggo.setCustomNameVisible(true);
 		    						LivingEntity mob = (LivingEntity) Bukkit.getWorld(world).spawnEntity(location, EntityType.valueOf(entityType));
 									if(!effects.isEmpty()) {
 				    		    		for(int pid : effects) {			
 				    		    			MakePotion poData = po.getDrinkableDataById(pid);
 				    		    			for(PotionEffectType effect : poData.effectTypes) {
-				    		    				//mob.setCustomName("PuffyCloud");
-				    		    		        //mob.setCustomNameVisible(true);
 				    	    					mob.addPotionEffect((new PotionEffect(effect, Integer.MAX_VALUE, poData.amplifier, true)));
 				    	    				}
 				    		    		}
@@ -211,7 +199,7 @@ public class ScheduledMobs implements Listener {
 		    			}
 		    		}
 		    		
-		    		//If we spanwed all the entities, but we're short (normally if DB is altered directly) spawn more until list matches max size.
+		    		//If we spawned all the entities, but we're short (normally if DB is altered directly) spawn more until list matches max size.
 		    		while(entities.size() < maxEntities) {
 		    			if(debugging) {plugin.getLogger().info(String.valueOf(entities.size()) + "Not enough entities, looping to add more...");}
 		    			LivingEntity mob = null;
@@ -220,12 +208,11 @@ public class ScheduledMobs implements Listener {
 							if( (rand.nextInt(chance+1) == 1) || debugging)
 							{
 								ItemStack item = new ItemStack( Material.matchMaterial(weapon), 1);
-								//try here
+
 								ItemMeta meta = item.getItemMeta();
 								if (meta instanceof Damageable){
 									((Damageable) meta).setDamage(dura);
 								}
-								//item.setDurability(dura);
 								
 								mob = (LivingEntity) Bukkit.getWorld(world).spawnEntity(location, EntityType.valueOf(entityType));
 			    		    	mob.getEquipment().setItemInMainHand(item);
@@ -241,19 +228,10 @@ public class ScheduledMobs implements Listener {
 							entities.add(mob);
 						}
 		    		}
-		    		
-		    		//Update Spanwers data.
 		    		spawners.put(location, entities);
 		    	}
-		    	
-		    	//Get everything from DB (Locations all I need...)
-		    	//Loop throuw locations (key) selecting all the List<Entities>
-		    	//Loop through each entity
-		    	//IF ENTITY.IsDead is true, response a new one at LOCATION, else continue...
 		    }
-		}, 20, (20*20));//Delay from first start, repeats every X
-		//20t = 1s
-		//20*10 = 10 seconds...
+		}, 20, (20*20));//Delay from first start, repeats every X 20t = 1s
 	}
 	
 	
