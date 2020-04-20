@@ -1,4 +1,4 @@
-package cutrats110;
+package me.cutrats110.mineswarm;
 
 
 import java.util.ArrayList;
@@ -54,7 +54,7 @@ public class Mineswarm extends JavaPlugin implements Listener{
 		getLogger().info("Mineswarm is starting...");
 	    getServer().getPluginManager().registerEvents(this, this);
 		getLogger().info("Mineswarm has been Registered");	
-		new EventListener(this, teams, board);
+		new EventListener(this, teams, board, potions);
 		getLogger().info("Mineswarm Event Listen has started for Teams");	
 		new ScheduledChests(this, potions);
 		getLogger().info("Mineswarm Scheduler has started for Chests");
@@ -85,6 +85,7 @@ public class Mineswarm extends JavaPlugin implements Listener{
 		getLogger().info("Mineswarm has been disabled");
 	}
 	//Player interaction and events.
+	@SuppressWarnings("unused")
 	@EventHandler
 	public void onPlayerInteract(PlayerInteractEvent event) {
 		try{
@@ -191,7 +192,10 @@ public class Mineswarm extends JavaPlugin implements Listener{
 				
 				if(buttons.containsKey(blockLocation)) {
 					try{
-						if(!(player.hasMetadata("class"))) {
+						//TODO
+						//REPLACE WITH PLAYER Class
+						//if(!(player.hasMetadata("class"))) {
+						if(true) {
 							kits.giveKit(player, buttons.get(blockLocation));
 							return;
 						}
@@ -235,6 +239,7 @@ public class Mineswarm extends JavaPlugin implements Listener{
 	}
 	
 	//Command based functions.
+	@SuppressWarnings("unused")
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args){	
 		Player player = (Player) sender;
 		if (cmd.getName().equalsIgnoreCase("doorlevel") && sender instanceof Player){
@@ -647,7 +652,10 @@ public class Mineswarm extends JavaPlugin implements Listener{
 		}
 		if (cmd.getName().equalsIgnoreCase("class")){
 			try{
-				if(!(player.hasMetadata("class"))) {
+				//REPLACE WITH MSPlayer class...
+				//if(!(player.hasMetadata("class"))) {
+				//TODO
+				if(true) {
 					kits.giveKit(player, args[0]);
 					return true;
 				}

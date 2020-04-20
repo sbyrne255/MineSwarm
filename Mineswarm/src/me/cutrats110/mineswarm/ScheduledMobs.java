@@ -1,4 +1,4 @@
-package cutrats110;
+package me.cutrats110.mineswarm;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -46,6 +46,7 @@ public class ScheduledMobs implements Listener {
 			plugin.getServer().dispatchCommand(plugin.getServer().getConsoleSender(), "killall all "+world.getName());
 		}
 		plugin.getServer().dispatchCommand(plugin.getServer().getConsoleSender(), "time " + plugin.getConfig().getString("set-time"));
+		//Error below...
 		plugin.getServer().dispatchCommand(plugin.getServer().getConsoleSender(), "gamerule doDaylightCycle " + plugin.getConfig().getBoolean("stop-time"));	
 		
 		mobSpawns();		

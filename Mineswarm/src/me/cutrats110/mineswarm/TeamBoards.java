@@ -1,8 +1,7 @@
-package cutrats110;
+package me.cutrats110.mineswarm;
 
 import java.util.HashMap;
 import java.util.List;
-
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
@@ -12,8 +11,12 @@ import org.bukkit.scoreboard.Scoreboard;
 
 public class TeamBoards {
 	public Plugin plugin = null;
+	EventListenerHelper helper;
 	public TeamBoards(Plugin plugin){
 		this.plugin = plugin;
+	}
+	public void setTeamData(EventListenerHelper helper) {
+		this.helper = helper;
 	}
 	
 	/**
@@ -49,25 +52,25 @@ public class TeamBoards {
 	 * @see setScoreboard(List<Player> players, String teamName, Player updatedPlayer, int health)
 	 */
 	public void setScoreboard(List<Player> players, String teamName) {
-		//TODO REMOVE
-		//if(teamName.length() <=0) {return;}
 		try {
 			Scoreboard teamBoard = boards.get(teamName);
 			Objective teamMembersBoard = teamBoard.getObjective("teamhp");
 			if(players != null) {
 				for(Player p : players){
 					try {
-						if(p.isOnline()) {//TODO I don't understand why I add 1 if health is less than 20?
-							if( (int)p.getHealth() >= 20) {
-								teamMembersBoard.getScore(p.getName()).setScore((int) (p.getHealth()));
-							}else {
-								teamMembersBoard.getScore(p.getName()).setScore((int) (p.getHealth()+1));
+						if(p.isOnline()) {
+							if(helper.isPlayerDown(p)) {
+								teamMembersBoard.getScore(p.getName()).setScore((int) ((p.getHealth()/2) * -1));	
+							} else {
+								teamMembersBoard.getScore(p.getName()).setScore((int) (p.getHealth()/2));
 							}
 						}
 					}catch(NullPointerException np) {continue;}
 				}
 				for(Player p : players){
-					p.setScoreboard(teamBoard);
+					if(p.isOnline()) {
+						p.setScoreboard(teamBoard);
+					}
 				}
 			}
 		}catch(NullPointerException np) {plugin.getLogger().info("Unexpected null value while updating scoreboard. ");}
@@ -91,10 +94,12 @@ public class TeamBoards {
 		for(Player p : players){
 			try {
 				if(p.isOnline()) {
-					if(p != updatedPlayer) {
-						teamMembersBoard.getScore(p.getName()).setScore((int) p.getHealth());
-					}else {
-						teamMembersBoard.getScore(updatedPlayer.getName()).setScore(health);
+					if(helper.isPlayerDown(p)) {
+						if(p != updatedPlayer) {teamMembersBoard.getScore(p.getName()).setScore((int) ((p.getHealth()/2) *-1));
+						}else {teamMembersBoard.getScore(updatedPlayer.getName()).setScore(health*-1);}
+					} else {
+						if(p != updatedPlayer) {teamMembersBoard.getScore(p.getName()).setScore((int) (p.getHealth()/2));
+						}else {teamMembersBoard.getScore(updatedPlayer.getName()).setScore(health/2);}
 					}
 				}
 			}catch(NullPointerException np) {continue;}

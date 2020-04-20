@@ -1,5 +1,5 @@
 name: Mineswarm
-main: cutrats110.Mineswarm
+main: me.cutrats110.mineswarm.Mineswarm
 version: 1.7.3
 description: Woop The Shooops
 api-version: 1.15

@@ -1,9 +1,7 @@
-package cutrats110;
+package me.cutrats110.mineswarm;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.List;
 
 import org.bukkit.Material;
@@ -15,7 +13,6 @@ import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.PotionMeta;
-import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -53,7 +50,6 @@ public class Kits {
 		
 		player.getInventory().addItem(guideBook);
 		
-		String timeStamp = new SimpleDateFormat("yyyyMMddHHmmss").format(Calendar.getInstance().getTime());
 		List<String> items;
 		
     	items = plugin.getConfig().getStringList(kit.toLowerCase()+"-class");
@@ -134,8 +130,8 @@ public class Kits {
     		}
     	}
     	if(items.size() > 0) {
-    		player.setMetadata("class",new FixedMetadataValue(plugin, kit.toLowerCase()));
-    		player.setMetadata("start_time",new FixedMetadataValue(plugin, timeStamp));
+    		//Set player class here...
+    		//TODO
     	}
 		
 		

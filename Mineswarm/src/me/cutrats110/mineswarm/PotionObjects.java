@@ -1,4 +1,4 @@
-package cutrats110;
+package me.cutrats110.mineswarm;
 
 import java.util.ArrayList;
 import java.util.Arrays;

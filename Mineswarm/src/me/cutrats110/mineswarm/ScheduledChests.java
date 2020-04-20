@@ -1,4 +1,4 @@
-package cutrats110;
+package me.cutrats110.mineswarm;
 
 import org.bukkit.Bukkit;
 import org.bukkit.event.Listener;

@@ -1,4 +1,4 @@
-package cutrats110;
+package me.cutrats110.mineswarm;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -10,7 +10,6 @@ import java.util.Map;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
-import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitTask;
 
@@ -29,8 +28,14 @@ import java.sql.SQLException;
 // Add persistant teams with database (removed, shorta)
 public class MineswarmTeams {
 	public Plugin plugin;
-
 	public HashMap<UUID, BukkitTask> tpQueue = new HashMap<>();
+	
+	public MineswarmTeams(Plugin instance, TeamBoards board) {
+		this.plugin = instance;
+		this.board = board;
+		this.db = new Database(plugin);
+		loadTeamData();
+	}
 	
 	/**
 	 * Holds a running list of all active teams using the String team name as lookup value
@@ -43,7 +48,6 @@ public class MineswarmTeams {
 	private HashMap<String, MSTeam> joinRequests = new HashMap<String, MSTeam>();
 	
 	private TeamBoards board;
-	private boolean debugging = false;
 	private Database db =null;
 	
 	public boolean loadTeamData() 
@@ -61,7 +65,14 @@ public class MineswarmTeams {
             ResultSet rs = pstmt.executeQuery();
             while (rs.next()) {
             	MSTeam team = new MSTeam(rs.getString("name"), UUID.fromString(rs.getString("owner")), rs.getBoolean("closed"), rs.getInt("score"));
+            	if(rs.getBoolean("closed")) {
+            		closedTeams.put(team.getName(), team);
+            	}
+            	else {
+            		openTeams.add(team);
+            	}
             	teams.put(rs.getInt("id"), team);
+            	board.makeScoreBoard(team.getName());
             }
             sql = "SELECT * FROM members";
             pstmt = teamsConn.prepareStatement(sql);       	
@@ -135,13 +146,6 @@ public class MineswarmTeams {
 		return true;
 	}
 
-	public MineswarmTeams(Plugin instance, TeamBoards board) {
-		this.plugin = instance;
-		this.board = board;
-		this.db = new Database(plugin);
-		loadTeamData();
-	}
-
 	
 	
 	/**
@@ -193,18 +197,12 @@ public class MineswarmTeams {
 					closedTeams.put(name, newTeam);
 					players.put(player.getUniqueId(), newTeam);
 
-					player.setMetadata("team_name", new FixedMetadataValue(plugin, name));
 					if (plugin.getConfig().getBoolean("creating-team-takes-to-spawn")) {
 						player.teleport(player.getWorld().getSpawnLocation());
 					}
 					try {
-						if(player.hasMetadata("team_name") && player.getMetadata("team_name").get(0).toString().length() >= 1) {
-					    	board.makeScoreBoard(player.getMetadata("team_name").get(0).asString());
-					    	board.setScoreboard(newTeam.getMembersPlayerObjects(), player.getMetadata("team_name").get(0).asString());
-					    }
-					    else {
-					    	if(debugging){plugin.getLogger().info("team_name NOT SET");}
-					    }
+					    board.makeScoreBoard(name);
+					    board.setScoreboard(newTeam.getMembersPlayerObjects(), name);
 					}catch(NullPointerException np) {}
 					catch(Exception err) {
 						plugin.getLogger().info("Problem making team " + err.toString());
@@ -255,20 +253,8 @@ public class MineswarmTeams {
 		players.put(playerID, team);
 		team.addMember(playerID);
 		players.put(player.getUniqueId(), team);
-		player.setMetadata("team_name", new FixedMetadataValue(plugin, team.getName()));
-		try {
-			if(player.hasMetadata("team_name") && player.getMetadata("team_name").get(0).toString().length() >= 1) {
-		    	board.makeScoreBoard(player.getMetadata("team_name").get(0).asString());
-		    	board.setScoreboard(team.getMembersPlayerObjects(), player.getMetadata("team_name").get(0).asString());
-		    }
-		    else {
-		    	if(debugging){plugin.getLogger().info("team_name NOT SET");}
-		    }	
-		}catch(NullPointerException np) {}
-		catch(Exception err) {
-			plugin.getLogger().info("Problem joining team" + err.toString());
-			return false;
-		}
+		board.makeScoreBoard(team.getName());
+		board.setScoreboard(team.getMembersPlayerObjects(), team.getName());
 		return true;
 	}
 	public void addRandomTPAQue(Player player) {
@@ -441,21 +427,8 @@ public class MineswarmTeams {
 			player.sendMessage("You have left the team");
 		}
 		team.removeMember(player.getUniqueId());
+		board.setScoreboard(team.getMembersPlayerObjects(), team.getName());
 		
-		try {
-			if(player.hasMetadata("team_name") && player.getMetadata("team_name").get(0).toString().length() >= 1) {
-		    	board.makeScoreBoard(player.getMetadata("team_name").get(0).asString());
-		    	board.setScoreboard(team.getMembersPlayerObjects(), player.getMetadata("team_name").get(0).asString());
-		    }
-		    else {
-		    	if(debugging){plugin.getLogger().info("team_name NOT SET");}
-		    }	
-		}catch(NullPointerException np) {}
-		catch(Exception err) {
-			plugin.getLogger().info("Problem joining team" + err.toString());
-		}
-		
-		player.setMetadata("team_name", new FixedMetadataValue(plugin, ""));
 		if (plugin.getConfig().getBoolean("leaving-team-takes-to-spawn")) {
 			player.teleport(player.getWorld().getSpawnLocation());
 		}					
@@ -478,11 +451,14 @@ public class MineswarmTeams {
 				//Transfer owner
 				team.newOwner();
 				updateRemoveTeamInfo(player, team, kicked);
+				//Check team size, if no members exist close team.
+				if(team.getMembers().size() <= 0) {closedTeams.remove(team.getName());}
 				return true;
 			}
 			else {
 				//Leave..
 				updateRemoveTeamInfo(player, team, kicked);
+				if(team.getMembers().size() <= 0) {closedTeams.remove(team.getName());}
 				return true;
 			}
 		} else {

@@ -1,8 +1,8 @@
 # default config.yml
-disable-all-explotions: true
-disable-creeper-explotions: true
-disable-dragon-explotions: true
-disable-tnt-explotions: true
+disable-all-explosions: true
+disable-creeper-explosions: true
+disable-dragon-explosions: true
+disable-tnt-explosions: true
 #Set true for debugging messages and 100% drop of keys and random items.
 debugging: false
 set-time: night
