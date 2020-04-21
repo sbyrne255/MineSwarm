@@ -26,6 +26,7 @@ import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.entity.EntityRegainHealthEvent;
+import org.bukkit.event.entity.ItemSpawnEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -308,6 +309,33 @@ public class EventListener implements Listener {
 		}
 	}
 
+	@EventHandler(priority = EventPriority.LOWEST)
+    public void PickupItem(ItemSpawnEvent  e) {
+		ItemStack item = e.getEntity().getItemStack();
+		if(item.getType().equals(Material.BOOK) && item.hasItemMeta() && item.getItemMeta().getDisplayName().equals("Key")) {
+			for(Entity ent : e.getEntity().getNearbyEntities(4, 4, 4)) {
+				if(ent instanceof Player) {
+					Player player = (Player)ent;
+					if(player.getInventory().firstEmpty() == -1) {
+						Inventory invt = player.getInventory();	
+						boolean inInventory = false;
+						for(ItemStack is : invt){
+	        				if(is == null){continue;}
+	    					//Item is same as stack...
+		        			if(is.getType().equals(Material.BOOK) && is.hasItemMeta() && is.getItemMeta().getLore().get(0).equals(item.getItemMeta().getLore().get(0)))
+		        			{ inInventory = true; break; }
+	        			}
+						if(inInventory) { continue;	}
+						else {
+							player.sendMessage(ChatColor.YELLOW + "" + ChatColor.BOLD + "You are near a " + item.getItemMeta().getLore().get(0) + " Key but don't have room to pick it up.");
+							if(teams.getTeam(player) != null) { teams.sendTeamMessage(player.getName() + " Is near a " + item.getItemMeta().getLore().get(0) + " Key but can't pick it up.", player); }
+						}
+					}
+				}
+			}
+			
+		}
+	}
 	//TODO Update to remove meta data usage.
 	@EventHandler(priority = EventPriority.LOWEST)
     public void PickupItem(EntityPickupItemEvent  e) {
@@ -315,35 +343,10 @@ public class EventListener implements Listener {
         if (pickedUp.getType().equals(Material.BOOK) && pickedUp.hasItemMeta() && pickedUp.getItemMeta().getDisplayName().equals("Key")){     	
         	if(e.getEntity() instanceof Player) {
         		Player player = (Player)e.getEntity();
-        		Inventory invt = player.getInventory();	  
-        		if(invt.firstEmpty() == -1)
-        		{
-        			//LOOP TO SEE IF STACK OF KEYS ALREADY EXITS.
-        			for(ItemStack is : invt){
-        				if(is == null){continue;}
-    					//Item is same as stack...
-	        			if(is.getType().equals(Material.BOOK) && is.hasItemMeta() && is.getItemMeta().getLore().get(0).equals(pickedUp.getItemMeta().getLore().get(0)))
-	        			{
-        					player.sendMessage(ChatColor.GOLD + "" + ChatColor.BOLD + "You picked up a " + pickedUp.getItemMeta().getLore().get(0) + " Key");
-        	        		try {teams.sendTeamMessage(teams.getTeam(player).getName(), player);									
-        					}catch(Exception err) {}
-        	        		
-        					e.setCancelled(false);
-        					return;
-        				}
-        			}
-        			player.sendMessage(ChatColor.GOLD + "" + ChatColor.BOLD + "A key dropped by you, but you can't carry it because your inventory is full.");
-            		try {teams.sendTeamMessage(player.getMetadata("team_name").get(0).asString(), player);									
-    				}catch(Exception err) {}
-        		}
-        		else
-        		{
-	        		player.sendMessage(ChatColor.GOLD + "" + ChatColor.BOLD + "You picked up a " + pickedUp.getItemMeta().getLore().get(0) + " Key");
-	        		try {teams.sendTeamMessage(player.getMetadata("team_name").get(0).asString(), player);									
-					}catch(Exception err) {}
-        		}
+        		player.sendMessage(ChatColor.GOLD + "" + ChatColor.BOLD + "You picked up a " + pickedUp.getItemMeta().getLore().get(0) + " Key");
+        		if(teams.getTeam(player) != null) { teams.sendTeamMessage(player.getName() + " Picked up a " + pickedUp.getItemMeta().getLore().get(0) + " Key", player); }
         	}
-        } 
+        }
     }
     public Inventory getClickedInventory(InventoryView view, int slot) {
     	try {

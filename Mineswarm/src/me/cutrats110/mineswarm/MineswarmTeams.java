@@ -313,7 +313,7 @@ public class MineswarmTeams {
 		for (Player teammate : teamMates) {
 			try {
 				if (teammate.isOnline()) {
-					teammate.sendMessage(message);
+					teammate.sendMessage(ChatColor.DARK_GREEN + "" + ChatColor.BOLD + message);
 				}
 			} catch (NullPointerException err) {
 				continue;
@@ -326,7 +326,7 @@ public class MineswarmTeams {
 			for(Player player : team.getMembersPlayerObjects()) {
 				try {
 					if (player.isOnline() && player != exclude) {
-						player.sendMessage(message);
+						player.sendMessage(ChatColor.DARK_GREEN + "" + ChatColor.BOLD + message);
 					}
 				} catch (NullPointerException err) {
 					continue;

@@ -87,9 +87,7 @@ public class EventListenerHelper {
 			return false;
 		}
 	}
-	
-	
-	
+
 	public void enviormentalOnPlayerDamage(EntityDamageEvent e) {
 		Player player = (Player) e.getEntity();
 		if(isPlayerDown(player)) {
