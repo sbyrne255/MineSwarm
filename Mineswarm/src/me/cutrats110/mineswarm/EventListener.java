@@ -21,6 +21,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.entity.EntityPickupItemEvent;
@@ -106,7 +107,9 @@ public class EventListener implements Listener {
         inv.setExtraContents(new ItemStack[inv.getExtraContents().length]);
         helper.updateTeamBoard(player);
     }
-    //TODO
+
+	@EventHandler(priority = EventPriority.HIGH)
+    public void allDamageEvent(EntityDamageEvent e) { if(e.getEntity() instanceof Player) { helper.enviormentalOnPlayerDamage(e); } }
 	@EventHandler(priority = EventPriority.HIGH)
 	public void onEntityDamage(EntityDamageByEntityEvent e) {
 		//Player on Player
@@ -116,7 +119,7 @@ public class EventListener implements Listener {
 		//Mob on Player
 		else if(!(e.getDamager() instanceof Player) && e.getEntity() instanceof Player) { helper.entityOnPlayerDamage(e); }
 		
-		if(e.getDamager() instanceof Trident || e.getDamager() instanceof Arrow) {
+		if(e.getDamager() instanceof Trident || e.getDamager() instanceof Arrow || e.getDamager() instanceof Projectile || e.getDamager() instanceof PotionEffect) {
 			Projectile projetile = (Projectile) e.getDamager();
 			if(projetile.getShooter() instanceof Player) {
 				if(downedPlayers.get(((Player) projetile.getShooter()).getUniqueId()) != null) {
@@ -146,6 +149,7 @@ public class EventListener implements Listener {
 			if(e.getEntity() instanceof Player) {
 				Player player = (Player) e.getEntity();
 				if((player.getHealth() - e.getFinalDamage()) <= .5) {
+					e.setCancelled(true);
 					helper.setPlayerAsDown(player);
 				}
 				helper.updateTeamBoard(player);

@@ -7,6 +7,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.potion.PotionEffect;
@@ -89,7 +90,19 @@ public class EventListenerHelper {
 	
 	
 	
-	
+	public void enviormentalOnPlayerDamage(EntityDamageEvent e) {
+		Player player = (Player) e.getEntity();
+		if(isPlayerDown(player)) {
+			e.setCancelled(true);
+			return;
+		}else {
+			if((player.getHealth() - e.getFinalDamage()) <= .5) {
+				e.setCancelled(true);
+				setPlayerAsDown(player);
+			}
+			updateTeamBoard(player);
+		}
+	}
 	public void playerOnPlayerDamage(EntityDamageByEntityEvent e) {
 		Player damagee = (Player) e.getEntity();
 		Player damager = (Player) e.getDamager();

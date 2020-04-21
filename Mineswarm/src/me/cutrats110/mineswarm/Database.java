@@ -41,8 +41,6 @@ public class Database {
 	//All database stuff here...
 	public void connectChests() {
         try {
-        	File directory = new File(System.getProperty("user.dir") +"/Mineswarm");
-    		if (! directory.exists()){ directory.mkdir(); }
             String url = "jdbc:sqlite:plugins/Mineswarm/mineswarmChests.db";
             // create a connection to the database
             chestConn = DriverManager.getConnection(url);
@@ -52,8 +50,6 @@ public class Database {
     }
 	public void connectButtons() {
         try {
-        	File directory = new File(System.getProperty("user.dir") +"/Mineswarm");
-    		if (! directory.exists()){ directory.mkdir(); }
             String url = "jdbc:sqlite:plugins/Mineswarm/buttons.db";
             buttonsConn = DriverManager.getConnection(url);
         } catch (SQLException e) {
@@ -62,8 +58,6 @@ public class Database {
     }
 	public Connection getTeamsConnection() {
         try {
-        	File directory = new File(System.getProperty("user.dir") +"/Mineswarm");
-    		if (! directory.exists()){ directory.mkdir(); }
             String url = "jdbc:sqlite:plugins/Mineswarm/teams.db";
             // create a connection to the database
             this.teamsConn = DriverManager.getConnection(url);
@@ -75,8 +69,6 @@ public class Database {
     }
 	public void connectMobs() {
         try {
-        	File directory = new File(System.getProperty("user.dir") +"/Mineswarm");
-    		if (! directory.exists()){ directory.mkdir(); }
             String url = "jdbc:sqlite:plugins/Mineswarm/mobspawners.db";
             // create a connection to the database
             mobConn = DriverManager.getConnection(url);
@@ -86,9 +78,6 @@ public class Database {
     }
 	public void connect() {
         try {
-        	// db parameters
-        	File directory = new File(System.getProperty("user.dir") +"/Mineswarm");
-    		if (! directory.exists()){ directory.mkdir(); }
             String url = "jdbc:sqlite:plugins/Mineswarm/mineswarm.db";
             // create a connection to the database
             conn = DriverManager.getConnection(url);
@@ -98,9 +87,6 @@ public class Database {
     }
 	public void connectPlayers() {
         try {
-        	// db parameters
-        	File directory = new File(System.getProperty("user.dir") +"/Mineswarm");
-    		if (! directory.exists()){ directory.mkdir(); }
             String url = "jdbc:sqlite:plugins/Mineswarm/playerdata.db";
             // create a connection to the database
             playerConn = DriverManager.getConnection(url);
@@ -110,9 +96,6 @@ public class Database {
     }
 	public void connectScores() {
         try {
-        	// db parameters
-        	File directory = new File(System.getProperty("user.dir") +"/Mineswarm");
-    		if (! directory.exists()){ directory.mkdir(); }
             String url = "jdbc:sqlite:plugins/Mineswarm/scoreboard.db";
             // create a connection to the database
             scoreboardConn = DriverManager.getConnection(url);
