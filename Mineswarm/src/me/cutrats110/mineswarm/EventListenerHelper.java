@@ -41,10 +41,7 @@ public class EventListenerHelper {
 	public void resetPlayerFromLastStand(Player player) {
         player.setWalkSpeed((float) .2);
         player.setGlowing(false);
-        MSTeam team = teams.getTeam(player);
-        if(team != null) {
-        	board.setScoreboard(team.getMembersPlayerObjects(), team.getName(), player, 20);
-        }
+        updateTeamBoard(player);
         
         BukkitTask downedTask = downedPlayers.get(player.getUniqueId());
 		if(downedTask != null) {
@@ -59,11 +56,12 @@ public class EventListenerHelper {
 			teams.tpQueue.remove(player.getUniqueId());
 		}	
 	}
+	//Tripple check error checking, there is a problem in here somehwere.
+	//TODO
 	public void updateTeamBoard(Player player) {
 		MSTeam team = teams.getTeam(player);
     	if(team != null) {
-    		board.makeScoreBoard(team.getName());
-        	board.setScoreboard(team.getMembersPlayerObjects(), team.getName());
+        	board.updateScoreBoard(team.getMembersPlayerObjects(), team.getName(), player);
     	}
 	}
 	public void updateTeamBoard(Player player, int health) {
@@ -206,14 +204,14 @@ public class EventListenerHelper {
 					downedPlayers.get(player.getUniqueId()).cancel();
 					downedPlayers.remove(player.getUniqueId());
 					player.setHealth(0);
-					return;
 				}
 				else{
 					player.setHealth(player.getHealth() - 1);
 				}
-				this.updateTeamBoard(player);
+				updateTeamBoard(player);
 			}catch(NullPointerException np) {
 				plugin.getLogger().info("Damagee or other element is null, likely due to disconnecting. " + np.toString());
+				downedPlayers.get(player.getUniqueId()).cancel();
 				downedPlayers.remove(player.getUniqueId());
 				player.setHealth(0);
 			}catch(Exception err) { plugin.getLogger().info("Error on slowly killing person. " + err.toString()); }

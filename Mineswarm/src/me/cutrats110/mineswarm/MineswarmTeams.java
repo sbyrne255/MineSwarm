@@ -34,7 +34,6 @@ public class MineswarmTeams {
 		this.plugin = instance;
 		this.board = board;
 		this.db = new Database(plugin);
-		loadTeamData();
 	}
 	
 	/**
@@ -63,8 +62,13 @@ public class MineswarmTeams {
         	HashMap<Integer, MSTeam> teams = new HashMap<Integer, MSTeam>();
         	
             ResultSet rs = pstmt.executeQuery();
+            UUID id;
             while (rs.next()) {
-            	MSTeam team = new MSTeam(rs.getString("name"), UUID.fromString(rs.getString("owner")), rs.getBoolean("closed"), rs.getInt("score"));
+            	try{id = UUID.fromString(rs.getString("owner"));}
+            	catch (IllegalArgumentException iae) {id = UUID.fromString("053573d9-85a4-4b1a-80b3-c86d08071f24");}
+            	catch (NullPointerException npr) {id = UUID.fromString("053573d9-85a4-4b1a-80b3-c86d08071f24");}
+            		
+            	MSTeam team = new MSTeam(rs.getString("name"),id, rs.getBoolean("closed"), rs.getInt("score"));
             	if(rs.getBoolean("closed")) {
             		closedTeams.put(team.getName(), team);
             	}
@@ -72,8 +76,10 @@ public class MineswarmTeams {
             		openTeams.add(team);
             	}
             	teams.put(rs.getInt("id"), team);
-            	board.makeScoreBoard(team.getName());
+            	plugin.getLogger().info("Adding board for team: " + team.getName());
+            	board.createScoreBoard(team.getName());
             }
+            
             sql = "SELECT * FROM members";
             pstmt = teamsConn.prepareStatement(sql);       	
             rs = pstmt.executeQuery();
@@ -117,19 +123,18 @@ public class MineswarmTeams {
 					pstmt.setString(1, playerID.toString());
 					pstmt.setInt(2, team_id);
 					pstmt.executeUpdate();
-				}catch(Exception err) {plugin.getLogger().info("Problem inserting closed team members " + err.toString());}
+				}catch(Exception err) {plugin.getLogger().warning("Problem inserting closed team members " + err.toString());}
 			}
 		}
 		for (MSTeam team : openTeams) {
 			try {
-				String sql = "INSERT INTO teams(name, owner, closed, score) VALUES(?,?,?,?)";
+				String sql = "INSERT INTO teams(name, closed, score) VALUES(?,?,?)";
 				PreparedStatement pstmt = teamsConn.prepareStatement(sql);
 				pstmt.setString(1, team.getName());
-				pstmt.setString(2, team.getOwner().toString());
-				pstmt.setBoolean(3, team.isClosed());
-				pstmt.setInt(4, team.getScore());
+				pstmt.setBoolean(2, team.isClosed());
+				pstmt.setInt(3, team.getScore());
 				pstmt.executeUpdate();
-			}catch(Exception err) {plugin.getLogger().info("Problem inserting open team data " +err.toString());}	
+			}catch(Exception err) {plugin.getLogger().warning("Problem inserting open team data " +err.toString());}	
 			
 			int team_id = db.getLastID(teamsConn);
 			for(UUID playerID : team.getMembers()) {
@@ -155,12 +160,22 @@ public class MineswarmTeams {
 	 * @return Returns MSTeam if team is successfully created otherwise null.
 	 * @see createTeam
 	 */
-	public MSTeam createOpenTeam() {
+	public MSTeam createOpenTeam(Player player) {
 		try {
 			String name = java.util.UUID.randomUUID().toString();
 			
 			MSTeam newTeam = new MSTeam(name, false);
 			openTeams.add(newTeam);
+			try {
+			    board.createScoreBoard(name);
+			    board.updateScoreBoard(newTeam.getMembersPlayerObjects(), name, player);
+			}
+			catch(NullPointerException npe) { plugin.getLogger().warning("Null value present in setScoreboard function (1b). " +npe.toString()); }
+			catch(IllegalArgumentException iae) { plugin.getLogger().warning("Illegal Argument present in setScoreboard function (1b). " +iae.toString()); }
+			catch(IllegalStateException ise) { plugin.getLogger().warning("Illegal State in setScoreboard function, objective has been unregistered (1b). " +ise.toString()); }
+			catch(Exception err) {
+				plugin.getLogger().info("Problem making team " + err.toString());
+			}
 			return newTeam;
 		} catch (Exception err) {
 			plugin.getLogger().info("Problem with making server team: " + err.toString());
@@ -201,9 +216,12 @@ public class MineswarmTeams {
 						player.teleport(player.getWorld().getSpawnLocation());
 					}
 					try {
-					    board.makeScoreBoard(name);
-					    board.setScoreboard(newTeam.getMembersPlayerObjects(), name);
-					}catch(NullPointerException np) {}
+					    board.createScoreBoard(name);
+					    board.updateScoreBoard(newTeam.getMembersPlayerObjects(), name, player);
+					}
+					catch(NullPointerException npe) { plugin.getLogger().warning("Null value present in setScoreboard function (1b). " +npe.toString()); }
+					catch(IllegalArgumentException iae) { plugin.getLogger().warning("Illegal Argument present in setScoreboard function (1b). " +iae.toString()); }
+					catch(IllegalStateException ise) { plugin.getLogger().warning("Illegal State in setScoreboard function, objective has been unregistered (1b). " +ise.toString()); }
 					catch(Exception err) {
 						plugin.getLogger().info("Problem making team " + err.toString());
 					}
@@ -224,7 +242,18 @@ public class MineswarmTeams {
 		}
 		return false;
 	}
-
+	public MSTeam getTeamByName(String name) {
+		MSTeam team = closedTeams.get(name);
+		if(team == null) {
+			for (MSTeam oteam : openTeams) {
+				if(oteam.getName() == name) {
+					return oteam;
+				}
+			}
+			return null;
+		}
+		else {return team;}		
+	}
 	public boolean joinRandom(Player player) {		
 		for(MSTeam team: openTeams) {
 			if(team.getMembers().size()<= plugin.getConfig().getInt("max-team-size")+1 ) {
@@ -235,7 +264,7 @@ public class MineswarmTeams {
 				return true;
 			}
 		}
-		updateTeamInfo(player, createOpenTeam());
+		updateTeamInfo(player, createOpenTeam(player));
 		player.sendMessage("You have joined a server-owned team!");
 		return true;
 	}
@@ -253,8 +282,7 @@ public class MineswarmTeams {
 		players.put(playerID, team);
 		team.addMember(playerID);
 		players.put(player.getUniqueId(), team);
-		board.makeScoreBoard(team.getName());
-		board.setScoreboard(team.getMembersPlayerObjects(), team.getName());
+		board.updateScoreBoard(team.getMembersPlayerObjects(), team.getName(), player);
 		return true;
 	}
 	public void addRandomTPAQue(Player player) {
@@ -427,13 +455,13 @@ public class MineswarmTeams {
 			player.sendMessage("You have left the team");
 		}
 		team.removeMember(player.getUniqueId());
-		board.setScoreboard(team.getMembersPlayerObjects(), team.getName());
+		board.updateScoreBoard(team.getMembersPlayerObjects(), team.getName(), player);
 		
 		if (plugin.getConfig().getBoolean("leaving-team-takes-to-spawn")) {
 			player.teleport(player.getWorld().getSpawnLocation());
 		}					
-		board.removeScoreboard(player);
-		board.setScoreboard(team.getMembersPlayerObjects(), team.getName());
+		board.removeScoreboard(player, team);
+		board.updateScoreBoard(team.getMembersPlayerObjects(), team.getName());
 
 		return true;
 		

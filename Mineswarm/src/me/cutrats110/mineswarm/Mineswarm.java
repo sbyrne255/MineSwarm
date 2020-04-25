@@ -4,14 +4,14 @@ package me.cutrats110.mineswarm;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.UUID;
+
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
-import org.bukkit.block.BlockFace;
-import org.bukkit.block.BlockState;
 import org.bukkit.block.Chest;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -19,34 +19,29 @@ import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.Action;
-import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.PotionMeta;
-import org.bukkit.material.Door;
-import org.bukkit.material.Openable;
-import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.potion.PotionType;
 
 
-@SuppressWarnings("deprecation")
 public class Mineswarm extends JavaPlugin implements Listener{
 
 	public final String version = "1.14.4";
 	//private boolean preventDouble = false;
+	private HashMap<UUID,MSPlayer> msplayers = new HashMap<UUID,MSPlayer>();
 	private Database db = null;
 	private PotionObjects potions = new PotionObjects();
-	private Kits kits = new Kits(this, potions);
+	private Kits kits = new Kits(this, potions, msplayers);
 	private TeamBoards board = new TeamBoards(this);
 	private MineswarmTeams teams = new MineswarmTeams(this, board);
 	private ScheduledMobs smobs = new ScheduledMobs(this, potions);
+
 	
 	//Util & logging
 	@Override
@@ -54,7 +49,7 @@ public class Mineswarm extends JavaPlugin implements Listener{
 		getLogger().info("Mineswarm is starting...");
 	    getServer().getPluginManager().registerEvents(this, this);
 		getLogger().info("Mineswarm has been Registered");	
-		new EventListener(this, teams, board, potions);
+		new EventListener(this, teams, board, potions, msplayers, kits);
 		getLogger().info("Mineswarm Event Listen has started for Teams");	
 		new ScheduledChests(this, potions);
 		getLogger().info("Mineswarm Scheduler has started for Chests");
@@ -66,7 +61,7 @@ public class Mineswarm extends JavaPlugin implements Listener{
 		db.createTable();
 		db.createMobsTable();
 		db.createChestsTable();
-		db.createPlayersTable();		
+		db.createPlayersTable();
 		db.createScoresTable();
 		db.createTeamsTable();
 		db.createButtonsTable();
@@ -74,6 +69,9 @@ public class Mineswarm extends JavaPlugin implements Listener{
 		getLogger().info("Mineswarm finished Databases...");
 		smobs.startMobs();
 		getLogger().info("Mineswarm Scheduled Mob spawns have been enabled");
+		getLogger().info("Mineswarm Loading MSTeam data into program.");
+		teams.loadTeamData();
+		getLogger().info("Mineswarm Loaded MSTeam data.");
 		getLogger().info("Mineswarm has been enabled!");
 
 	}
@@ -84,162 +82,8 @@ public class Mineswarm extends JavaPlugin implements Listener{
 		
 		getLogger().info("Mineswarm has been disabled");
 	}
-	//Player interaction and events.
-	@SuppressWarnings("unused")
-	@EventHandler
-	public void onPlayerInteract(PlayerInteractEvent event) {
-		try{
-			Player player = event.getPlayer();
-			boolean opendoor = false;
-		//if(preventDouble){
-			try{
-				if (event.getAction() == Action.RIGHT_CLICK_BLOCK && event.getClickedBlock().getType().equals(Material.IRON_DOOR)) 
-				{
-					Block block = event.getClickedBlock();
-					
-					String blockID = "X:" + String.valueOf(block.getX()) + "Z:"+String.valueOf(block.getZ()) + "W:"+String.valueOf(block.getWorld());
-					int blockY = block.getY();
-					String level = db.selectDoor(blockID, blockY);
-					level = "[" + level + "]";
-					
-					BlockState state = block.getState();
-					for(ItemStack item : player.getInventory()) {
-						if(item != null && item.getType().equals(Material.BOOK) && item.hasItemMeta() && item.getItemMeta().hasLore() && item.getItemMeta().getLore().toString().equals(level))
-						{
-							//https://bukkit.org/threads/open-iron-door-door-deprecated.213967/
-							try{
-								state = block.getRelative(BlockFace.DOWN).getState();
-					            Openable door = (Openable)state.getData();
-					            if(door.isOpen()){
-					            	return;
-					            }
-					            else{
-					            	opendoor = true;
-					            	//Remove Key
-									item.setAmount(item.getAmount() -1);
-									break;
-					            }
-							}catch(Exception doorer){
-								state = event.getClickedBlock().getState();
-					            Openable door = (Openable)state.getData();
-					            if(door.isOpen()){
-					            	return;
-					            }
-					            else{
-					            	opendoor = true;
-					            	//Remove Key
-									item.setAmount(item.getAmount() -1);	
-									break;
-					            }
-							}	
-						}
-					}
-					if(opendoor){
-						try{
-				            state = block.getRelative(BlockFace.DOWN).getState();
-				            Openable door = (Openable)state.getData();
-				            door.setOpen(true);
-				            state.setData((Door)door);
-				            state.update();
-						}
-						catch(Exception err)
-						{
-							state = event.getClickedBlock().getState();
-				            Openable door = (Openable)state.getData();
-				            door.setOpen(true);
-				            //((Openable)door).setOpen(true);
-				            state.setData((Door)door);
-				            state.update();
-						}
-						//Schedule Close
-					    	getServer().getScheduler().scheduleSyncDelayedTask(this, new Runnable() 
-					    	{
-						    	public void run() 
-						    	{
-						    		BlockState state = block.getState();
-									try{
-							            state = event.getClickedBlock().getRelative(BlockFace.DOWN).getState();
-							            Openable door = (Openable)state.getData();
-							            door.setOpen(false);
-							            state.setData((Door)door);
-							            state.update();
-									}catch(Exception err)
-									{
-										state = event.getClickedBlock().getState();
-							            Openable door = (Openable)state.getData();
-							            door.setOpen(false);
-							            state.setData((Door)door);
-							            state.update();
-									}
-						    	}
-					    	}, 55L);
-					    event.setCancelled(true);//Probably want to cancel but shouldn't matter in adventure mode
-					    return;
-					}else {
-						player.sendMessage("You need a " + level + " key to open this door");
-					}
-			}
-		}
-		catch(Exception err)
-		{
-			getLogger().info("Problem with opening door in MineSwarm. " + err.toString());
-		}
-		//preventDouble = false; }else{ preventDouble = true;	}	
-			
-			if(event.getAction().equals(Action.RIGHT_CLICK_BLOCK) && event.getClickedBlock().getType().equals(Material.JUNGLE_BUTTON)) {
-				Location blockLocation = event.getClickedBlock().getLocation();
-				HashMap<Location, String> buttons = db.getButtons();
-				
-				if(buttons.containsKey(blockLocation)) {
-					try{
-						//TODO
-						//REPLACE WITH PLAYER Class
-						//if(!(player.hasMetadata("class"))) {
-						if(true) {
-							kits.giveKit(player, buttons.get(blockLocation));
-							return;
-						}
-						else
-						{
-							player.sendMessage("You can't use more than 1 class, die to pick a new class >:)");
-							return;
-						}
-					}
-					catch(Exception er){
-						player.sendMessage("Error on class command: " + er.toString());
-						return;
-					}
-				}
-				
-			}
-			
-			if((event.getAction() == Action.RIGHT_CLICK_BLOCK || event.getAction() == Action.LEFT_CLICK_BLOCK) && (player.getInventory().getItemInMainHand().getItemMeta().getDisplayName().contains("MCMS Marking Tool"))){
-				try{
-					if(event.getAction() == Action.RIGHT_CLICK_BLOCK && player.getInventory().getItemInMainHand().getItemMeta().getDisplayName().contains("MCMS Marking Tool")){
-						player.setMetadata("pos2x",new FixedMetadataValue(this,event.getClickedBlock().getLocation().getBlockX()));
-						player.setMetadata("pos2z",new FixedMetadataValue(this,event.getClickedBlock().getLocation().getBlockZ()));
-						player.setMetadata("pos2y",new FixedMetadataValue(this,event.getClickedBlock().getLocation().getBlockY()));
-						player.setMetadata("world2",new FixedMetadataValue(this,event.getClickedBlock().getLocation().getWorld()));
-					}
-				}catch(Exception er){player.sendMessage("Error on right hand: " + er.toString());}
-				try{
-					if(event.getAction() == Action.LEFT_CLICK_BLOCK && player.getInventory().getItemInMainHand().getItemMeta().getDisplayName().contains("MCMS Marking Tool")){
-						player.setMetadata("pos1x",new FixedMetadataValue(this,event.getClickedBlock().getLocation().getBlockX()));
-						player.setMetadata("pos1z",new FixedMetadataValue(this,event.getClickedBlock().getLocation().getBlockZ()));
-						player.setMetadata("pos1y",new FixedMetadataValue(this,event.getClickedBlock().getLocation().getBlockY()));
-						player.setMetadata("world1",new FixedMetadataValue(this,event.getClickedBlock().getLocation().getWorld()));
-					}
-				}catch(Exception er){player.sendMessage("Error on right hand: " + er.toString());}
-				
-				event.setCancelled(true);//Probably want to cancel but shouldn't matter in adventure mode
-			}
-		}catch(Exception noncrit){
-			//getLogger().info("Some uncaught error, only happens when hand is empt right clicking; probably bukkit.");
-		}
-	}
-	
+
 	//Command based functions.
-	@SuppressWarnings("unused")
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args){	
 		Player player = (Player) sender;
 		if (cmd.getName().equalsIgnoreCase("doorlevel") && sender instanceof Player){
@@ -652,18 +496,8 @@ public class Mineswarm extends JavaPlugin implements Listener{
 		}
 		if (cmd.getName().equalsIgnoreCase("class")){
 			try{
-				//REPLACE WITH MSPlayer class...
-				//if(!(player.hasMetadata("class"))) {
-				//TODO
-				if(true) {
-					kits.giveKit(player, args[0]);
-					return true;
-				}
-				else
-				{
-					player.sendMessage("You can't use more than 1 class, die to pick a new class >:)");
-					return true;
-				}
+				if(kits.giveKit(player, args[0])) {	return true; }
+				else { player.sendMessage("You can't use more than 1 class, die to pick a new class >:)"); return true;	}
 			}
 			catch(Exception er){
 				player.sendMessage("Error on class command: " + er.toString());

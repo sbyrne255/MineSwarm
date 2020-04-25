@@ -2,7 +2,9 @@ package me.cutrats110.mineswarm;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.UUID;
 
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -22,14 +24,17 @@ public class Kits {
 	public Plugin plugin;
 	public Database db = null;
 	private PotionObjects potions = null;
-	public Kits(Plugin instance, PotionObjects potions) {
+	private HashMap<UUID,MSPlayer> msplayers;
+	public Kits(Plugin instance, PotionObjects potions, HashMap<UUID,MSPlayer> msplayers) {
 		plugin = instance;
 		this.db = new Database(plugin);
 		this.potions = potions;
-		
+		this.msplayers = msplayers;
 	}
 
-	void giveKit(Player player, String kit) {
+	public boolean giveKit(Player player, String kit) {
+		MSPlayer msPlayer = msplayers.get(player.getUniqueId());
+		if(msPlayer.getItemClass() != null) {return false;}
 		//Read standard items (all players get).
 		//Check kit against config, if more items needed:
 		
@@ -132,7 +137,9 @@ public class Kits {
     	if(items.size() > 0) {
     		//Set player class here...
     		//TODO
+    		msPlayer.setItemClass(kit);    		
     	}
+    	return true;
 		
 		
 		
