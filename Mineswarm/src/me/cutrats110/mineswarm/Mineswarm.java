@@ -57,8 +57,7 @@ public class Mineswarm extends JavaPlugin implements Listener{
         getLogger().info("Mineswarm Default Config has been saved");
         db = new Database(this);
         getLogger().info("Mineswarm Databases have been started...");
-		db.connect();
-		db.createTable();
+        db.setupDatabases();
 		db.createMobsTable();
 		db.createChestsTable();
 		db.createPlayersTable();

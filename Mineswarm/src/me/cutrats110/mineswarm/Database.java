@@ -38,6 +38,44 @@ public class Database {
 	public Database(Plugin instance) {
 		plugin = instance;
 	}
+	
+	public Connection establishDatabaseConnection(String database) {
+		try {
+			String url = String.format("jdbc:sqlite:plugins/Mineswarm/%s.db", database);
+			Connection conn = DriverManager.getConnection(url);
+			
+			if(conn == null) {
+				plugin.getLogger().warning(String.format("Failure to establish database connection to: %s ", database));
+				return null;
+			} else { 
+				return conn; 
+			}
+        } catch (SQLException e) {
+        	plugin.getLogger().warning(e.getMessage());
+        	return null;
+        }
+	}
+	
+	private static void close(Connection conn) throws SQLException {
+		if (conn != null) { conn.close(); }
+	}
+	private static void closeQuietly(Connection conn) {
+    	try { close(conn); } 
+    	catch (SQLException e) {
+    		//TODO Add loging to txt file./
+    	}
+    }
+	private static void closePreparedStatement(PreparedStatement prep) throws SQLException {
+		if (prep != null) { prep.close(); }
+	}
+	private static void closePreparedStatementQuietly(PreparedStatement prep) {
+    	try { closePreparedStatement(prep); } 
+    	catch (SQLException e) {
+    		//TODO Add loging to txt file./
+    	}
+    }
+	
+	/*
 	//All database stuff here...
 	public void connectChests() {
         try {
@@ -94,65 +132,101 @@ public class Database {
         	plugin.getLogger().info(e.getMessage());
         }
     }
-	public void connectScores() {
-        try {
-            String url = "jdbc:sqlite:plugins/Mineswarm/scoreboard.db";
-            // create a connection to the database
-            scoreboardConn = DriverManager.getConnection(url);
-        } catch (SQLException e) {
-        	plugin.getLogger().info(e.getMessage());
-        }
-    }  
 
-	public void createTable() {
-        try{
-        	if(conn.isClosed()){
-        		
-        		connect();
-        	}
-        }
-        catch(NullPointerException np){
-        	connect();
-        }
-        catch(Exception er){
-        	plugin.getLogger().info("Conn check failed. " + er.toString());
-        }
-    	
-    	String sql = "CREATE TABLE IF NOT EXISTS zones(id,min_x,min_y,min_z,max_x,max_y,max_z,level,creator,world,pvp_enabled,mob_multiplier)";
-        try (
-        	PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.execute();
-        } catch (SQLException e) {plugin.getLogger().info(e.getMessage());}
-        
-        sql = "CREATE TABLE IF NOT EXISTS doors(id, level, block_y,creator)";
-        try (
-        	PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.execute();
-        } catch (SQLException e) {plugin.getLogger().info(e.getMessage());}
-        finally{ try {conn.close();} catch (SQLException e) {} }
-    }	
-    public void createButtonsTable() {
-        try{
-        	if(buttonsConn.isClosed()){
-        		
-        		connectButtons();
-        	}
-        }
-        catch(NullPointerException np){
-        	connectButtons();
-        }
-        catch(Exception er){
-        	plugin.getLogger().info("Conn check failed. " + er.toString());
-        }
-    	
-        String sql = "CREATE TABLE IF NOT EXISTS buttons(x,y,z,world,class)";
+*/
+	
+	//TODO combine all tables into one database, makes way more sense.
+	public void setupDatabases() { createTable(); }
+	
+	private void createTable() {
+        /*
+         * CREATE PRIMARY DATA TABLE -- DOORS & ZONES.
+         */
+		Connection conn = establishDatabaseConnection("mineswarm");
+        if(conn == null){ return; }
+        PreparedStatement pstmt = null;        
         try {
-        	PreparedStatement pstmt = buttonsConn.prepareStatement(sql);
-            pstmt.execute();
+        	pstmt = conn.prepareStatement("CREATE TABLE IF NOT EXISTS zones(id,min_x,min_y,min_z,max_x,max_y,max_z,level,creator,world,pvp_enabled,mob_multiplier)"); 
+        	pstmt.execute();
+        	closePreparedStatementQuietly(pstmt);
             
-        } catch (SQLException e) {plugin.getLogger().info(e.getMessage());}
-        finally{ try {buttonsConn.close();} catch (SQLException e) {} }
-    }		
+            pstmt = conn.prepareStatement("CREATE TABLE IF NOT EXISTS doors(id, level, block_y,creator)");
+            pstmt.execute();
+            closePreparedStatementQuietly(pstmt);
+            
+        } catch (SQLException e) {plugin.getLogger().warning(e.getMessage());}
+        finally {
+        	closePreparedStatementQuietly(pstmt);
+        	closeQuietly(conn);
+        }
+        
+        /*
+         * CREATE BUTTONS TABLE.
+         */
+		conn = establishDatabaseConnection("buttons");
+        if(conn == null){ return; }
+        pstmt = null;        
+        try {
+        	pstmt = conn.prepareStatement("CREATE TABLE IF NOT EXISTS buttons(x,y,z,world,class)"); 
+        	pstmt.execute();
+        	closePreparedStatementQuietly(pstmt);            
+        } catch (SQLException e) {plugin.getLogger().warning(e.getMessage());}
+        finally {
+        	closePreparedStatementQuietly(pstmt);
+        	closeQuietly(conn);
+        }
+        
+        /*
+         * CREATE PLAYER DATA TABLE.
+         */
+		conn = establishDatabaseConnection("playerdata");
+        if(conn == null){ return; }
+        pstmt = null;        
+        try {
+        	pstmt = conn.prepareStatement("CREATE TABLE IF NOT EXISTS players("
+            		+ "name,"
+            		+ "total_damage_taken,"
+            		+ "total_damage_delt,"
+            		+ "kit,"
+            		+ "has_died,"
+            		+ "isdown,"
+            		+ "first_joined,"
+            		+ "team_name,"
+            		+ "team_size,"
+            		+ "deaths,"
+            		+ "players_saved,"
+            		+ "downs,"
+            		+ "been_revived,"
+            		+ "start_time,"
+            		+ "end_time,"
+            		+ "mobs_killed)"); 
+        	pstmt.execute();
+        	closePreparedStatementQuietly(pstmt);            
+        } catch (SQLException e) {plugin.getLogger().warning(e.getMessage());}
+        finally {
+        	closePreparedStatementQuietly(pstmt);
+        	closeQuietly(conn);
+        }
+        
+        /*
+         * CREATE BUTTONS TABLE.
+         */
+		conn = establishDatabaseConnection("chests");
+        if(conn == null){ return; }
+        pstmt = null;        
+        try {
+        	pstmt = conn.prepareStatement("CREATE TABLE IF NOT EXISTS chests(x,y,z,world,creator,items)"); 
+        	pstmt.execute();
+        	closePreparedStatementQuietly(pstmt);            
+        } catch (SQLException e) {plugin.getLogger().warning(e.getMessage());}
+        finally {
+        	closePreparedStatementQuietly(pstmt);
+        	closeQuietly(conn);
+        }
+        
+    }
+	
+		
     public void createTeamsTable() {
     	this.teamsConn = getTeamsConnection();
     	if(this.teamsConn == null) {
@@ -239,38 +313,10 @@ public class Database {
         } catch (SQLException e) {plugin.getLogger().info(e.getMessage());}
         finally{ try {chestConn.close();} catch (SQLException e) {} }
     }	
-	public void createPlayersTable() {
-        try{if(playerConn.isClosed()){ connectPlayers(); }}
-        catch(NullPointerException np){connectPlayers();}
-        catch(Exception er){plugin.getLogger().info("Conn check failed. " + er.toString());}
-        String sql = "CREATE TABLE IF NOT EXISTS players("
-        		+ "name,"
-        		+ "total_damage_taken,"
-        		+ "total_damage_delt,"
-        		+ "kit,"
-        		+ "has_died,"
-        		+ "isdown,"
-        		+ "first_joined,"
-        		+ "team_name,"
-        		+ "team_size,"
-        		+ "deaths,"
-        		+ "players_saved,"
-        		+ "downs,"
-        		+ "been_revived,"
-        		+ "start_time,"
-        		+ "end_time,"
-        		+ "mobs_killed"
-        		+ ");";
-        try {
-        	PreparedStatement pstmt = playerConn.prepareStatement(sql);
-            pstmt.execute();
-        } catch (SQLException e) {plugin.getLogger().info(e.getMessage());}
-        finally{ try {playerConn.close();} catch (SQLException e) {} }
-    }	
+	
 	public void createScoresTable() {
-        try{if(scoreboardConn.isClosed()){ connectScores(); }}
-        catch(NullPointerException np){connectScores();}
-        catch(Exception er){plugin.getLogger().info("Conn check failed. " + er.toString());}
+		Connection conn = establishDatabaseConnection("scoreboard");
+        if(conn == null){ return; }
     	String scoresSQL =
     			"CREATE TABLE IF NOT EXISTS solo_scores("
         		+ "name,"
@@ -396,9 +442,9 @@ public class Database {
     
     
 	public boolean getScores(int topScores) {
-        try{if(scoreboardConn.isClosed()){connectScores();}}
-        catch(NullPointerException np){connectScores();}
-        catch(Exception er){plugin.getLogger().info("Conn check failed. " + er.toString());}
+		Connection conn = establishDatabaseConnection("scoreboard");
+        if(conn == null){ return false; }
+        
     	String sql = "SELECT * FROM scores ORDER BY run_time DESC LIMIT ?";
     	try {
         	PreparedStatement pstmt = conn.prepareStatement(sql);

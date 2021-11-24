@@ -89,6 +89,13 @@ public class ScheduledMobs implements Listener {
 			    		loc = Arrays.asList(data.get(d).split("\\s*,\\s*"));
 			    		world = data.get(d+1);
 			    		location = new Location(Bukkit.getWorld(world), Integer.valueOf(loc.get(0)), Integer.valueOf(loc.get(1)), Integer.valueOf(loc.get(2)));
+			    		//Try:
+			    		/*
+			    		 * if()...
+			    		 * https://hub.spigotmc.org/javadocs/spigot/org/bukkit/World.html#getForceLoadedChunks()
+			    		 * https://hub.spigotmc.org/javadocs/spigot/org/bukkit/World.html#getLoadedChunks()
+			    		 *
+			    		 */
 			    		if(!Bukkit.getWorld(world).getChunkAt(location).isLoaded()) {
 			    			plugin.getLogger().info("World chunk not loaded, skipping mobs");
 			    			continue;//Major error loading chunk as "isLoaded" should load the chunk.
