@@ -32,8 +32,7 @@ import org.bukkit.potion.PotionType;
 
 public class Mineswarm extends JavaPlugin implements Listener{
 
-	public final String version = "1.14.4";
-	//private boolean preventDouble = false;
+	public final String version = "1.17.0";
 	private HashMap<UUID,MSPlayer> msplayers = new HashMap<UUID,MSPlayer>();
 	private Database db = null;
 	private PotionObjects potions = new PotionObjects();
@@ -41,12 +40,11 @@ public class Mineswarm extends JavaPlugin implements Listener{
 	private TeamBoards board = new TeamBoards(this);
 	private MineswarmTeams teams = new MineswarmTeams(this, board);
 	private ScheduledMobs smobs = new ScheduledMobs(this, potions);
-
 	
 	//Util & logging
 	@Override
 	public void onEnable(){
-		getLogger().info("Mineswarm is starting...");
+		getLogger().info(String.format("Mineswarm Version %s is starting...", version));
 	    getServer().getPluginManager().registerEvents(this, this);
 		getLogger().info("Mineswarm has been Registered");	
 		new EventListener(this, teams, board, potions, msplayers, kits);
@@ -58,12 +56,6 @@ public class Mineswarm extends JavaPlugin implements Listener{
         db = new Database(this);
         getLogger().info("Mineswarm Databases have been started...");
         db.setupDatabases();
-		db.createMobsTable();
-		db.createChestsTable();
-		db.createPlayersTable();
-		db.createScoresTable();
-		db.createTeamsTable();
-		db.createButtonsTable();
 		getLogger().info("Mineswarm all Databases have been enabled");
 		getLogger().info("Mineswarm finished Databases...");
 		smobs.startMobs();
@@ -77,7 +69,7 @@ public class Mineswarm extends JavaPlugin implements Listener{
 	@Override
 	public void onDisable(){
 		teams.saveTeamData();
-		//Loop through online players updating players in the DB...
+		//TODO Loop through online players updating players in the DB...
 		
 		getLogger().info("Mineswarm has been disabled");
 	}

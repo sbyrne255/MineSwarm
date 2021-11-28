@@ -614,7 +614,7 @@ public class EventListener implements Listener {
 					
 					String blockID = "X:" + String.valueOf(block.getX()) + "Z:"+String.valueOf(block.getZ()) + "W:"+String.valueOf(block.getWorld());
 					int blockY = block.getY();
-					String level = db.selectDoor(blockID, blockY);
+					String level = db.getDoorByLocation(blockID, blockY);
 					if(level == null || level == "null") { openDoor(block, event);	scheduleDoorClose(block, event); return;}
 					
 					level = "[" + level + "]";

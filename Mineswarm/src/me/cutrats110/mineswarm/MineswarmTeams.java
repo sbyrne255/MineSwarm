@@ -98,32 +98,10 @@ public class MineswarmTeams {
 
 	public boolean saveTeamData() {
 		db.emptyTeamsTable();
-		
-    	Connection teamsConn = db.getTeamsConnection();
-    	if(teamsConn == null) {
-    		plugin.getLogger().info("Connection returned null.");
-    		return false;
-    	}
 		for (Map.Entry<String, MSTeam> team : closedTeams.entrySet()) {
-			try {
-				String sql = "INSERT INTO teams(name, owner, closed, score) VALUES(?,?,?,?)";
-				PreparedStatement pstmt = teamsConn.prepareStatement(sql);
-				pstmt.setString(1, team.getValue().getName());
-				pstmt.setString(2, team.getValue().getOwner().toString());
-				pstmt.setBoolean(3, team.getValue().isClosed());
-				pstmt.setInt(4, team.getValue().getScore());
-				pstmt.executeUpdate();
-			}catch(Exception err) {plugin.getLogger().info("Problem inserting closed team data " + err.toString());}	
-			
-			int team_id = db.getLastID(teamsConn);
+			int team_id = db.updateTeamsTable(team.getValue().getName(), team.getValue().getOwner().toString(), team.getValue().isClosed(), team.getValue().getScore());
 			for(UUID playerID : team.getValue().getMembers()) {
-				try {
-					String sql = "INSERT INTO members(member, team_id) VALUES(?,?)";
-					PreparedStatement pstmt = teamsConn.prepareStatement(sql);
-					pstmt.setString(1, playerID.toString());
-					pstmt.setInt(2, team_id);
-					pstmt.executeUpdate();
-				}catch(Exception err) {plugin.getLogger().warning("Problem inserting closed team members " + err.toString());}
+				db.insertNewTeamMember(playerID.toString(), team_id);
 			}
 		}
 		for (MSTeam team : openTeams) {
