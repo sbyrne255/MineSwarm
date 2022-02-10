@@ -43,6 +43,7 @@ import org.bukkit.event.player.PlayerMoveEvent;
 //import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.world.ChunkUnloadEvent;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.InventoryView;
@@ -604,9 +605,10 @@ public class EventListener implements Listener {
 	@EventHandler
 	public void onPlayerInteract(PlayerInteractEvent event) {
 		try{
+			if(event.getHand() == EquipmentSlot.HAND) return;
+
 			Player player = event.getPlayer();
 			boolean opendoor = false;
-		//if(preventDouble){
 			try{
 				if (event.getAction() == Action.RIGHT_CLICK_BLOCK && event.getClickedBlock().getType().equals(Material.IRON_DOOR)) 
 				{
@@ -658,9 +660,7 @@ public class EventListener implements Listener {
 		catch(Exception err)
 		{
 			plugin.getLogger().info("Problem with opening door in MineSwarm. " + err.toString());
-		}
-		//preventDouble = false; }else{ preventDouble = true;	}	
-			
+		}			
 			if(event.getAction().equals(Action.RIGHT_CLICK_BLOCK) && event.getClickedBlock().getType().equals(Material.JUNGLE_BUTTON)) {
 				Location blockLocation = event.getClickedBlock().getLocation();
 				HashMap<Location, String> buttons = db.getButtons();
