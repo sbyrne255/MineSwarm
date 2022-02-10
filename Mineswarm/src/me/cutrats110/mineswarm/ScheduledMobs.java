@@ -69,7 +69,7 @@ public class ScheduledMobs implements Listener {
 		    	//DB should return, Location, weapon Chance, Weapon Durability, Weapon, Entity Type, Max Entities
 		    	List<String> data = db.getMobSpawners();
 		    	if(data == null) {
-		    		plugin.getLogger().info("No data found");
+		    		plugin.getLogger().info("No mob spawner data found");
 		    		return;
 		    	}
 		    	for(int d = 0; d < data.size()-8; d+=9) {

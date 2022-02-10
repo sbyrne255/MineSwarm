@@ -49,19 +49,20 @@ public class MineswarmTeams {
 	private TeamBoards board;
 	private Database db =null;
 	
-	public boolean loadTeamData() 
-	{
-		Connection teamsConn = db.getTeamsConnection();
-    	if(teamsConn == null) {
-    		plugin.getLogger().info("Connection returned null.");
-    		return false;
-    	}
-    	String sql = "SELECT name, owner, closed, score, rowid as id FROM teams";
+	/* TEAMS MIGRATION STARTS HERE, LOTS TO FIX WITH TEAMS LAYOUT AND GROUPING...
+	 * 
+	 */
+	public boolean loadTeamData() {
+		Connection conn = this.db.connect();
+    	if(conn == null){ plugin.getLogger().warning("Connection to Database Failed, returned null."); }
+    	PreparedStatement pstmt = null;
+    	ResultSet rs = null;
+    	HashMap<Integer, MSTeam> teams = new HashMap<Integer, MSTeam>();
+    	
     	try {
-        	PreparedStatement pstmt = teamsConn.prepareStatement(sql);
-        	HashMap<Integer, MSTeam> teams = new HashMap<Integer, MSTeam>();
+        	pstmt = conn.prepareStatement("SELECT name, owner, closed, score, rowid as id FROM teams");
         	
-            ResultSet rs = pstmt.executeQuery();
+            rs = pstmt.executeQuery();
             UUID id;
             while (rs.next()) {
             	try{id = UUID.fromString(rs.getString("owner"));}
@@ -69,19 +70,25 @@ public class MineswarmTeams {
             	catch (NullPointerException npr) {id = UUID.fromString("053573d9-85a4-4b1a-80b3-c86d08071f24");}
             		
             	MSTeam team = new MSTeam(rs.getString("name"),id, rs.getBoolean("closed"), rs.getInt("score"));
-            	if(rs.getBoolean("closed")) {
-            		closedTeams.put(team.getName(), team);
-            	}
-            	else {
-            		openTeams.add(team);
-            	}
+            	if(rs.getBoolean("closed")) {	closedTeams.put(team.getName(), team);	}
+            	else {	openTeams.add(team);	}
             	teams.put(rs.getInt("id"), team);
-            	plugin.getLogger().info("Adding board for team: " + team.getName());
             	board.createScoreBoard(team.getName());
             }
             
-            sql = "SELECT * FROM members";
-            pstmt = teamsConn.prepareStatement(sql);       	
+    	} catch (SQLException e) {plugin.getLogger().warning(String.format("Error loading team data: ", e.getMessage())); }
+    	finally {
+    		Database.closeResultSetQuietly(rs);
+    		Database.closePreparedStatementQuietly(pstmt);
+    		Database.closeQuietly(conn);
+    	}
+    	
+    	conn = this.db.connect();
+    	if(conn == null){ plugin.getLogger().warning("Connection to Database Failed, returned null."); }
+    	pstmt = null;
+    	rs = null;
+    	try {          
+            pstmt = conn.prepareStatement("SELECT * FROM members");       	
             rs = pstmt.executeQuery();
             while (rs.next()) {
             	MSTeam cur_team = teams.get(rs.getInt("team_id"));
@@ -89,40 +96,32 @@ public class MineswarmTeams {
             	cur_team.addMember(cur_player);
             	players.put(cur_player, cur_team);
             }
-            
-        } catch (SQLException e) {plugin.getLogger().info("ERROR GETTING TEAMS OR MEMBERS: " + e.getMessage());}
-    	finally{ try {teamsConn.close();} catch (SQLException e) {} }		
+    	} catch (SQLException e) {plugin.getLogger().warning(String.format("Error getting team member data: ", e.getMessage())); }
+    	finally {
+    		Database.closeResultSetQuietly(rs);
+    		Database.closePreparedStatementQuietly(pstmt);
+    		Database.closeQuietly(conn);
+    	}
     	
 		return true;
 	}
 
 	public boolean saveTeamData() {
 		db.emptyTeamsTable();
+		
+		//Updates team table
 		for (Map.Entry<String, MSTeam> team : closedTeams.entrySet()) {
 			int team_id = db.updateTeamsTable(team.getValue().getName(), team.getValue().getOwner().toString(), team.getValue().isClosed(), team.getValue().getScore());
 			for(UUID playerID : team.getValue().getMembers()) {
 				db.insertNewTeamMember(playerID.toString(), team_id);
 			}
 		}
+		
 		for (MSTeam team : openTeams) {
-			try {
-				String sql = "INSERT INTO teams(name, closed, score) VALUES(?,?,?)";
-				PreparedStatement pstmt = teamsConn.prepareStatement(sql);
-				pstmt.setString(1, team.getName());
-				pstmt.setBoolean(2, team.isClosed());
-				pstmt.setInt(3, team.getScore());
-				pstmt.executeUpdate();
-			}catch(Exception err) {plugin.getLogger().warning("Problem inserting open team data " +err.toString());}	
+			int team_id = db.updateOpenTeams(team.getName(), team.isClosed(), team.getScore());
 			
-			int team_id = db.getLastID(teamsConn);
 			for(UUID playerID : team.getMembers()) {
-				try {
-					String sql = "INSERT INTO members(member, team_id) VALUES(?,?)";
-					PreparedStatement pstmt = teamsConn.prepareStatement(sql);
-					pstmt.setString(1, playerID.toString());
-					pstmt.setInt(2, team_id);
-					pstmt.executeUpdate();
-				}catch(Exception err) {plugin.getLogger().info("Problem inserting open team members " +err.toString());}
+				db.insertMembers(playerID.toString(), team_id);
 			}
 		}
 		
@@ -444,6 +443,7 @@ public class MineswarmTeams {
 		return true;
 		
 	}
+	
 	/**
 	 * Removes player from team assuming they are part of the team. 
 	 * Sets new owner if owner is leaving team.
@@ -472,6 +472,7 @@ public class MineswarmTeams {
 			return false;
 		}
 	}
+	
 	/**
 	 * Kicks the specified player if sender is owner and player being kicked is part of the team and not the owner
 	 * Player must be online, a member of your team, and sender being the owner.

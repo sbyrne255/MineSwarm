@@ -12,6 +12,8 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
+import org.bukkit.block.BlockState;
 import org.bukkit.block.Chest;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -24,6 +26,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.PotionMeta;
+import org.bukkit.material.Openable;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -32,7 +35,7 @@ import org.bukkit.potion.PotionType;
 
 public class Mineswarm extends JavaPlugin implements Listener{
 
-	public final String version = "1.17.0";
+	public final String version = "1.18.0";
 	private HashMap<UUID,MSPlayer> msplayers = new HashMap<UUID,MSPlayer>();
 	private Database db = null;
 	private PotionObjects potions = new PotionObjects();
@@ -62,6 +65,15 @@ public class Mineswarm extends JavaPlugin implements Listener{
 		getLogger().info("Mineswarm Scheduled Mob spawns have been enabled");
 		getLogger().info("Mineswarm Loading MSTeam data into program.");
 		teams.loadTeamData();
+		//Used to intentionally trigger legacy block error so it doesn't lack the game when something else triggers it... DUMB!
+        try{
+        	BlockState state = Bukkit.getWorlds().get(0).getBlockAt(0,0,0).getRelative(BlockFace.DOWN).getState();
+    		state.getBlock();
+    		
+        	Openable door = (Openable)state.getData();
+        	door.isOpen();	
+        }catch(Exception duh) {}//Casting will cause an error but also requires legacy material, giving the 'desired' result...
+
 		getLogger().info("Mineswarm Loaded MSTeam data.");
 		getLogger().info("Mineswarm has been enabled!");
 
@@ -335,12 +347,13 @@ public class Mineswarm extends JavaPlugin implements Listener{
 				LivingEntity mob;
 				//Spawning just a mob, no weapons, potions, of effects.
 				try {
-					mob = (LivingEntity) Bukkit.getWorld(world).spawnEntity(block.getLocation(), EntityType.valueOf(args[0]));
+					mob = (LivingEntity) Bukkit.getWorld(world).spawnEntity(block.getLocation(), EntityType.valueOf(args[0].toUpperCase()));
 				}
 				catch(Exception err) {
 					player.sendMessage("Unrecognized Mob type.");
 					return true;
 				}
+				
 				if(args.length == 2) {
 					// 			XZY, World, Type, Number, Weapon, Chance, Durability, Enchantments, Effects.
 					db.makeSpawner(xyz, world, args[0].toUpperCase(), Integer.valueOf(args[1]), "NONE", 0, 0, null, null);
@@ -366,6 +379,7 @@ public class Mineswarm extends JavaPlugin implements Listener{
 		    	}
 				//ZOMBIE 5 POTION:54
 				if(weapon == "NONE") {
+					try {Integer.valueOf(args[1]);} catch(Exception intError) {player.sendMessage("No number of mobs given."); return true;}
 					db.makeSpawner(xyz, world, args[0].toUpperCase(), Integer.valueOf(args[1]), weapon, 0, 0, enchantments, effects);
 					return true;
 				}

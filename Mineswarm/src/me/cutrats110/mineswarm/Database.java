@@ -1,6 +1,5 @@
 package me.cutrats110.mineswarm;
 
-import java.io.File;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -32,6 +31,7 @@ public class Database {
 		plugin = instance;
 	}
 	
+	public Connection connect() { return establishDatabaseConnection();  };
 	private Connection establishDatabaseConnection() { return establishDatabaseConnection("mineswarm"); }
 	private Connection establishDatabaseConnection(String database) {
 		try {
@@ -52,7 +52,8 @@ public class Database {
 	private static void close(Connection conn) throws SQLException {
 		if (conn != null) { conn.close(); }
 	}
-	private static void closeQuietly(Connection conn) {
+	//Make private after teams class organization fixed...
+	public static void closeQuietly(Connection conn) {
     	try { close(conn); } 
     	catch (SQLException e) {
     		//TODO Add loging to txt file./
@@ -61,7 +62,8 @@ public class Database {
 	private static void closePreparedStatement(PreparedStatement prep) throws SQLException {
 		if (prep != null) { prep.close(); }
 	}
-	private static void closePreparedStatementQuietly(PreparedStatement prep) {
+	//Make private after teams class organization fixed...
+	public static void closePreparedStatementQuietly(PreparedStatement prep) {
     	try { closePreparedStatement(prep); } 
     	catch (SQLException e) {
     		//TODO Add loging to txt file./
@@ -70,7 +72,8 @@ public class Database {
 	private static void closeResultSet(ResultSet rs) throws SQLException {
 		if (rs != null) { rs.close(); }
 	}
-	private static void closeResultSetQuietly(ResultSet rs) {
+	//Make private after teams class organization fixed...
+	public static void closeResultSetQuietly(ResultSet rs) {
 		try { closeResultSet(rs); } 
     	catch (SQLException e) {
     		//TODO Add loging to txt file./
@@ -93,6 +96,7 @@ public class Database {
         	pstmt = conn.prepareStatement("CREATE TABLE IF NOT EXISTS zones(id,min_x,min_y,min_z,max_x,max_y,max_z,level,creator,world,pvp_enabled,mob_multiplier)"); 
         	pstmt.execute();
         	closePreparedStatementQuietly(pstmt);
+        	plugin.getLogger().info("    Zones Setup...");
             
         	/*
              * CREATE DOORS TABLE.
@@ -100,13 +104,14 @@ public class Database {
             pstmt = conn.prepareStatement("CREATE TABLE IF NOT EXISTS doors(id, level, block_y,creator)");
             pstmt.execute();
             closePreparedStatementQuietly(pstmt);
-            
+            plugin.getLogger().info("    Doors Setup...");
             /*
              * CREATE BUTTONS TABLE.
              */
             pstmt = conn.prepareStatement("CREATE TABLE IF NOT EXISTS buttons(x,y,z,world,class)"); 
         	pstmt.execute();
-        	closePreparedStatementQuietly(pstmt); 
+        	closePreparedStatementQuietly(pstmt);
+        	plugin.getLogger().info("    Buttons Setup...");
         	
         	 /*
              * CREATE PLAYERS TABLE.
@@ -114,6 +119,7 @@ public class Database {
         	pstmt = conn.prepareStatement("CREATE TABLE IF NOT EXISTS players(name, total_damage_taken, total_damage_delt, kit, has_died, isdown, first_joined, team_name, team_size, deaths, players_saved, downs, been_revived, start_time, end_time, mobs_killed)"); 
         	pstmt.execute();
         	closePreparedStatementQuietly(pstmt);   
+        	plugin.getLogger().info("    Players Setup...");
         	
         	/*
              * CREATE CHESTS TABLE.
@@ -121,20 +127,23 @@ public class Database {
         	pstmt = conn.prepareStatement("CREATE TABLE IF NOT EXISTS chests(x,y,z,world,creator,items)"); 
         	pstmt.execute();
         	closePreparedStatementQuietly(pstmt);
+        	plugin.getLogger().info("    Chests Setup...");
         	
         	/*
              * CREATE TEAMS TABLE.
              */
         	pstmt = conn.prepareStatement("CREATE TABLE IF NOT EXISTS teams (name TEXT, owner TEXT, closed INTEGER, score INTEGER)"); 
         	pstmt.execute();
-        	closePreparedStatementQuietly(pstmt);      
+        	closePreparedStatementQuietly(pstmt);     
+        	plugin.getLogger().info("    Teams Setup...");
         	
         	/*
              * CREATE MEMBERS TABLE.
              */
         	pstmt = conn.prepareStatement("CREATE TABLE IF NOT EXISTS members(team_id INTEGER, member TEXT)"); 
         	pstmt.execute();
-        	closePreparedStatementQuietly(pstmt);     
+        	closePreparedStatementQuietly(pstmt);    
+        	plugin.getLogger().info("    Members Setup...");
         	
         	/*
              * CREATE SPAWNERS TABLE.
@@ -142,13 +151,15 @@ public class Database {
         	pstmt = conn.prepareStatement("CREATE TABLE IF NOT EXISTS spawners(location,world,etype,max_mobs,chance,weapons,durability,enchantments, effects)"); 
         	pstmt.execute();
         	closePreparedStatementQuietly(pstmt);  
+        	plugin.getLogger().info("    Spawners Setup...");
         	
         	/*
              * CREATE SOLO_SCORES TABLE.
              */
-        	pstmt = conn.prepareStatement("CREATE TABLE IF NOT EXISTS solo_scores(name, total_damage_taken, total_damage_delt, kit, first_joined, team_name, team_size, deaths, players_saved, downs, been_revived, start_time, end_time, run_time, mobs_killed, team_members"); 
+        	pstmt = conn.prepareStatement("CREATE TABLE IF NOT EXISTS solo_scores(name, total_damage_taken, total_damage_delt, kit, first_joined, team_name, team_size, deaths, players_saved, downs, been_revived, start_time, end_time, run_time, mobs_killed, team_members)"); 
         	pstmt.execute();
         	closePreparedStatementQuietly(pstmt);
+        	plugin.getLogger().info("    Solo Scores Setup...");
         	
         	/*
              * CREATE TEAM_SCORES TABLE.
@@ -156,6 +167,7 @@ public class Database {
         	pstmt = conn.prepareStatement("CREATE TABLE IF NOT EXISTS team_scores(total_damage_taken, total_damage_delt, team_name, team_size, deaths, players_saved, downs, been_revived, start_time, end_time, run_time, mobs_killed, team_members)"); 
         	pstmt.execute();
         	closePreparedStatementQuietly(pstmt);  
+        	plugin.getLogger().info("    Team Scores Setup...");
             
         } catch (SQLException e) {plugin.getLogger().warning(e.getMessage());}
         finally {
@@ -278,7 +290,6 @@ public class Database {
     	}	
 		return true;
 	}
-	
     public String getDoorByLocation(String location, int y){
     	Connection conn = establishDatabaseConnection();
     	if(conn == null){ plugin.getLogger().warning("Connection to Database Failed, returned null."); }
@@ -371,23 +382,12 @@ public class Database {
     	}	
     }
     public void makeZone(String id, int min_x, int min_y, int min_z, int max_x, int max_y, int max_z, String level, String creator, String world, boolean pvp_enabled, int mob_multiplier) {
-        try{
-        	if(conn.isClosed()){
-        		
-        		connect();
-        	}
-        }
-        catch(NullPointerException np){
-        	connect();
-        }
-        catch(Exception er){
-        	plugin.getLogger().info("Conn check failed. " + er.toString());
-        }
+    	Connection conn = establishDatabaseConnection();
+    	if(conn == null){ plugin.getLogger().warning("Connection to Database Failed, returned null."); }
+    	PreparedStatement pstmt = null;
     	
-    	
-    	String sql = "INSERT INTO zones(id, min_x, min_y, min_z, max_x, max_y, max_z, level, creator, world, pvp_enabled, mob_multiplier) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)";
-        try (
-        	PreparedStatement pstmt = conn.prepareStatement(sql)) {
+    	try {
+    		pstmt = conn.prepareStatement("INSERT INTO zones(id, min_x, min_y, min_z, max_x, max_y, max_z, level, creator, world, pvp_enabled, mob_multiplier) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)"); 
         	pstmt.setString(1, id);
             pstmt.setInt(2, min_x);
             pstmt.setInt(3, min_y);
@@ -403,24 +403,21 @@ public class Database {
             
             
             pstmt.executeUpdate();
-        } catch (SQLException e) {plugin.getLogger().info(e.getMessage());}
-        finally{ try {conn.close();} catch (SQLException e) {} }
+    	} catch (SQLException e) {plugin.getLogger().warning(String.format("Error making zone data: ", e.getMessage())); }
+    	finally {
+            closePreparedStatementQuietly(pstmt);
+    	    closeQuietly(conn);
+    	}	
     }
     public String selectZoneLevel(int x, int y, int z, String world) {
-        String sql = "SELECT level FROM zones WHERE min_x < ? AND min_z < ? AND min_y < ? AND max_y > ? AND max_x > ? AND max_z > ? AND world = ? LIMIT 1";
-        try{
-        	if(conn.isClosed()){
-        		connect();
-        	}
-        }
-        catch(NullPointerException np){
-        	connect();
-        }
-        catch(Exception er){
-        	plugin.getLogger().info("Conn check failed. " + er.toString());
-        }
-        try {
-            	PreparedStatement pstmt = conn.prepareStatement(sql);
+        Connection conn = establishDatabaseConnection();
+    	if(conn == null){ plugin.getLogger().warning("Connection to Database Failed, returned null."); }
+    	PreparedStatement pstmt = null;
+    	ResultSet rs = null;
+    	String results = "Generic";
+    	
+    	try {
+            	pstmt = conn.prepareStatement("SELECT level FROM zones WHERE min_x < ? AND min_z < ? AND min_y < ? AND max_y > ? AND max_x > ? AND max_z > ? AND world = ? LIMIT 1");
                 pstmt.setInt(1, x);
                 pstmt.setInt(2, z);
                 pstmt.setInt(3, y);
@@ -428,30 +425,28 @@ public class Database {
                 pstmt.setInt(5, x);
                 pstmt.setInt(6, z);
                 pstmt.setString(7, world);                
-                ResultSet rs = pstmt.executeQuery();
-                while (rs.next()) {
-                    return rs.getString("level");                    
+                rs = pstmt.executeQuery();
+                while (rs.next()) {                	
+                    results = rs.getString("level");
+                    break;
                 }
-        }
-        catch (Exception e) {plugin.getLogger().info("ERROR SELECTING: " + e.getMessage());}
-        finally{ try {conn.close();} catch (SQLException e) {} }
-        return "Generic";
+    	} catch (SQLException e) {plugin.getLogger().warning(String.format("Error selecting zone data: ", e.getMessage())); }
+    	finally {
+    		closeResultSetQuietly(rs);
+            closePreparedStatementQuietly(pstmt);
+    	    closeQuietly(conn);
+    	}	
+        return results;
     }
     public boolean selectZonePVP(int x, int y, int z, String world) {
-        String sql = "SELECT pvp_enabled FROM zones WHERE min_x < ? AND min_z < ? AND min_y < ? AND max_y > ? AND max_x > ? AND max_z > ? AND world = ? LIMIT 1";
-        try{
-        	if(conn.isClosed()){
-        		connect();
-        	}
-        }
-        catch(NullPointerException np){
-        	connect();
-        }
-        catch(Exception er){
-        	plugin.getLogger().info("Conn check failed. " + er.toString());
-        }
-        try {
-            	PreparedStatement pstmt = conn.prepareStatement(sql);
+        Connection conn = establishDatabaseConnection();
+    	if(conn == null){ plugin.getLogger().warning("Connection to Database Failed, returned null."); }
+    	PreparedStatement pstmt = null;
+    	ResultSet rs = null;
+    	Boolean results = plugin.getConfig().getBoolean("default-pvp-on");;
+    	
+    	try {
+            	pstmt = conn.prepareStatement("SELECT pvp_enabled FROM zones WHERE min_x < ? AND min_z < ? AND min_y < ? AND max_y > ? AND max_x > ? AND max_z > ? AND world = ? LIMIT 1");
                 pstmt.setInt(1, x);
                 pstmt.setInt(2, z);
                 pstmt.setInt(3, y);
@@ -459,31 +454,28 @@ public class Database {
                 pstmt.setInt(5, x);
                 pstmt.setInt(6, z);
                 pstmt.setString(7, world);                
-                ResultSet rs = pstmt.executeQuery();
+                rs = pstmt.executeQuery();
                 while (rs.next()) {
-                    return rs.getBoolean("pvp_enabled");
+                	results = rs.getBoolean("pvp_enabled");
+                	break;
                 }
-        }
-        catch (Exception e) {plugin.getLogger().info("ERROR SELECTING: " + e.getMessage());}
-        finally{ try {conn.close();} catch (SQLException e) {} }
-        return plugin.getConfig().getBoolean("default-pvp-on");
+    	} catch (SQLException e) {plugin.getLogger().warning(String.format("Error selecting zone's PVP data: ", e.getMessage())); }
+    	finally {
+    		closeResultSetQuietly(rs);
+            closePreparedStatementQuietly(pstmt);
+    	    closeQuietly(conn);
+    	}	
+        return results;
     }
     public List<String> showZone(int x, int y, int z, String world) {
-        String sql = "SELECT * FROM zones WHERE min_x < ? AND min_z < ? AND min_y < ? AND max_y > ? AND max_x > ? AND max_z > ? AND world = ? LIMIT 1";
-        try{
-        	if(conn.isClosed()){
-        		connect();
-        	}
-        }
-        catch(NullPointerException np){
-        	connect();
-        }
-        catch(Exception er){
-        	plugin.getLogger().info("Conn check failed. " + er.toString());
-        }
-        List<String> data = new ArrayList<String>();
+        Connection conn = establishDatabaseConnection();
+    	if(conn == null){ plugin.getLogger().warning("Connection to Database Failed, returned null."); }
+    	PreparedStatement pstmt = null;
+    	ResultSet rs = null;
+    	List<String> data = null;
+    	
         try {
-            	PreparedStatement pstmt = conn.prepareStatement(sql);
+            	pstmt = conn.prepareStatement("SELECT * FROM zones WHERE min_x < ? AND min_z < ? AND min_y < ? AND max_y > ? AND max_x > ? AND max_z > ? AND world = ? LIMIT 1");
                 pstmt.setInt(1, x);
                 pstmt.setInt(2, z);
                 pstmt.setInt(3, y);
@@ -491,8 +483,9 @@ public class Database {
                 pstmt.setInt(5, x);
                 pstmt.setInt(6, z);
                 pstmt.setString(7, world);                
-                ResultSet rs = pstmt.executeQuery();
+                rs = pstmt.executeQuery();
                 while (rs.next()) {
+                	data = new ArrayList<String>();
                 	data.add("Starting points: X: " + rs.getString("min_x") + " Y: " + rs.getString("min_y") + " Z: " + rs.getString("min_z"));
                 	data.add("Ending points: X: " + rs.getString("max_x") + " Y: " + rs.getString("max_y") + " Z: " + rs.getString("max_z"));
                 	data.add("World: " + rs.getString("world"));
@@ -501,96 +494,95 @@ public class Database {
                 	data.add("Created by: " + rs.getString("creator"));
                 	data.add("Level: " + rs.getString("level"));
                 	data.add("Name/ID: " + rs.getString("id"));
-                	conn.close();
-                	return data;                
+                	break;                
                 }
-        }
-        catch (Exception e) {plugin.getLogger().info("ERROR SELECTING: " + e.getMessage());}
-        finally{ try {conn.close();} catch (SQLException e) {} }
-        data.add("No zone found.");
+        } catch (SQLException e) {plugin.getLogger().warning(String.format("Error selecting zone's PVP data: ", e.getMessage())); }
+    	finally {
+    		closeResultSetQuietly(rs);
+            closePreparedStatementQuietly(pstmt);
+    	    closeQuietly(conn);
+    	}	
+        if(data.size() <= 0) {data.add("No zone found.");}
+        
         return data;
     } 
     public List<String> tpToZone(String name) {
-        String sql = "SELECT * FROM zones WHERE id = ? OR level = ? LIMIT 1";
-        try{
-        	if(conn.isClosed()){
-        		connect();
-        	}
-        }
-        catch(NullPointerException np){
-        	connect();
-        }
-        catch(Exception er){
-        	plugin.getLogger().info("Conn check failed. " + er.toString());
-        }
-        List<String> data = new ArrayList<String>();
+        Connection conn = establishDatabaseConnection();
+    	if(conn == null){ plugin.getLogger().warning("Connection to Database Failed, returned null."); }
+    	PreparedStatement pstmt = null;
+    	ResultSet rs = null;
+    	List<String> data = null;
+    	
         try {
-            	PreparedStatement pstmt = conn.prepareStatement(sql);
+            	pstmt = conn.prepareStatement("SELECT * FROM zones WHERE id = ? OR level = ? LIMIT 1");
                 pstmt.setString(1, name);
                 pstmt.setString(2, name);  
-                ResultSet rs = pstmt.executeQuery();
+                rs = pstmt.executeQuery();
                 while (rs.next()) {
                 	int x =  ((Integer.valueOf(rs.getString("min_x"))) + (Integer.valueOf(rs.getString("max_x"))))/2;//Middle of X
                 	int y =  ((Integer.valueOf(rs.getString("min_y"))) + (Integer.valueOf(rs.getString("max_y"))))/2;//Middle of Y
                 	int z =  ((Integer.valueOf(rs.getString("min_z"))) + (Integer.valueOf(rs.getString("max_z"))))/2;//Middle of Z
                 	String world = rs.getString("world").replace("CraftWorld{name=", "").replace("}", "");
                 	
+                	data = new ArrayList<String>();
                 	data.add(world);
                 	data.add(String.valueOf(x));
                 	data.add(String.valueOf(y));
                 	data.add(String.valueOf(z));
-                	conn.close();
-                	return data;                
+                	break;
                 }
-        }
-        catch (Exception e) {plugin.getLogger().info("ERROR SELECTING: " + e.getMessage());}
-        finally{ try {conn.close();} catch (SQLException e) {} }
-        return null;
+        } catch (SQLException e) {plugin.getLogger().warning(String.format("Error finding TP Zone data: ", e.getMessage())); }
+    	finally {
+    		closeResultSetQuietly(rs);
+            closePreparedStatementQuietly(pstmt);
+    	    closeQuietly(conn);
+    	}	
+        if(data.size() <= 0) {data.add("No zone found.");}
+        
+        return data;
     }
-
+    //TODO Change from list to custom data type, makes future changes 100x easier...
     public List<String> getMobSpawners() {
-        String sql = "SELECT * FROM spawners";
-        try{if(conn.isClosed()){connectMobs();}}
-        catch(NullPointerException np){connectMobs();}
-        catch(Exception er){plugin.getLogger().info("Conn check failed. " + er.toString());}
-        List<String> data = new ArrayList<String>();
-        try {
-            	PreparedStatement pstmt = mobConn.prepareStatement(sql);             
-                ResultSet rs = pstmt.executeQuery();
-                
-                while (rs.next()) {
-                	try{
-                		data.add(rs.getString("location"));//0
-	                	data.add(rs.getString("world"));//1
-	                	data.add(rs.getString("etype"));//2
-	                	data.add(rs.getString("max_mobs"));//3 
-	                	data.add(rs.getString("chance"));//4
-	                	data.add(rs.getString("weapons"));//5
-	                	data.add(rs.getString("durability"));//6
-	                	data.add(rs.getString("enchantments"));//7
-	                	data.add(rs.getString("effects"));//8
-                	}
-                	catch(Exception er){
-                		plugin.getLogger().info("Error " + er.toString());
-                	}
-                	          
-                }
-                return data;
-        }
-        catch (Exception e) {plugin.getLogger().info("ERROR SELECTING MOB SPAWNERS...: " + e.toString());}
-        finally{ try {mobConn.close();} catch (SQLException e) {} }
-        return null;
-    }
-    public void makeSpawner(String location, String world, String mobType, int maxMobs, String weapon, int chance, int durability, List<String> enchantments, List<String> effects) {
-        try{
-        	if(mobConn.isClosed()){plugin.getLogger().info("OPENING CONNECTION...");connectMobs();}}
-        catch(NullPointerException np){plugin.getLogger().info("NULL, OPENING CONNECTION...");connectMobs();}
-        catch(Exception er){plugin.getLogger().info("Conn check failed. " + er.toString());}
+        Connection conn = establishDatabaseConnection();
+    	if(conn == null){ plugin.getLogger().warning("Connection to Database Failed, returned null."); }
+    	PreparedStatement pstmt = null;
+    	ResultSet rs = null;
+    	List<String> data = null;
     	
-    	String sql = "INSERT INTO spawners(location,world,etype,max_mobs,chance,weapons,durability,enchantments,effects)"
-    			+ " VALUES(?,?,?,?,?,?,?,?,?)";
         try {
-        	PreparedStatement pstmt = mobConn.prepareStatement(sql);
+            pstmt = conn.prepareStatement("SELECT * FROM spawners");             
+            rs = pstmt.executeQuery();
+            data = new ArrayList<String>();
+                
+            while (rs.next()) {
+            	data.add(rs.getString("location"));//0
+               	data.add(rs.getString("world"));//1
+               	data.add(rs.getString("etype"));//2
+               	data.add(rs.getString("max_mobs"));//3 
+               	data.add(rs.getString("chance"));//4
+               	data.add(rs.getString("weapons"));//5
+               	data.add(rs.getString("durability"));//6
+               	data.add(rs.getString("enchantments"));//7
+               	data.add(rs.getString("effects"));//8
+            }
+        } catch (SQLException e) {plugin.getLogger().warning(String.format("Error selecting mob spawner data: ", e.getMessage())); }
+    	finally {
+    		closeResultSetQuietly(rs);
+            closePreparedStatementQuietly(pstmt);
+    	    closeQuietly(conn);
+    	}	
+        return data;
+    }
+    
+    //TODO Make custom type, again easier to change in future.
+    public void makeSpawner(String location, String world, String mobType, int maxMobs, String weapon, int chance, int durability, List<String> enchantments, List<String> effects) {
+    	Connection conn = establishDatabaseConnection();
+    	if(conn == null){ plugin.getLogger().warning("Connection to Database Failed, returned null."); }
+    	PreparedStatement pstmt = null;
+    	
+        try {
+        	pstmt = conn.prepareStatement("INSERT INTO spawners(location,world,etype,max_mobs,chance,weapons,durability,enchantments,effects)"
+        			+ " VALUES(?,?,?,?,?,?,?,?,?)");
         	if(enchantments == null || enchantments.isEmpty()) {pstmt.setString(8, "NONE");}
         	else {pstmt.setString(8, StringUtils.join(enchantments, ","));}//Convert list to CSV string
         	if(effects==null || effects.isEmpty()) {pstmt.setString(9, "NONE");}
@@ -604,172 +596,136 @@ public class Database {
         	pstmt.setInt(7, durability);
                     
             pstmt.executeUpdate();
-        } catch (SQLException e) {plugin.getLogger().info("PROBLEM ADDING MOB SPAWNER TO DB: " + e.toString());}
-        catch(Exception err){
-        	plugin.getLogger().info("BAD IN INSERT, NOT SQL PROBLEM: " + err.toString());
-        }
-        finally{ try {mobConn.close();} catch (Exception e) {} }
+        } catch (SQLException e) {plugin.getLogger().warning(String.format("Error creating mob spawner: ", e.getMessage())); }
+    	finally {
+            closePreparedStatementQuietly(pstmt);
+    	    closeQuietly(conn);
+    	}
     }
        
     public void createChest(int x, int y, int z, String world, String creator, String items) {
-        try{
-        	if(chestConn.isClosed()){
-        		
-        		plugin.getLogger().info("OPENING CONNECTION...");
-        		connectChests();
-        	}
-        }
-        catch(NullPointerException np){
-        	plugin.getLogger().info("NULL, OPENING CONNECTION...");
-        	connectChests();
-        }
-        catch(Exception er){
-        	plugin.getLogger().info("Conn check failed. " + er.toString());
-        }
-    	
-    	String sql = "INSERT INTO chests(x,y,z,world,creator,items)"
-    			+ " VALUES(?,?,?,?,?,?)";
+    	Connection conn = establishDatabaseConnection();
+    	if(conn == null){ plugin.getLogger().warning("Connection to Database Failed, returned null."); }
+    	PreparedStatement pstmt = null;
+
         try {
-        	PreparedStatement pstmt = chestConn.prepareStatement(sql);
+        	pstmt = conn.prepareStatement("INSERT INTO chests(x,y,z,world,creator,items)"
+        			+ " VALUES(?,?,?,?,?,?)");
         	pstmt.setInt(1, x);
         	pstmt.setInt(2, y);
         	pstmt.setInt(3, z);
         	pstmt.setString(4, world);
         	pstmt.setString(5, creator);
         	pstmt.setString(6, items);
-
-            
             pstmt.executeUpdate();
-        } catch (SQLException e) {plugin.getLogger().info("Problem inserting new chest data: " + e.toString());}
-        catch(Exception err){
-        	plugin.getLogger().info("SQL error see error: " + err.toString());
-        }
-        finally{ try {chestConn.close();} catch (Exception e) {} }
+            
+        } catch (SQLException e) {plugin.getLogger().warning(String.format("Error creating chest: ", e.getMessage())); }
+    	finally {
+            closePreparedStatementQuietly(pstmt);
+    	    closeQuietly(conn);
+    	}
     }
 
-    public ResultSet getChests(PotionObjects potions) {
-        String sql = "SELECT * FROM chests";
-        try{
-        	if(conn.isClosed()){
-        		connectChests();
-        	}
-        }
-        catch(NullPointerException np){
-        	connectChests();
-        }
-        catch(Exception er){
-        	plugin.getLogger().info("Conn check failed. " + er.toString());
-        }
-        
-        try {
-        	PreparedStatement pstmt = chestConn.prepareStatement(sql);    
-        	
-	    	ResultSet rs = pstmt.executeQuery();
-	    	try {
-	    		Chest chest;
-				while (rs.next()) {
-					try {
-						chest = (Chest) new Location(Bukkit.getWorld(rs.getString("world")), rs.getInt("x"),rs.getInt("y"),rs.getInt("z")).getBlock().getState();
-						List<String> items = Arrays.asList(rs.getString("items").split("\\s*,\\s*"));
-						ItemStack[] contents = new ItemStack[(items.size()/2)];
-						int j = 0;
-						for(int i = 0; i < items.size(); i+=2) {//This builds my itemStack array...
-							ItemStack toAdd = null;
+    public void getChests(PotionObjects potions) {
+        Connection conn = establishDatabaseConnection();
+    	if(conn == null){ plugin.getLogger().warning("Connection to Database Failed, returned null."); }
+    	PreparedStatement pstmt = null;
+    	ResultSet rs = null;
+    	try {
+    		pstmt = conn.prepareStatement("SELECT * FROM chests");
+	    	rs = pstmt.executeQuery();
+    		Chest chest;
+			while (rs.next()) {
+				try {
+					chest = (Chest) new Location(Bukkit.getWorld(rs.getString("world")), rs.getInt("x"),rs.getInt("y"),rs.getInt("z")).getBlock().getState();
+					List<String> items = Arrays.asList(rs.getString("items").split("\\s*,\\s*"));
+					ItemStack[] contents = new ItemStack[(items.size()/2)];
+					int j = 0;
+					for(int i = 0; i < items.size(); i+=2) {//This builds my itemStack array...
+						ItemStack toAdd = null;
+		    			try {
+		    				int pID = Integer.valueOf(items.get(i).toString());//Should error out here if it's not an ID...
+		    				MakePotion potionData = potions.getDrinkableDataById(pID);
+		    				if(potionData.isSplash) {
+		    					toAdd = new ItemStack(Material.SPLASH_POTION, Integer.valueOf(items.get(i+1).toString()));
+		    				}else {
+		    					toAdd = new ItemStack(Material.POTION, Integer.valueOf(items.get(i+1).toString()));
+		    				}
 			    			try {
-			    				int pID = Integer.valueOf(items.get(i).toString());//Should error out here if it's not an ID...
-			    				MakePotion potionData = potions.getDrinkableDataById(pID);
-			    				if(potionData.isSplash) {
-			    					toAdd = new ItemStack(Material.SPLASH_POTION, Integer.valueOf(items.get(i+1).toString()));
-			    				}else {
-			    					toAdd = new ItemStack(Material.POTION, Integer.valueOf(items.get(i+1).toString()));
-			    				}
-				    			try {
-					    				ItemMeta im = toAdd.getItemMeta();
-					    				im.setDisplayName(potionData.name);
-					    				PotionMeta pm = (PotionMeta) im;
-					    				for(PotionEffectType effect : potionData.effectTypes) {
-					    					//									Type	time in seconds probably	amplifier(1=2)
-					    					pm.addCustomEffect(new PotionEffect(effect, (int)potionData.duration, potionData.amplifier), true);
-					    				}
-					    				pm.setColor(potionData.color);
-					    				toAdd.setItemMeta(im);
-				    			}
-				    			catch(Exception err) {plugin.getLogger().info("ERROR : " + err.toString());}
-			    				
-			    				
-			    				
-			    			}catch(NumberFormatException  nf) {
-			    				//Tipped Arrow?
-			    				try {
-			    				int pID = Integer.valueOf(items.get(i).toString().replaceAll("TIPPED_ARROW:", ""));//Should error out here if it's not an ID...
-			    				MakePotion potionData = potions.getDrinkableDataById(pID);
-								if(items.get(i).toUpperCase().contains("TIPPED_ARROW:")) {    					
-			    					toAdd = new ItemStack(Material.TIPPED_ARROW, Integer.valueOf(items.get(i+1)));
-			    					
-			    					ItemMeta im = toAdd.getItemMeta();
-			    					PotionMeta pm = (PotionMeta) im;
-			    					//meta.setBasePotionData(new PotionData(PotionType.valueOf(stuff.get(0).toUpperCase().replace("TIPPED_ARROW:", ""))) );
-			    					im.setDisplayName(potionData.name);
-			        				for(PotionEffectType effect : potionData.effectTypes) {
-			        					pm.addCustomEffect(new PotionEffect(effect, (int)potionData.duration, potionData.amplifier), true);
-			        				}
-			        				pm.setColor(potionData.color);
-			    					toAdd.setItemMeta(im);
-			    				}
-			    				}catch(NumberFormatException nfe) {
-									toAdd = new ItemStack(Material.getMaterial(items.get(i).toString()),Integer.valueOf(items.get(i+1)));
-								}
+				    				ItemMeta im = toAdd.getItemMeta();
+				    				im.setDisplayName(potionData.name);
+				    				PotionMeta pm = (PotionMeta) im;
+				    				for(PotionEffectType effect : potionData.effectTypes) {
+				    					//									Type	time in seconds probably	amplifier(1=2)
+				    					pm.addCustomEffect(new PotionEffect(effect, (int)potionData.duration, potionData.amplifier), true);
+				    				}
+				    				pm.setColor(potionData.color);
+				    				toAdd.setItemMeta(im);
 			    			}
-			    			if(toAdd != null) {
-			    				contents[j] = toAdd;
-			    			}							
-							j++;
-						}
-						chest.getBlockInventory().setContents(contents);
-					}catch(Exception err) {
-						plugin.getLogger().info("Failed to cast block: " + err.toString());
+			    			catch(Exception err) {plugin.getLogger().info("ERROR : " + err.toString());}
+		    				
+		    			}catch(NumberFormatException  nf) {
+		    				//Tipped Arrow?
+		    				try {
+		    				int pID = Integer.valueOf(items.get(i).toString().replaceAll("TIPPED_ARROW:", ""));//Should error out here if it's not an ID...
+		    				MakePotion potionData = potions.getDrinkableDataById(pID);
+							if(items.get(i).toUpperCase().contains("TIPPED_ARROW:")) {    					
+		    					toAdd = new ItemStack(Material.TIPPED_ARROW, Integer.valueOf(items.get(i+1)));
+		    					
+		    					ItemMeta im = toAdd.getItemMeta();
+		    					PotionMeta pm = (PotionMeta) im;
+		    					//meta.setBasePotionData(new PotionData(PotionType.valueOf(stuff.get(0).toUpperCase().replace("TIPPED_ARROW:", ""))) );
+		    					im.setDisplayName(potionData.name);
+		        				for(PotionEffectType effect : potionData.effectTypes) {
+		        					pm.addCustomEffect(new PotionEffect(effect, (int)potionData.duration, potionData.amplifier), true);
+		        				}
+		        				pm.setColor(potionData.color);
+		    					toAdd.setItemMeta(im);
+		    				}
+		    				}catch(NumberFormatException nfe) {
+								toAdd = new ItemStack(Material.getMaterial(items.get(i).toString()),Integer.valueOf(items.get(i+1)));
+							}
+		    			}
+		    			if(toAdd != null) {
+		    				contents[j] = toAdd;
+		    			}							
+						j++;
 					}
-					
+					chest.getBlockInventory().setContents(contents);
+				}catch(Exception err) {
+					plugin.getLogger().info("Failed to cast block: " + err.toString());
 				}
-			} catch (Exception e) {
-				plugin.getLogger().info(e.toString());
+				
 			}
-        	
-        	
-        	
-            return null;                
-        }
-        catch (Exception e) {plugin.getLogger().info("General Error...: " + e.toString());}
-        finally{ try {chestConn.close();} catch (SQLException e) {} }
-        return null;
+    	} catch (SQLException e) {plugin.getLogger().warning(String.format("Error getting chest data: ", e.getMessage())); }
+    	finally {
+    		closeResultSetQuietly(rs);
+            closePreparedStatementQuietly(pstmt);
+    	    closeQuietly(conn);
+    	}
     }
 
     public boolean playerExists(String name) {
-        String sql = "SELECT * FROM players WHERE name = ?";
-        try{
-        	if(playerConn.isClosed()){
-        		connectPlayers();
-        	}
-        }
-        catch(NullPointerException np){
-        	connectPlayers();
-        }
-        catch(Exception er){
-        	plugin.getLogger().info("Conn check failed. " + er.toString());
-        }
-        try {
-            	PreparedStatement pstmt = playerConn.prepareStatement(sql);
-                pstmt.setString(1, name);           
-                ResultSet rs = pstmt.executeQuery();
-                
-                while (rs.next()) {
-                	playerConn.close();
-                	return true;
-                }
-        }
-        catch (Exception e) {plugin.getLogger().info("ERROR SELECTING PLAYER...: " + e.toString());}
-        finally{ try {playerConn.close();} catch (SQLException e) {} }
-        return false;   
+        Connection conn = establishDatabaseConnection();
+    	if(conn == null){ plugin.getLogger().warning("Connection to Database Failed, returned null."); }
+    	PreparedStatement pstmt = null;
+    	ResultSet rs = null;
+    	Boolean exists = false;
+    	try {
+        	pstmt = conn.prepareStatement("SELECT * FROM players WHERE name = ?");
+            pstmt.setString(1, name);           
+            rs = pstmt.executeQuery();
+            while (rs.next()) {
+            	exists = true;
+            	break;
+            }
+    	} catch (SQLException e) {plugin.getLogger().warning(String.format("Error getting player existence: ", e.getMessage())); }
+    	finally {
+    		closeResultSetQuietly(rs);
+            closePreparedStatementQuietly(pstmt);
+    	    closeQuietly(conn);
+    	}
+    	return exists;   
     }
     
      
@@ -781,8 +737,8 @@ public class Database {
     }
 
 	public int updateTeamsTable(String name, String string, boolean closed, int score) {
-		Connection conn = establishDatabaseConnection("mineswarm");
-        if(conn == null){ return -1; }
+		Connection conn = establishDatabaseConnection();
+    	if(conn == null){ plugin.getLogger().warning("Connection to Database Failed, returned null."); }
         PreparedStatement pstmt = null;  
         int result = -1;
         try {
@@ -806,7 +762,47 @@ public class Database {
         }
         return result;
 	}
+	public int updateOpenTeams(String teamName, boolean closed, int score) {
+		Connection conn = establishDatabaseConnection();
+    	if(conn == null){ plugin.getLogger().warning("Connection to Database Failed, returned null."); }
+    	PreparedStatement pstmt = null;
+    	int result = -1;
+        try {
+			pstmt = conn.prepareStatement("INSERT INTO teams(name, closed, score) VALUES(?,?,?)");
+			pstmt.setString(1, teamName);
+			pstmt.setBoolean(2, closed);
+			pstmt.setInt(3, score);
+			pstmt.executeUpdate();    
+			closePreparedStatementQuietly(pstmt);
+    		
+    		pstmt = conn.prepareStatement("SELECT last_insert_rowid() AS LAST_ID");
+    		result = Integer.parseInt(pstmt.executeQuery().getString("LAST_ID"));
+    		closePreparedStatementQuietly(pstmt);
+        } catch (SQLException e) {plugin.getLogger().warning(String.format("Error updating teams table, error: ", e.getMessage())); }
+        finally {
+	        closePreparedStatementQuietly(pstmt);
+	        closeQuietly(conn);
+        }
+        return result;
+	}
+	public void insertMembers(String member, int teamID) {
+		Connection conn = establishDatabaseConnection();
+    	if(conn == null){ plugin.getLogger().warning("Connection to Database Failed, returned null."); }
+    	PreparedStatement pstmt = null;
+        try {
+			pstmt = conn.prepareStatement("INSERT INTO members(member, team_id) VALUES(?,?)");
+			pstmt.setString(1, member);
+			pstmt.setInt(2, teamID);
+			pstmt.executeUpdate();    
+        } catch (SQLException e) {plugin.getLogger().warning(String.format("Error inserting member: ", e.getMessage())); }
+        finally {
+	        closePreparedStatementQuietly(pstmt);
+	        closeQuietly(conn);
+        }
+	}
 
+	
+	//FUCK
 	public void insertNewTeamMember(String string, int team_id) {
 		Connection conn = establishDatabaseConnection("mineswarm");
         if(conn == null){ return; }
@@ -825,6 +821,7 @@ public class Database {
         }
 		
 	}
+
 }
 
 
