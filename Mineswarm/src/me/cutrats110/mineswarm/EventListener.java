@@ -605,7 +605,7 @@ public class EventListener implements Listener {
 	@EventHandler
 	public void onPlayerInteract(PlayerInteractEvent event) {
 		try{
-			if(event.getHand() == EquipmentSlot.HAND) return;
+			if(event.getHand() == EquipmentSlot.OFF_HAND) return;
 
 			Player player = event.getPlayer();
 			boolean opendoor = false;

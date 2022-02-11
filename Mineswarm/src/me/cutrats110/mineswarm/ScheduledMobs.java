@@ -62,6 +62,7 @@ public class ScheduledMobs implements Listener {
 	public void mobSpawns(){
 		Bukkit.getScheduler().scheduleSyncRepeatingTask(plugin, new Runnable() {
 			public void run() {	    	
+				//plugin.getLogger().info("Starting mob spawns");
 		    	//IF LIST SIZE IS SMALLER THAN MAX MOBS (ADJUST LATER) LOOP THROUGH DIFFERENCES SPAWNING MORE UNTIL IT IS THE SAME...
 		    	//IF LIST SIZE IS BIGGER THAN MAX MOBS, REMOVE ENTRIES UNTIL IT FITS.
 		    	
@@ -145,7 +146,11 @@ public class ScheduledMobs implements Listener {
 									if(!enchantments.isEmpty() && enchantments.size() > 0 && !enchantments.contains("NONE")) {
 										for(String enchantment : enchantments) {
 											String[] en = enchantment.split(":");
-											item.addEnchantment(Enchantment.getByKey(NamespacedKey.minecraft(en[0].toLowerCase())), Integer.valueOf(en[1]));
+											try {
+												item.addEnchantment(Enchantment.getByKey(NamespacedKey.minecraft(en[0].toLowerCase())), Integer.valueOf(en[1]));
+											} catch (Exception whoops) {
+												plugin.getLogger().warning("Could not enchant weapon, likely a legacy database or blank field where NONE should be.");
+											}
 										}
 									}
 									
@@ -238,7 +243,9 @@ public class ScheduledMobs implements Listener {
 		    		}
 		    		spawners.put(location, entities);
 		    	}
+		    	//plugin.getLogger().info("Ending mob spawns");
 		    }
+			
 		}, 20, (20*20));//Delay from first start, repeats every X 20t = 1s
 	}
 	
