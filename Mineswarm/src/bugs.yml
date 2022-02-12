@@ -1,3 +1,2 @@
 1) Commands not properly listed, no consistency with command usage (update)
-2) Holding item while dying drops item back to player when they respawns (duplicate by left clicking and holding item off inventory while dying. Once dead and you respawn item appears in first item slot). Will need to clear inventory at respawn to fix most likely, maybe slight delay.
-3) FEATURE: Add verbose logging based on config settings.
+2) FEATURE: Add verbose logging based on config settings.

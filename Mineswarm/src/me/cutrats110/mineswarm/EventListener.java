@@ -103,7 +103,8 @@ public class EventListener implements Listener {
 	@EventHandler
 	public void onPlayerRespawn(PlayerRespawnEvent event) {
 		Player player = event.getPlayer();
-		Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {@Override public void run() { helper.updateTeamBoard(player); } }, 5L);
+		Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {@Override public void run() { helper.updateTeamBoard(player); player.getInventory().clear();} }, 5L);
+		
 	}
     @EventHandler
     public void onPlayerDeath(PlayerDeathEvent event)
