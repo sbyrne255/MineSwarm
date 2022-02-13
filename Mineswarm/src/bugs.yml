@@ -1,2 +1,4 @@
 1) Commands not properly listed, no consistency with command usage (update)
 2) FEATURE: Add verbose logging based on config settings.
+3) Potions Update to use names over magic numbers (duh!)
+4) Also, enchatment option for items in chests.

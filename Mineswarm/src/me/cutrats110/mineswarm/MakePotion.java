@@ -7,6 +7,7 @@ import org.bukkit.potion.PotionEffectType;
 
 
 public class MakePotion {
+	
 	public int id;
 	public String name;
 	public List<PotionEffectType> effectTypes;
