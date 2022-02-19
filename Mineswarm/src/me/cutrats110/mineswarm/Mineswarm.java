@@ -86,141 +86,75 @@ public class Mineswarm extends JavaPlugin implements Listener{
 		getLogger().info("Mineswarm has been disabled");
 	}
 
-	//Command based functions.
-	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args){	
-		Player player = (Player) sender;
-		if (cmd.getName().equalsIgnoreCase("doorlevel") && sender instanceof Player){
-			Block block = player.getTargetBlock(null, 100);
-			Location bl = block.getLocation();
-			player.sendMessage(bl.toString());
-			
-			
-			return true;
+	private void getDoorLevel(Player player) {
+		Block block = player.getTargetBlock(null, 100);
+		Location bl = block.getLocation();
+		player.sendMessage(bl.toString());
+					
+		return;
+	}
+	private void getTool(Player player) {
+		ItemStack markingTool = new ItemStack( Material.GOLDEN_HOE, 1);
+		List<String> lore = new ArrayList<>();
+		lore.add("Marking Tool: Left click POS1, Right click POS2");
+		
+		ItemMeta meta = markingTool.getItemMeta();
+		meta.setDisplayName("MCMS Marking Tool");
+		if(meta.hasLore()){meta.getLore().add("Marking Tool: Left click POS1, Right click POS2");}
+		else{meta.setLore(lore);}
+		markingTool.setItemMeta(meta);
+		player.getLocation().getWorld().dropItem(player.getLocation(), markingTool);			
+		
+		return;
+	}
+	private void gotoZone(Player player, String arg) {
+		try{
+			List<String> zoneData = db.tpToZone(arg);
+			if(zoneData.size() >= 1){
+				Location location = new Location (Bukkit.getWorld(zoneData.get(0)), Integer.valueOf(zoneData.get(1)), Integer.valueOf(zoneData.get(2)), Integer.valueOf(zoneData.get(3)));
+				player.teleport(location);
+			}
+			return;
 		}
+		catch(Exception er){
+			player.sendMessage("Error on show location/s: " + er.toString());
+		}
+	}
+	private void setClass(Player player, String itemClass) {
+		try{
+			if(!(kits.giveKit(player, itemClass))) { player.sendMessage("You can't use more than 1 class, die to pick a new class >:)"); return;	}
+		}
+		catch(Exception er){
+			player.sendMessage("Error on class command: " + er.toString());
+			return;
+		}
+	}
+	//Command based functions.
+	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args){
+		Player player = (Player) sender;
+		
+		
+		//Function is worthless, just gives block location...
+		//TODO Document
+		if (cmd.getName().equalsIgnoreCase("doorlevel") && sender instanceof Player){ getDoorLevel(player); }
+		//TODO Document
+		if (cmd.getName().equalsIgnoreCase("markingtool") && sender instanceof Player){ getTool(player);	}
+		//TODO Document
+		if (cmd.getName().equalsIgnoreCase("gotozone") && sender instanceof Player) { gotoZone(player, args[0]); }
+		if (cmd.getName().equalsIgnoreCase("class")){ setClass(player, args[0]); }
+		
 		//START TEAM COMMANDS
 		if (cmd.getName().equalsIgnoreCase("msteam") && sender instanceof Player){
 			if(args.length <= 0) {
 				player.sendMessage("Type /msteam help for help. No subcommand given.");
 				return true;
-			}
-			switch(args[0]) {
-				case "tpr":
-					if(teams.tpQueue.get(player.getUniqueId()) != null) {
-						//A Request already exists, cancel the first one.
-						teams.tpQueue.get(player.getUniqueId()).cancel();
-						teams.tpQueue.remove(player.getUniqueId());
-					}
-					teams.addRandomTPAQue(player);
-					player.sendMessage("You will be TPed in ~20 seconds, do not move or this will be cancelled");
-					break;
-				case "tpp":
-					if(teams.tpQueue.get(player.getUniqueId()) != null) {
-						//A Request already exists, cancel the first one.
-						teams.tpQueue.get(player.getUniqueId()).cancel();
-						teams.tpQueue.remove(player.getUniqueId());
-					}
-					teams.addTPAQue(player, args[1]);
-					player.sendMessage("You will be TPed in ~20 seconds, do not move or this will be cancelled");
-					break;
-				case "no":
-					teams.tpQueue.get(player.getUniqueId()).cancel();
-					break;
-				case "join": 
-					try {
-						teams.joinRequest(player, args[1]);
-						return true;
-					}catch(IndexOutOfBoundsException ib) {
-						player.sendMessage("Please enter a team name you want to join");
-					}
-					break;
-				case "joinr": 
-					teams.joinRandom(player);
-					return true;
-				case "add": 
-					try {
-						teams.joinTeamAccept(player, args[1]);
-						return true;
-					}catch(IndexOutOfBoundsException ib) {
-						player.sendMessage("Please enter the player name you want to let join");
-					}
-					break;
-				case "deny": 
-					try {
-						teams.joinTeamDeny(player, args[1]);
-						return true;
-					}catch(IndexOutOfBoundsException ib) {
-						player.sendMessage("Please enter the player name you want to deny joining");
-					}
-					break;
-				case "leave":
-					try {
-						teams.leaveTeam(player, false);
-						return true;
-					}catch(Exception exc) {
-						player.sendMessage("Error: " + exc.toString());
-					}
-					break;
-				case "create":
-					try {
-						teams.createClosedTeam(args[1], player);
-						return true;
-					}catch(IndexOutOfBoundsException ib) {
-						player.sendMessage("Please enter a team name you want to create");
-					}
-					break;
-				case "kick":
-					try {
-						teams.kickTeamMember(args[1], player);
-						return true;
-					}catch(IndexOutOfBoundsException ib) {
-						player.sendMessage("Please enter the player name you want to kick.");
-					}
-					break;
-				case "list"://List all players in the command sender's team.
-					try {
-						ArrayList<String> members = teams.getMemberNames(player);
-						for(String name : members) {player.sendMessage(name);}
-						if(members == null) {player.sendMessage("Couldn't find any team members.");}
-						return true;
-					}catch(IndexOutOfBoundsException ib) {
-						player.sendMessage("Please enter the player name you want to kick.");
-					}
-					break;
-				case "save":
-					try {
-						teams.saveTeamData();
-						return true;
-					}catch(Exception exc) {
-						player.sendMessage("Problem saving: " + exc.toString());
-					}
-					break;
-				default:
-					player.sendMessage("Invalid subcommand, type /help mineswarm for command details.");
-					break;
-			}
-			return true;
-		}
-		
+			}	
 		if(cmd.getName().equalsIgnoreCase("PotionTypes")) {
 			for(PotionType x : PotionType.values()) {
 				player.sendMessage(x.toString());
 			}
 		}
-		//MCMS Marking Tool
-		if (cmd.getName().equalsIgnoreCase("markingtool") && sender instanceof Player){
-			ItemStack markingTool = new ItemStack( Material.GOLDEN_HOE, 1);
-			List<String> lore = new ArrayList<>();
-			lore.add("Marking Tool: Left click POS1, Right click POS2");
-			
-			ItemMeta meta = markingTool.getItemMeta();
-			meta.setDisplayName("MCMS Marking Tool");
-			if(meta.hasLore()){meta.getLore().add("Marking Tool: Left click POS1, Right click POS2");}
-			else{meta.setLore(lore);}
-			markingTool.setItemMeta(meta);
-			player.getLocation().getWorld().dropItem(player.getLocation(), markingTool);			
-			
-			return true;
-		}
+		
 		if (cmd.getName().equalsIgnoreCase("showzone") && sender instanceof Player){		
 			try{
 				List<String> zoneData = db.showZone(player.getLocation().getBlockX(), player.getLocation().getBlockY(), player.getLocation().getBlockZ(), player.getLocation().getWorld().toString());
@@ -233,23 +167,7 @@ public class Mineswarm extends JavaPlugin implements Listener{
 				player.sendMessage("Error on show location/s: " + er.toString());
 			}
 		}
-		if (cmd.getName().equalsIgnoreCase("gotozone") && sender instanceof Player){		
-			try{
-				List<String> zoneData = db.tpToZone(args[0]);
-				if(zoneData.size() >= 1){
-					Location location = new Location (Bukkit.getWorld(zoneData.get(0)), Integer.valueOf(zoneData.get(1)), Integer.valueOf(zoneData.get(2)), Integer.valueOf(zoneData.get(3)));
-					player.teleport(location);
-					return true;
-				}
-				else{
-					return false;
-				}
-			}
-			catch(Exception er){
-				player.sendMessage("Error on show location/s: " + er.toString());
-			}
-		}
-		if (cmd.getName().equalsIgnoreCase("makezone") && sender instanceof Player){			
+		if (cmd.getName().equalsIgnoreCase("makezone") && sender instanceof Player){		
 			try{
 				if (player.hasMetadata("pos1x") && player.hasMetadata("pos1z") && player.hasMetadata("pos1y") && player.hasMetadata("pos2z") && player.hasMetadata("pos2x")&& player.hasMetadata("pos2y")&& player.hasMetadata("world1")&& player.hasMetadata("world2")){
 					if(!player.getMetadata("world1").get(0).asString().equals(player.getMetadata("world2").get(0).asString())){
@@ -435,12 +353,13 @@ public class Mineswarm extends JavaPlugin implements Listener{
 					ItemStack toAdd = null;
 						try {
 							int pID = Integer.valueOf(args[i]);//Should error out here if it's not an ID...
-		    				MakePotion potionData = potions.getDrinkableDataById(pID);
+		    				MakePotion potionData = potions.getDrinkableDataById(pID);		    				
 		    				if(potionData.isSplash) {
 		    					toAdd = new ItemStack(Material.SPLASH_POTION, Integer.valueOf(args[i+1].toString()));
 		    				}else {
 		    					toAdd = new ItemStack(Material.POTION, Integer.valueOf(args[i+1].toString()));
 		    				}
+		    				
 			    			try {
 				    				ItemMeta im = toAdd.getItemMeta();
 				    				im.setDisplayName(potionData.name);
@@ -499,16 +418,6 @@ public class Mineswarm extends JavaPlugin implements Listener{
 				player.sendMessage("Error ON INSERT: " + er.toString());
 			}
 		}
-		if (cmd.getName().equalsIgnoreCase("class")){
-			try{
-				if(kits.giveKit(player, args[0])) {	return true; }
-				else { player.sendMessage("You can't use more than 1 class, die to pick a new class >:)"); return true;	}
-			}
-			catch(Exception er){
-				player.sendMessage("Error on class command: " + er.toString());
-				return false;
-			}
-		}
 		if (cmd.getName().equalsIgnoreCase("inhand")){
 			try{
 				player.sendMessage(player.getInventory().getItemInMainHand().getType().toString());
@@ -540,6 +449,107 @@ public class Mineswarm extends JavaPlugin implements Listener{
 			player.sendMessage("Native teams are disbaled, try msteam instead.");
 			return true;
 		}
+		
+		
+		switch(args[0]) {
+		case "tpr":
+			if(teams.tpQueue.get(player.getUniqueId()) != null) {
+				//A Request already exists, cancel the first one.
+				teams.tpQueue.get(player.getUniqueId()).cancel();
+				teams.tpQueue.remove(player.getUniqueId());
+			}
+			teams.addRandomTPAQue(player);
+			player.sendMessage("You will be TPed in ~20 seconds, do not move or this will be cancelled");
+			break;
+		case "tpp":
+			if(teams.tpQueue.get(player.getUniqueId()) != null) {
+				//A Request already exists, cancel the first one.
+				teams.tpQueue.get(player.getUniqueId()).cancel();
+				teams.tpQueue.remove(player.getUniqueId());
+			}
+			teams.addTPAQue(player, args[1]);
+			player.sendMessage("You will be TPed in ~20 seconds, do not move or this will be cancelled");
+			break;
+		case "no":
+			teams.tpQueue.get(player.getUniqueId()).cancel();
+			break;
+		case "join": 
+			try {
+				teams.joinRequest(player, args[1]);
+				return true;
+			}catch(IndexOutOfBoundsException ib) {
+				player.sendMessage("Please enter a team name you want to join");
+			}
+			break;
+		case "joinr": 
+			teams.joinRandom(player);
+			return true;
+		case "add": 
+			try {
+				teams.joinTeamAccept(player, args[1]);
+				return true;
+			}catch(IndexOutOfBoundsException ib) {
+				player.sendMessage("Please enter the player name you want to let join");
+			}
+			break;
+		case "deny": 
+			try {
+				teams.joinTeamDeny(player, args[1]);
+				return true;
+			}catch(IndexOutOfBoundsException ib) {
+				player.sendMessage("Please enter the player name you want to deny joining");
+			}
+			break;
+		case "leave":
+			try {
+				teams.leaveTeam(player, false);
+				return true;
+			}catch(Exception exc) {
+				player.sendMessage("Error: " + exc.toString());
+			}
+			break;
+		case "create":
+			try {
+				teams.createClosedTeam(args[1], player);
+				return true;
+			}catch(IndexOutOfBoundsException ib) {
+				player.sendMessage("Please enter a team name you want to create");
+			}
+			break;
+		case "kick":
+			try {
+				teams.kickTeamMember(args[1], player);
+				return true;
+			}catch(IndexOutOfBoundsException ib) {
+				player.sendMessage("Please enter the player name you want to kick.");
+			}
+			break;
+		case "list"://List all players in the command sender's team.
+			try {
+				ArrayList<String> members = teams.getMemberNames(player);
+				for(String name : members) {player.sendMessage(name);}
+				if(members == null) {player.sendMessage("Couldn't find any team members.");}
+				return true;
+			}catch(IndexOutOfBoundsException ib) {
+				player.sendMessage("Please enter the player name you want to kick.");
+			}
+			break;
+		case "save":
+			try {
+				teams.saveTeamData();
+				return true;
+			}catch(Exception exc) {
+				player.sendMessage("Problem saving: " + exc.toString());
+			}
+			break;
+		default:
+			player.sendMessage("Invalid subcommand, type /help mineswarm for command details.");
+			break;
+	}
+	return true;
+}
+		
+		
 		return false;
 	}
 }

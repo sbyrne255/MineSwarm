@@ -624,7 +624,7 @@ public class EventListener implements Listener {
 					
 					BlockState state = block.getState();
 					for(ItemStack item : player.getInventory()) {
-						if((item != null && item.getType().equals(Material.BOOK) && item.hasItemMeta() && item.getItemMeta().hasLore() && item.getItemMeta().getLore().toString().equals(level)))
+						if((item != null && item.getType().equals(Material.BOOK) && item.hasItemMeta() && item.getItemMeta().hasLore() && item.getItemMeta().getLore().toString().equals(level)) || player.getGameMode() == GameMode.CREATIVE )
 						{
 							//https://bukkit.org/threads/open-iron-door-door-deprecated.213967/
 							try{
@@ -635,9 +635,8 @@ public class EventListener implements Listener {
 					            }
 					            else{
 					            	opendoor = true;
-					            	//Remove Key
-									item.setAmount(item.getAmount() -1);
-									break;
+					            	if(player.getGameMode() == GameMode.CREATIVE) { break ;}
+					            	else { item.setAmount(item.getAmount() -1);  break; }
 					            }
 							}catch(Exception doorer){
 								state = event.getClickedBlock().getState();
@@ -647,9 +646,8 @@ public class EventListener implements Listener {
 					            }
 					            else{
 					            	opendoor = true;
-					            	//Remove Key
-									item.setAmount(item.getAmount() -1);	
-									break;
+					            	if(player.getGameMode() == GameMode.CREATIVE) { break ;}
+					            	else { item.setAmount(item.getAmount() -1);  break; }
 					            }
 							}	
 						}
